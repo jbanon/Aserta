@@ -26,7 +26,7 @@ dotnet run --project src/Aserta.Web      # http://127.0.0.1:5110
 dotnet test                              # dominio + integración (necesita la base)
 ```
 
-Al arrancar se aplican las migraciones pendientes y, con `Demo:Sembrar = true` (por defecto en `Development`), se siembran datos **ficticios**. Usuarios de demo: `socio@demo.aserta.local`, `carlos@…`, `lucia@…`, `pedro@…`, `panaderia@…`; contraseña `Aserta-Demo-2026!`.
+Al arrancar se aplican las migraciones pendientes y, con `Demo:Sembrar = true` (por defecto en `Development`), se siembran datos **ficticios**. Usuarios de demo: `socio@demo.aserta.local`, `carlos@…`, `lucia@…`, `pedro@…`, `panaderia@…`; contraseña `Aserta-Demo-2026!`. Segundo factor opcional (TOTP) desde «Mi cuenta».
 
 ## Reglas de trabajo
 

@@ -92,10 +92,7 @@ public class EntrarModel : PaginaBase
             return Page();
         }
         if (resultado.RequiresTwoFactor)
-        {
-            ModelState.AddModelError(string.Empty, "Este usuario tiene activado el segundo factor, que se habilita en una tarea posterior.");
-            return Page();
-        }
+            return RedirectToPage("/Cuenta/Mfa/Verificar", new { volver = Volver, recordar = Datos.Recordar });
 
         using (_contexto.AbrirAmbitoTenant(usuario.GestoriaId))
             await _auditoria.RegistrarYGuardarAsync(AccionesAuditoria.InicioSesionFallido, nameof(Usuario), usuario.Id.ToString(), null, usuario.GestoriaId, usuario.Id);

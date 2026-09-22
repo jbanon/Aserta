@@ -1,0 +1,33 @@
+@page
+@model Aserta.Web.Pages.Cuenta.Mfa.ConfigurarModel
+@{
+    ViewData["Titulo"] = "Activar segundo factor";
+}
+<div class="migas"><a asp-page="/Cuenta/Perfil">Mi cuenta</a> › Segundo factor</div>
+<div class="pagina-cabecera"><div><h1>Activar el segundo factor</h1><p class="subtitulo">Aplicación autenticadora (TOTP): Google Authenticator, Microsoft Authenticator, Aegis, 1Password…</p></div></div>
+@if (Model.Obligatorio) { <div class="alerta alerta-aviso">@Icono.Aviso <div><strong>Su gestoría exige el segundo factor.</strong> Hasta que lo active no podrá usar el resto de la aplicación.</div></div> }
+@if (Model.CodigosRecuperacion is not null)
+{
+    <div class="panel ancho-max-sm"><div class="panel-cabecera"><h2>Segundo factor activado</h2></div><div class="panel-cuerpo">
+        <p>Guarde estos <strong>códigos de recuperación</strong> en un lugar seguro. Cada uno sirve una sola vez y <strong>no se volverán a mostrar</strong>.</p>
+        <ul class="mono mt-3">@foreach (var c in Model.CodigosRecuperacion) { <li>@c</li> }</ul>
+        <p class="mt-4"><a class="boton boton-primario" href="/">Continuar</a></p>
+    </div></div>
+}
+else
+{
+    <partial name="_ResumenErrores" />
+    <div class="rejilla rejilla-2">
+        <div class="panel"><div class="panel-cabecera"><h2>1 · Escanee el código</h2></div><div class="panel-cuerpo">
+            <img src="@Model.QrDataUri" alt="Código QR para la aplicación autenticadora" width="220" height="220" />
+            <p class="texto-sm texto-2 mt-3">Si no puede escanear, introduzca esta clave a mano:</p>
+            <p class="mono texto-sm">@Model.ClaveFormateada</p>
+        </div></div>
+        <div class="panel"><div class="panel-cabecera"><h2>2 · Confirme con un código</h2></div><div class="panel-cuerpo">
+            <form method="post">
+                <div class="campo"><label asp-for="Codigo">Código de 6 dígitos</label><input class="entrada mono" asp-for="Codigo" inputmode="numeric" autocomplete="one-time-code" autofocus required /><span class="error" asp-validation-for="Codigo"></span></div>
+                <div class="mt-4"><button type="submit" class="boton boton-primario">Activar</button></div>
+            </form>
+        </div></div>
+    </div>
+}

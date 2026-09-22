@@ -1,0 +1,23 @@
+@page
+@model Aserta.Web.Pages.Cuenta.Mfa.VerificarModel
+@{
+    Layout = "_LayoutCuenta";
+    ViewData["Titulo"] = "Segundo factor";
+}
+<div class="cuenta-tarjeta">
+    <div class="marca"><span class="marca-logo" aria-hidden="true">A</span> Aserta</div>
+    <h1>Segundo factor</h1>
+    <p class="texto-2 mb-4">Introduzca el código de 6 dígitos de su aplicación autenticadora@(Model.UsarRecuperacion ? " o uno de sus códigos de recuperación" : "").</p>
+    <partial name="_ResumenErrores" />
+    <form method="post">
+        <input type="hidden" asp-for="Volver" /><input type="hidden" asp-for="Recordar" /><input type="hidden" asp-for="UsarRecuperacion" />
+        <div class="campo">
+            <label asp-for="Codigo">@(Model.UsarRecuperacion ? "Código de recuperación" : "Código")</label>
+            <input class="entrada mono" asp-for="Codigo" autocomplete="one-time-code" inputmode="numeric" autofocus required />
+            <span class="error" asp-validation-for="Codigo"></span>
+        </div>
+        @if (!Model.UsarRecuperacion) { <label class="interruptor mt-3"><input type="checkbox" asp-for="RecordarEquipo" /> <span>No volver a pedir el código en este equipo durante 30 días</span></label> }
+        <div class="mt-4 flex"><button type="submit" class="boton boton-primario">Verificar</button>
+            <a class="boton boton-sutil" asp-page="/Cuenta/Mfa/Verificar" asp-route-volver="@Model.Volver" asp-route-recordar="@Model.Recordar" asp-route-usarRecuperacion="@(!Model.UsarRecuperacion)">@(Model.UsarRecuperacion ? "Usar la aplicación" : "Usar un código de recuperación")</a></div>
+    </form>
+</div>

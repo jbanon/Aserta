@@ -63,7 +63,11 @@ builder.Services.AddAuthorization(o =>
 
 builder.Services.AddRazorPages(o =>
 {
-    o.Conventions.AllowAnonymousToFolder("/Cuenta");
+    // Solo las paginas de entrada son anonimas; /Cuenta/Perfil y /Cuenta/Mfa/Configurar exigen sesion (FallbackPolicy).
+    o.Conventions.AllowAnonymousToPage("/Cuenta/Entrar");
+    o.Conventions.AllowAnonymousToPage("/Cuenta/Salir");
+    o.Conventions.AllowAnonymousToPage("/Cuenta/Denegado");
+    o.Conventions.AllowAnonymousToPage("/Cuenta/Mfa/Verificar");
     o.Conventions.AllowAnonymousToPage("/Error");
     o.Conventions.AuthorizeFolder("/Clientes", Politicas.Gestoria);
     o.Conventions.AuthorizeFolder("/Obligaciones", Politicas.Gestoria);
@@ -136,6 +140,7 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
 app.UseMiddleware<MiddlewareContextoEjecucion>();
+app.UseMiddleware<MiddlewareMfaObligatorio>();
 app.UseAuthorization();
 
 app.MapRazorPages();

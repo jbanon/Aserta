@@ -37,7 +37,7 @@
             @if (Usuario.EstaAutenticado)
             {
                 <div class="usuario-actual">
-                    <span class="medio texto-sm">@Usuario.NombreCompleto</span>
+                    <a class="medio texto-sm" asp-page="/Cuenta/Perfil" title="Mi cuenta">@Usuario.NombreCompleto</a>
                     <small>@string.Join(", ", Usuario.Roles)</small>
                 </div>
                 <form method="post" asp-page="/Cuenta/Salir">

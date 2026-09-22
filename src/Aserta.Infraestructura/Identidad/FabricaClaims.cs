@@ -14,6 +14,7 @@ public static class ClaimsAserta
     public const string ClienteId = "aserta:cliente";
     public const string NombreCompleto = "aserta:nombre";
     public const string MfaObligatorio = "aserta:mfa";
+    public const string MfaActivo = "aserta:mfa-activo";
 }
 
 /// <summary>
@@ -47,6 +48,7 @@ public sealed class FabricaClaims : UserClaimsPrincipalFactory<UsuarioIdentity, 
         if (u.ClienteId is Guid c) identidad.AddClaim(new Claim(ClaimsAserta.ClienteId, c.ToString()));
         identidad.AddClaim(new Claim(ClaimsAserta.NombreCompleto, u.NombreCompleto));
         identidad.AddClaim(new Claim(ClaimsAserta.MfaObligatorio, u.MfaObligatorio ? "1" : "0"));
+        identidad.AddClaim(new Claim(ClaimsAserta.MfaActivo, user.TwoFactorEnabled ? "1" : "0"));
         return identidad;
     }
 }
