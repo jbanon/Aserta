@@ -83,6 +83,10 @@ public class FlujoDocumentalTests
                 await documentos.ValidarAsync(d.Id);
             }
         }
+        // Un documento mas (aunque el periodo ya estuviera cubierto de ejecuciones anteriores) para disparar el evento DocumentoValidado
+        var extra = await documentos.SubirAsync(Subida(clienteId, TipoDocumento.Ticket, "03", Pdf.Concat(Guid.NewGuid().ToByteArray()).ToArray()));
+        await documentos.ValidarAsync(extra.Id);
+
         var final = await db.Obligaciones.AsNoTracking().FirstAsync(x => x.Id == o.Id);
         Assert.Equal(EstadoObligacion.DocumentacionCompleta, final.Estado);
         Assert.True(await db.DocumentosObligacion.AnyAsync(x => x.ObligacionId == o.Id)); // vinculo automatico por periodo

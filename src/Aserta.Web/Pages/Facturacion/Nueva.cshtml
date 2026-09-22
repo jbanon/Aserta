@@ -1,0 +1,14 @@
+@page
+@model Aserta.Web.Pages.Facturacion.NuevaModel
+@{
+    ViewData["Titulo"] = Model.Datos.FacturaRectificadaId is null ? "Nueva factura" : "Factura rectificativa";
+    ViewData["Destinatarios"] = Model.Destinatarios;
+    ViewData["NumRectificada"] = Model.NumRectificada;
+}
+<div class="migas"><a asp-page="/Facturacion/Index">Facturación</a> › @ViewData["Titulo"]</div>
+<div class="pagina-cabecera"><div><h1>@ViewData["Titulo"]</h1><p class="subtitulo">Emisor: <strong>@Model.NombreEmisor</strong> (@Model.NifEmisor). Al emitir se calcula la huella encadenada, se imprime el QR y se encola el envío: la AEAT no bloquea la emisión.</p></div></div>
+<form method="post" class="ancho-max-md">
+    <partial name="_ResumenErrores" />
+    <partial name="_FormularioFactura" for="Datos" />
+    <div class="form-pie"><a class="boton" asp-page="/Facturacion/Index" asp-route-emisorId="@Model.Datos.ClienteEmisorId">Cancelar</a><button class="boton boton-primario">Emitir factura</button></div>
+</form>

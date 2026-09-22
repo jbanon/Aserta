@@ -367,3 +367,18 @@
   .portal-aprobacion { border-color: var(--color-marca); }
   @media (min-width: 720px) { .portal-nav { position: sticky; } body.portal { padding-bottom: 0; } }
 }
+
+/* ---- Facturacion Veri*Factu (M6) ------------------------------------------------------ */
+@layer componentes {
+  .lineas-factura .entrada, .lineas-factura select { padding: 4px 6px; font-size: var(--tamano-sm); min-width: 0; }
+  .lineas-factura td:first-child { min-width: 220px; }
+  .lineas-factura td { padding: 3px 4px; }
+  .registro-vf { padding: var(--esp-3); border: 1px solid var(--color-borde); border-radius: var(--radio); background: var(--color-superficie-2); }
+  .registro-vf + .registro-vf { margin-top: var(--esp-3); }
+  .registro-vf .datos { grid-template-columns: max-content 1fr; }
+  .registro-vf dd.mono { overflow-wrap: anywhere; }
+  pre.xml { font-family: var(--fuente-mono); font-size: 11px; white-space: pre-wrap; overflow-wrap: anywhere; background: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: var(--radio-sm); padding: var(--esp-2); max-height: 320px; overflow: auto; }
+  .portal-nav-5 { grid-template-columns: repeat(5, 1fr); }
+  details.portal-subida > summary { cursor: pointer; list-style: none; }
+  details.portal-subida > summary::-webkit-details-marker { display: none; }
+}

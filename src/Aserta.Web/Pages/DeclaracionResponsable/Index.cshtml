@@ -1,0 +1,36 @@
+@page "/DeclaracionResponsable"
+@model Aserta.Web.Pages.DeclaracionResponsable.IndexModel
+@{
+    ViewData["Titulo"] = "Declaración responsable";
+    if (!Model.Autenticado) { Layout = "_LayoutCuenta"; }
+    var d = Model.Declaracion;
+}
+<div class="@(Model.Autenticado ? "" : "cuenta-tarjeta ancho-max-md")">
+@if (d.DatosDeDemostracion || !Model.EsProduccion)
+{
+    <div class="alerta alerta-error" role="alert">@Icono.Aviso <div><strong>DATOS DE DEMOSTRACIÓN.</strong> Este sistema no está en producción y esta declaración <strong>no tiene validez</strong>. Antes de cualquier uso real hay que sustituir razón social, NIF y domicilio del productor (DA-02).</div></div>
+}
+<h1>Declaración responsable del productor del sistema informático de facturación</h1>
+<p class="texto-2">Reglamento de requisitos de los sistemas informáticos de facturación (RD 1007/2023) y Orden HAC/1177/2024. Contenido mínimo <span class="sin-confirmar" title="Pendiente de contrastar con el texto de la norma">[VERIFICAR]</span>.</p>
+<div class="panel mt-4"><div class="panel-cuerpo">
+<dl class="datos">
+    <dt>Productor · razón social</dt><dd>@d.RazonSocial</dd>
+    <dt>Productor · NIF</dt><dd class="mono">@d.Nif</dd>
+    <dt>Productor · domicilio</dt><dd>@d.Domicilio</dd>
+    <dt>Nombre del sistema</dt><dd>@d.NombreSistema</dd>
+    <dt>Identificador del sistema</dt><dd class="mono">@d.IdSistemaInformatico</dd>
+    <dt>Versión</dt><dd class="mono">@d.Version</dd>
+    <dt>Número de instalación</dt><dd class="mono">@Model.NumeroInstalacion</dd>
+    <dt>Componentes</dt><dd>@d.Componentes</dd>
+    <dt>Modalidad</dt><dd>Solo VERI*FACTU (sistema de emisión de facturas verificables). No permite el modo NO VERI*FACTU.</dd>
+    <dt>Especificaciones aplicadas</dt><dd>Huella: v@Aserta.Verifactu.Comun.FormatosVerifactu.VersionEspecHuella · QR: v@Aserta.Verifactu.Comun.FormatosVerifactu.VersionEspecQr · Esquemas XSD versionados en el repositorio</dd>
+    <dt>Fecha y lugar de suscripción</dt><dd>@d.FechaSuscripcion, @d.LugarSuscripcion</dd>
+    <dt>Suscribe</dt><dd>@d.Firmante</dd>
+</dl>
+<p class="texto-sm mt-4">El productor declara que el sistema informático identificado cumple los requisitos de integridad, conservación, accesibilidad, legibilidad, trazabilidad e inalterabilidad de los registros de facturación exigidos por el artículo 29.2.j) de la Ley 58/2003, General Tributaria, y su normativa de desarrollo <span class="sin-confirmar">[VERIFICAR redacción exigida]</span>.</p>
+</div></div>
+<div class="panel mt-4"><div class="panel-cabecera"><h2>Histórico de versiones declaradas</h2></div>
+    <div class="tabla-envoltorio"><table class="tabla tabla-compacta"><thead><tr><th>Versión</th><th>Suscripción</th><th>Registrada</th><th>Hash</th></tr></thead>
+    <tbody>@foreach (var h in Model.Historico) { <tr><td class="mono">@h.Version</td><td class="tabular">@h.FechaSuscripcion.ToString("dd/MM/yyyy")</td><td class="tabular">@h.FechaRegistroUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td><td class="mono texto-xs">@h.HashSha256[..16]…</td></tr> }</tbody></table></div></div>
+<p class="mt-4 texto-sm"><a href="/">Volver</a></p>
+</div>

@@ -1,0 +1,52 @@
+@model Aserta.Verifactu.Servicios.FacturaNueva
+@{
+    var destinatarios = ViewData["Destinatarios"] as IReadOnlyList<Aserta.Dominio.Facturacion.Destinatario> ?? [];
+    var esRectificativa = Model.FacturaRectificadaId is not null;
+    string N(string campo) => ViewData.TemplateInfo.GetFullHtmlFieldName(campo);
+}
+<input type="hidden" asp-for="ClienteEmisorId" />
+<input type="hidden" asp-for="FacturaRectificadaId" />
+@if (esRectificativa)
+{
+    <fieldset><legend>Rectificación</legend>
+        <p class="texto-sm texto-2">Rectifica a <strong class="mono">@ViewData["NumRectificada"]</strong> <strong>por diferencias</strong>: indique solo la diferencia (positiva o negativa). El sistema deriva el código (R1, R4 o R5).</p>
+        <div class="campo-fila">
+            <div class="campo"><label asp-for="Motivo">¿Por qué rectifica?</label>
+                <select asp-for="Motivo">
+                    <option value="DevolucionODescuento">Devolución, descuento o resolución de la operación</option>
+                    <option value="ErrorEnDatos">Error en el importe, el concepto o los datos del destinatario</option>
+                </select></div>
+            <div class="campo"><label asp-for="TextoMotivo">Explicación (aparece en la factura)</label><input class="entrada" asp-for="TextoMotivo" maxlength="200" required /></div>
+        </div>
+    </fieldset>
+}
+<fieldset><legend>Destinatario</legend>
+    <label class="interruptor"><input type="checkbox" asp-for="Simplificada" /><span>Factura simplificada (ticket, sin identificar al destinatario)<small>F2; máximo 3.000 € [VERIFICAR]</small></span></label>
+    <div class="campo-fila mt-3">
+        <div class="campo"><label asp-for="DestinatarioNombre">Nombre o razón social</label><input class="entrada" asp-for="DestinatarioNombre" list="destinatarios" maxlength="120" />
+            <datalist id="destinatarios">@foreach (var d in destinatarios) { <option value="@d.Nombre">@d.Nif</option> }</datalist></div>
+        <div class="campo"><label asp-for="DestinatarioNif">NIF</label><input class="entrada mono" asp-for="DestinatarioNif" maxlength="9" /></div>
+    </div>
+</fieldset>
+<fieldset><legend>Operación</legend>
+    <div class="campo"><label asp-for="Descripcion">Descripción de la operación</label><input class="entrada" asp-for="Descripcion" maxlength="500" required /></div>
+    <div class="tabla-envoltorio mt-3"><table class="tabla tabla-compacta lineas-factura">
+        <thead><tr><th>Descripción</th><th>Cantidad</th><th>Precio (€)</th><th>IVA</th><th>Rec. equiv.</th><th>Exenta</th></tr></thead>
+        <tbody>
+        @for (int i = 0; i < 6; i++)
+        {
+            var l = i < Model.Lineas.Count ? Model.Lineas[i] : new Aserta.Verifactu.Servicios.LineaNueva { PrecioUnitario = 0, Cantidad = i == 0 ? 1 : 0 };
+            <tr>
+                <td><input class="entrada" name="@N($"Lineas[{i}].Descripcion")" value="@l.Descripcion" maxlength="300" placeholder="@(i == 0 ? "Servicio o producto" : "")" /></td>
+                <td><input class="entrada" type="number" step="0.001" min="0" name="@N($"Lineas[{i}].Cantidad")" value="@(l.Cantidad == 0 ? "" : l.Cantidad.ToString(System.Globalization.CultureInfo.InvariantCulture))" /></td>
+                <td><input class="entrada" type="number" step="0.01" name="@N($"Lineas[{i}].PrecioUnitario")" value="@(l.PrecioUnitario == 0 ? "" : l.PrecioUnitario.ToString(System.Globalization.CultureInfo.InvariantCulture))" /></td>
+                <td><select name="@N($"Lineas[{i}].TipoIva")"><option value="21" selected="@(l.TipoIva == 21)">21 %</option><option value="10" selected="@(l.TipoIva == 10)">10 %</option><option value="4" selected="@(l.TipoIva == 4)">4 %</option><option value="0" selected="@(l.TipoIva == 0)">0 %</option></select></td>
+                <td><select name="@N($"Lineas[{i}].TipoRecargo")"><option value="">—</option><option value="5.2" selected="@(l.TipoRecargo == 5.2m)">5,2 %</option><option value="1.4" selected="@(l.TipoRecargo == 1.4m)">1,4 %</option><option value="0.5" selected="@(l.TipoRecargo == 0.5m)">0,5 %</option></select></td>
+                <td><input type="checkbox" name="@N($"Lineas[{i}].Exenta")" value="true" checked="@l.Exenta" aria-label="Exenta" /></td>
+            </tr>
+        }
+        </tbody></table></div>
+    <div class="campo-fila mt-3">
+        <div class="campo"><label asp-for="PorcentajeRetencion">Retención IRPF (%)</label><input class="entrada" type="number" step="0.01" min="0" max="50" asp-for="PorcentajeRetencion" /><span class="ayuda">Profesionales: 15 % (7 % los tres primeros años) [VERIFICAR]</span></div>
+    </div>
+</fieldset>

@@ -2,6 +2,7 @@ using Aserta.Aplicacion.Puertos;
 using Aserta.Dominio.Catalogo;
 using Aserta.Dominio.Clientes;
 using Aserta.Dominio.Documental;
+using Aserta.Dominio.Facturacion;
 using Aserta.Dominio.Mensajeria;
 using Aserta.Dominio.Nucleo;
 using Aserta.Dominio.Obligaciones;
@@ -51,6 +52,22 @@ public sealed class AsertaDbContext : IdentityDbContext<UsuarioIdentity, RolIden
     public DbSet<Hilo> Hilos => Set<Hilo>();
     public DbSet<Mensaje> Mensajes => Set<Mensaje>();
 
+    public DbSet<SerieFacturacion> SeriesFacturacion => Set<SerieFacturacion>();
+    public DbSet<Destinatario> Destinatarios => Set<Destinatario>();
+    public DbSet<ArticuloServicio> ArticulosServicio => Set<ArticuloServicio>();
+    public DbSet<CadenaEmisor> CadenasEmisor => Set<CadenaEmisor>();
+    public DbSet<FacturaEmitida> FacturasEmitidas => Set<FacturaEmitida>();
+    public DbSet<LineaFactura> LineasFactura => Set<LineaFactura>();
+    public DbSet<RegistroFacturacion> RegistrosFacturacion => Set<RegistroFacturacion>();
+    public DbSet<EstadoEnvioRegistro> EstadosEnvio => Set<EstadoEnvioRegistro>();
+    public DbSet<EnvioPendiente> EnviosPendientes => Set<EnvioPendiente>();
+    public DbSet<LoteEnvio> LotesEnvio => Set<LoteEnvio>();
+    public DbSet<FacturaPdf> FacturasPdf => Set<FacturaPdf>();
+    public DbSet<Certificado> Certificados => Set<Certificado>();
+    public DbSet<Apoderamiento> Apoderamientos => Set<Apoderamiento>();
+    public DbSet<AccesoCertificadoLog> AccesosCertificado => Set<AccesoCertificadoLog>();
+    public DbSet<DeclaracionResponsableHistorico> DeclaracionesResponsables => Set<DeclaracionResponsableHistorico>();
+
     public Task<int> GuardarCambiosAsync(CancellationToken ct = default) => SaveChangesAsync(ct);
 
     // Se leen como parametros en cada consulta: cambiar el ambito cambia el filtro sin recompilar el modelo.
@@ -76,5 +93,19 @@ public sealed class AsertaDbContext : IdentityDbContext<UsuarioIdentity, RolIden
         mb.Entity<RequisitoPeriodo>().HasQueryFilter(r => Mantenimiento || r.GestoriaId == GestoriaActual);
         mb.Entity<Hilo>().HasQueryFilter(h => Mantenimiento || h.GestoriaId == GestoriaActual);
         mb.Entity<Mensaje>().HasQueryFilter(m => Mantenimiento || m.GestoriaId == GestoriaActual);
+        mb.Entity<SerieFacturacion>().HasQueryFilter(x => Mantenimiento || x.GestoriaId == GestoriaActual);
+        mb.Entity<Destinatario>().HasQueryFilter(x => Mantenimiento || x.GestoriaId == GestoriaActual);
+        mb.Entity<ArticuloServicio>().HasQueryFilter(x => Mantenimiento || x.GestoriaId == GestoriaActual);
+        mb.Entity<CadenaEmisor>().HasQueryFilter(x => Mantenimiento || x.GestoriaId == GestoriaActual);
+        mb.Entity<FacturaEmitida>().HasQueryFilter(x => Mantenimiento || x.GestoriaId == GestoriaActual);
+        mb.Entity<LineaFactura>().HasQueryFilter(x => Mantenimiento || x.GestoriaId == GestoriaActual);
+        mb.Entity<RegistroFacturacion>().HasQueryFilter(x => Mantenimiento || x.GestoriaId == GestoriaActual);
+        mb.Entity<EstadoEnvioRegistro>().HasQueryFilter(x => Mantenimiento || x.GestoriaId == GestoriaActual);
+        mb.Entity<EnvioPendiente>().HasQueryFilter(x => Mantenimiento || x.GestoriaId == GestoriaActual);
+        mb.Entity<LoteEnvio>().HasQueryFilter(x => Mantenimiento || x.GestoriaId == GestoriaActual);
+        mb.Entity<FacturaPdf>().HasQueryFilter(x => Mantenimiento || x.GestoriaId == GestoriaActual);
+        mb.Entity<Certificado>().HasQueryFilter(x => Mantenimiento || x.GestoriaId == GestoriaActual);
+        mb.Entity<Apoderamiento>().HasQueryFilter(x => Mantenimiento || x.GestoriaId == GestoriaActual);
+        mb.Entity<AccesoCertificadoLog>().HasQueryFilter(x => Mantenimiento || x.GestoriaId == GestoriaActual);
     }
 }

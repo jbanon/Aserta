@@ -31,9 +31,10 @@
     <partial name="_Alertas" />
     @RenderBody()
 </main>
-<nav class="portal-nav" aria-label="Principal">
+<nav class="portal-nav portal-nav-5" aria-label="Principal">
     <a href="/Portal" aria-current="@(ruta.Equals("/Portal", StringComparison.OrdinalIgnoreCase) || ruta.StartsWith("/Portal/Index", StringComparison.OrdinalIgnoreCase) ? "page" : null)">@Icono.Tablero<span>Inicio</span></a>
     <a href="/Portal/Documentos" aria-current="@Actual("/Portal/Documentos")">@Icono.Catalogo<span>Documentos</span></a>
+    <a href="/Portal/Facturas" aria-current="@Actual("/Portal/Facturas")">@Icono.Editar<span>Facturas</span></a>
     <a href="/Portal/Impuestos" aria-current="@Actual("/Portal/Impuesto")">@Icono.Calendario<span>Impuestos</span></a>
     <a href="/Portal/Mensajes" aria-current="@(Actual("/Portal/Mensajes") ?? Actual("/Mensajes"))" class="campana">@Icono.Historial<span>Mensajes</span>@if (sinLeer > 0) { <span class="campana-contador">@sinLeer</span> }</a>
 </nav>

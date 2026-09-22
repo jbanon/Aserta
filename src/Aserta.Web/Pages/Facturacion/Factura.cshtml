@@ -1,0 +1,74 @@
+@page "{id:guid}"
+@model Aserta.Web.Pages.Facturacion.FacturaModel
+@{
+    var f = Model.Factura;
+    ViewData["Titulo"] = f.NumSerieFactura;
+}
+<div class="migas"><a asp-page="/Facturacion/Index">Facturación</a> › @f.NumSerieFactura</div>
+<div class="pagina-cabecera">
+    <div><h1><span class="mono">@f.NumSerieFactura</span> <span class="insignia">@f.TipoFactura · @f.TipoFactura.Etiqueta()</span> @if (Model.Anulada) { <span class="insignia insignia-error">Anulada</span> }</h1>
+    <p class="subtitulo">@Model.NombreEmisor (@f.NifEmisor) · @f.FechaExpedicion.ToString("dd/MM/yyyy") · @f.ImporteTotal.ToString("N2") € @(f.DestinatarioNombre is null ? "· simplificada" : $"· para {f.DestinatarioNombre}")</p></div>
+    <div class="acciones">
+        @if (Model.PdfListo) { <a class="boton boton-primario" href="@Url.Page("/Facturacion/Pdf", new { id = f.Id })" target="_blank">Abrir PDF</a> }
+        else { <a class="boton" href="@Url.Page("/Facturacion/Pdf", new { id = f.Id })">Generar y abrir PDF</a> }
+        @if (!Model.Anulada && !f.TipoFactura.EsRectificativa()) { <a class="boton" asp-page="/Facturacion/Nueva" asp-route-rectifica="@f.Id">Rectificar</a> }
+        @if (!Model.Anulada) { <form method="post" asp-page-handler="Anular" data-confirmar="¿Generar el registro de anulación de @f.NumSerieFactura? La factura permanece; se registra su anulación en la cadena."><button class="boton boton-peligro">Anular</button></form> }
+    </div>
+</div>
+<partial name="_ResumenErrores" />
+<div class="rejilla rejilla-2">
+    <div class="panel">
+        <div class="panel-cabecera"><h2>Factura</h2><span class="texto-3 texto-xs">Inalterable (RD 1007/2023): no se edita ni se borra</span></div>
+        <div class="panel-cuerpo">
+            <dl class="datos">
+                <dt>Concepto</dt><dd>@f.Descripcion</dd>
+                <dt>Destinatario</dt><dd>@(f.DestinatarioNombre is null ? "(factura simplificada)" : $"{f.DestinatarioNombre} · {f.DestinatarioNif}")</dd>
+                @if (f.FacturaRectificadaId is not null) { <dt>Rectifica a</dt><dd><a asp-page="/Facturacion/Factura" asp-route-id="@f.FacturaRectificadaId" class="mono">@Model.NumRectificada</a> · @f.MotivoRectificacion (por diferencias)</dd> }
+                <dt>Base</dt><dd class="tabular">@f.BaseTotal.ToString("N2") €</dd>
+                <dt>Cuota IVA</dt><dd class="tabular">@f.CuotaTotal.ToString("N2") € @(f.CuotaRecargoTotal != 0 ? $"+ recargo {f.CuotaRecargoTotal:N2} €" : "")</dd>
+                @if (f.RetencionTotal != 0) { <dt>Retención</dt><dd class="tabular">-@f.RetencionTotal.ToString("N2") € (@f.PorcentajeRetencion %)</dd> }
+                <dt>Total</dt><dd class="tabular negrita">@f.ImporteTotal.ToString("N2") €</dd>
+                <dt>Emitida</dt><dd>@f.FechaHoraCreacionUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss") por @Model.NombreUsuario</dd>
+            </dl>
+            <table class="tabla tabla-compacta mt-3"><thead><tr><th>Línea</th><th class="num">Cant.</th><th class="num">Precio</th><th class="num">IVA</th><th class="num">Base</th></tr></thead>
+            <tbody>@foreach (var l in f.Lineas.OrderBy(l => l.Orden)) { <tr><td>@l.Descripcion</td><td class="num">@l.Cantidad.ToString("0.###")</td><td class="num">@l.PrecioUnitario.ToString("N2")</td><td class="num">@(l.Exenta ? "Exenta" : l.TipoIva.ToString("N2") + " %")@(l.TipoRecargo is not null ? $" + {l.TipoRecargo:N2} % RE" : "")</td><td class="num">@l.BaseLinea.ToString("N2")</td></tr> }</tbody></table>
+        </div>
+    </div>
+    <div class="columna">
+        <div class="panel">
+            <div class="panel-cabecera"><h2>QR tributario</h2><span class="texto-3 texto-xs">ISO 18004, corrección M, 35 mm en el PDF</span></div>
+            <div class="panel-cuerpo texto-centro">
+                <p class="texto-sm">QR tributario:</p>
+                <img src="@Model.QrDataUri" alt="QR tributario de la factura" width="160" height="160" />
+                <p class="texto-sm">Factura verificable en la sede electrónica de la AEAT</p>
+                <p class="texto-xs mono texto-3">@f.UrlQr</p>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="panel-cabecera"><h2>Registros de facturación</h2><span class="texto-3 texto-xs">Cadena del emisor @f.NifEmisor</span></div>
+            <div class="panel-cuerpo">
+                @foreach (var r in Model.Registros)
+                {
+                    var e = Model.Estados.GetValueOrDefault(r.Registro.Id);
+                    <div class="registro-vf">
+                        <div class="flex flex-entre"><strong>@r.Registro.Tipo · n.º @r.Registro.NumeroEnCadena @(r.Registro.PrimerRegistro ? "(primer registro de la cadena)" : "")</strong>
+                            <span class="insignia @Aserta.Web.Pages.Facturacion.IndexModel.ClaseEstado(e?.Estado)">@(e?.Estado.Etiqueta() ?? "—")</span></div>
+                        <dl class="datos texto-xs mt-2">
+                            <dt>Huella</dt><dd class="mono">@r.Registro.Huella</dd>
+                            <dt>Huella anterior</dt><dd class="mono">@(r.Registro.HuellaAnterior ?? "(ninguna)")</dd>
+                            <dt>Generado</dt><dd class="mono">@r.Registro.FechaHoraHusoGenRegistroTexto</dd>
+                            <dt>Cadena hasheada</dt><dd class="mono" title="Texto exacto sobre el que se calculó SHA-256">@r.Registro.CadenaHuella</dd>
+                            <dt>Verificación</dt><dd>@(r.HuellaRecalculada == r.Registro.Huella ? "✓ la huella recalculada ahora coincide" : "✗ NO COINCIDE")</dd>
+                            @if (e is not null)
+                            {
+                                <dt>Envío</dt><dd>@e.Intentos intento@(e.Intentos == 1 ? "" : "s")@(e.CsvAeat is not null ? $" · CSV {e.CsvAeat}" : "")@(e.FechaRespuestaUtc is { } fr ? $" · respuesta {fr.ToLocalTime():dd/MM HH:mm:ss}" : "")</dd>
+                                @if (e.DescripcionErrorAeat is not null) { <dt>Detalle</dt><dd class="texto-2">@(e.CodigoErrorAeat is not null ? $"[{e.CodigoErrorAeat}] " : "")@e.DescripcionErrorAeat</dd> }
+                            }
+                        </dl>
+                        <details class="mt-2"><summary class="texto-xs">XML del registro</summary><pre class="xml">@r.XmlBonito</pre></details>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

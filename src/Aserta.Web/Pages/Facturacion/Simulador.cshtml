@@ -1,0 +1,49 @@
+@page
+@model Aserta.Web.Pages.Facturacion.SimuladorModel
+@{
+    ViewData["Titulo"] = "Simulador AEAT";
+}
+<div class="pagina-cabecera">
+    <div><h1>Simulador de la AEAT</h1><p class="subtitulo">Herramienta de demostración y de pruebas: provoca caídas, latencia, rechazos, aceptados con errores y esperas agresivas. Mismo contrato que el cliente real. Nunca se activa en producción.</p></div>
+    <div class="acciones"><a class="boton" asp-page="/Facturacion/Envios">Bandeja de envíos</a></div>
+</div>
+<div class="rejilla rejilla-2">
+    <div class="panel">
+        <div class="panel-cabecera"><h2>Estado actual: <span class="insignia @(Model.Modo == "Caido" ? "insignia-error" : Model.Modo == "Normal" ? "insignia-ok" : "insignia-aviso")">@Model.Modo</span></h2></div>
+        <div class="panel-cuerpo">
+            <form method="post" class="columna">
+                <div class="campo"><label for="Modo">Modo</label>
+                    <select id="Modo" name="Modo">
+                        <option value="Normal" selected="@(Model.Modo == "Normal")">Normal: acepta con latencia configurable</option>
+                        <option value="Caido" selected="@(Model.Modo == "Caido")">Caída total: no responde (los envíos quedan en cola y se reintentan)</option>
+                        <option value="LatenciaAlta" selected="@(Model.Modo == "LatenciaAlta")">Latencia alta (≥ 4 s): la emisión no se bloquea</option>
+                        <option value="Rechazo" selected="@(Model.Modo == "Rechazo")">Rechazo con código de error (flujo de subsanación)</option>
+                        <option value="AceptadoConErrores" selected="@(Model.Modo == "AceptadoConErrores")">Aceptado con errores (alerta roja)</option>
+                        <option value="EsperaAgresiva" selected="@(Model.Modo == "EsperaAgresiva")">Tiempo de espera agresivo (control de flujo por emisor)</option>
+                    </select></div>
+                <div class="campo-fila">
+                    <div class="campo"><label for="LatenciaMs">Latencia (ms)</label><input class="entrada" type="number" id="LatenciaMs" name="LatenciaMs" value="@Model.LatenciaMs" min="0" max="60000" /></div>
+                    <div class="campo"><label for="TiempoEspera">Tiempo de espera devuelto (s)</label><input class="entrada" type="number" id="TiempoEspera" name="TiempoEspera" value="@Model.TiempoEspera" min="0" max="3600" /></div>
+                </div>
+                <div class="campo-fila">
+                    <div class="campo"><label for="CodigoRechazo">Código de rechazo</label><input class="entrada" id="CodigoRechazo" name="CodigoRechazo" value="@Model.CodigoRechazo" /></div>
+                    <div class="campo"><label for="DescripcionRechazo">Descripción del rechazo</label><input class="entrada" id="DescripcionRechazo" name="DescripcionRechazo" value="@Model.DescripcionRechazo" /></div>
+                </div>
+                <div><button class="boton boton-primario">Aplicar</button></div>
+            </form>
+        </div>
+    </div>
+    <div class="panel">
+        <div class="panel-cabecera"><h2>Guion de la demo</h2></div>
+        <div class="panel-cuerpo texto-sm">
+            <ol>
+                <li>Emitir una factura con el simulador en <strong>Normal</strong>: QR y PDF al instante; en unos segundos, «Aceptado».</li>
+                <li>Poner <strong>Caída total</strong>, emitir tres facturas más: se emiten igual, quedan «En cola», los reintentos crecen (30 s, 60 s, 2 min… con jitter).</li>
+                <li>Volver a <strong>Normal</strong> y pulsar «Procesar cola ahora» (o esperar): la cola se vacía sola.</li>
+                <li><strong>Rechazo</strong>: el registro queda rechazado y no se reintenta; se subsana con una rectificativa/registro nuevo.</li>
+                <li><strong>Aceptado con errores</strong>: aparece la alerta roja en la bandeja y en el cuadro de mando.</li>
+            </ol>
+            <p class="texto-3 mt-3">Lotes recibidos por el simulador: @Model.Lotes · registros: @Model.Registros · último: @(Model.UltimoLote?.ToLocalTime().ToString("HH:mm:ss") ?? "—")</p>
+        </div>
+    </div>
+</div>

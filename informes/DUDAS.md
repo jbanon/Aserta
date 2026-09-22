@@ -44,3 +44,18 @@
 | D-25 | Reglas de requisito documental como datos (`cat.ReglaRequisito`): ¿de acuerdo con el catálogo inicial (facturas, extracto, nóminas, alquiler, tickets opcionales, todo mensual)? | Aplicado; ajustable cliente a cliente desde la ficha. | Portal, ficha | Abierta |
 | D-26 | Cifrado en reposo con Data Protection (claves en disco junto al resto). Suficiente para la demo; no es un KMS. | Aplicado; anotado como riesgo residual igual que ADR-002 §4. | Almacén | Abierta |
 | D-27 | La base de desarrollo acumula histórico inborrable de mis pruebas (auditoría, historial). Antes de la demo real conviene recrear la base `Aserta` vacía (requiere DBA) y dejar que el runner y el seed la construyan. | Anotado; el seed es idempotente y reproducible. | Demo | **Necesita acción del usuario** |
+
+## Fase 4
+
+| # | Duda | Supuesto aplicado | Afecta a | Estado |
+|---|---|---|---|---|
+| D-28 | Los casos de uso de facturación viven en `Aserta.Verifactu` con puerto de persistencia propio, e **Infraestructura referencia a Verifactu** (arista no dibujada en ADR-001). Alternativa: que `Aplicacion` referencie `Verifactu` (prohibido por la regla 2). ¿Vale así? | Aplicado; `ArquitecturaTests` en verde. | Arquitectura | Abierta |
+| D-29 | `CuotaTotal` del registro de facturación: ¿incluye la cuota del recargo de equivalencia? La especificación de huella no lo aclara. | Sí (cuota IVA + recargo). | Huella, XML | `[VERIFICAR]` |
+| D-30 | Claves del desglose: `ClaveRegimen` 01, `CalificacionOperacion` S1, `OperacionExenta` E1 (valores admitidos por el XSD; semántica no confirmada). | Aplicadas como régimen general / sujeta no exenta / exenta art. 20. | XML | `[VERIFICAR]` |
+| D-31 | Correspondencia motivo llano → código de rectificativa (devolución/descuento → R1, error en datos → R4, simplificada → R5; R2/R3 no ofrecidos). | Aplicada. | Emisión | `[VERIFICAR]` |
+| D-32 | `FacturaEmitida.PdfClaveAlmacen` del modelo choca con la inalterabilidad: he creado `vf.FacturaPdf` (mutable). ¿De acuerdo? | Aplicado. | Modelo de datos | Abierta |
+| D-33 | Umbral de la factura simplificada (3.000 €) y retención de profesionales (15 %/7 %) mostrados en la interfaz. | Sin efecto normativo más allá del aviso; umbral aplicado como validación. | Emisión | `[VERIFICAR]` |
+| D-34 | URLs del servicio web SOAP de la AEAT (pruebas/producción): vacías en configuración; el cliente real no se ha probado (no hay certificado ni entorno). | Sin URL, cada envío real es `ERROR_TECNICO` reintentable. | Envío real | **Necesita acción del usuario** |
+| D-35 | Chromium en el servidor de desarrollo: funciona (Playwright 1.61 usa `~/.cache/ms-playwright/chromium-1228`), ~200 MB de RSS; con la web quedan ~170 MB libres. ¿Aceptable para la demo o prefiere `Pdf:Motor = Basico` por defecto? | Playwright por defecto; respaldo básico automático si Chromium no arranca. | RAM, PDF | Abierta |
+| D-36 | He quitado `EnableRetryOnFailure` de EF Core (incompatible con la transacción explícita de emisión). | Aplicado; base local e instancia única. | Persistencia | Abierta |
+| D-37 | Datos ficticios del productor en `appsettings` (`Productor Ficticio de Software SL`, NIF ficticio válido, versión 0.4.0). | Marcados `DatosDeDemostracion = true`; vetados en Production. | Declaración responsable | **Sustituir antes de uso real** (DA-02) |

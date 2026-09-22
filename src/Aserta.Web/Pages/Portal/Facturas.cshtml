@@ -1,0 +1,32 @@
+@page
+@model Aserta.Web.Pages.Portal.FacturasModel
+@{
+    Layout = "_LayoutPortal";
+    ViewData["Titulo"] = "Mis facturas";
+    ViewData["Destinatarios"] = Model.Destinatarios;
+}
+<h1 class="portal-saludo">Mis facturas</h1>
+<partial name="_ResumenErrores" />
+@if (Model.PuedeEmitir)
+{
+    <details class="panel portal-subida" open="@(Model.MostrarFormulario)">
+        <summary class="panel-cabecera"><strong>@Icono.Mas Emitir factura</strong></summary>
+        <form method="post" class="panel-cuerpo columna">
+            <partial name="/Pages/Facturacion/_FormularioFactura.cshtml" for="Datos" />
+            <button class="boton boton-primario boton-grande">Emitir factura</button>
+            <p class="texto-xs texto-3">La factura se registra al instante con su código QR; el envío a Hacienda lo hace la plataforma en segundo plano.</p>
+        </form>
+    </details>
+}
+<h2 class="portal-seccion">Emitidas</h2>
+<ul class="portal-lista">
+    @if (Model.Filas.Count == 0) { <li class="texto-3">Todavía no has emitido ninguna factura.</li> }
+    @foreach (var f in Model.Filas)
+    {
+        <li>
+            <div><strong class="mono">@f.Factura.NumSerieFactura</strong> <small class="texto-3">@f.Factura.FechaExpedicion.ToString("dd/MM/yyyy")</small><br />
+                <small class="texto-2">@(f.Factura.DestinatarioNombre ?? "Simplificada") · @f.Factura.ImporteTotal.ToString("N2") € · @(f.Anulada ? "Anulada" : f.Estado?.EtiquetaCliente() ?? "")</small></div>
+            <a class="boton boton-pequeno" href="@Url.Page("/Facturacion/Pdf", new { id = f.Factura.Id })" target="_blank">PDF</a>
+        </li>
+    }
+</ul>

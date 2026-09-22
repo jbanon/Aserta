@@ -42,15 +42,17 @@ public sealed class SembradorDemo
     private readonly ServicioClientes _clientes;
     private readonly ServicioGeneracionObligaciones _motor;
     private readonly Aplicacion.Documental.ServicioDocumentos _documentos;
+    private readonly Aserta.Verifactu.Servicios.ServicioEmision _emision;
     private readonly IConfiguration _config;
     private readonly IRelojSistema _reloj;
     private readonly ILogger<SembradorDemo> _log;
 
     public SembradorDemo(ContextoEjecucion contexto, AsertaDbContext db, RoleManager<RolIdentity> roles, UserManager<UsuarioIdentity> usuarios,
-        ServicioClientes clientes, ServicioGeneracionObligaciones motor, Aplicacion.Documental.ServicioDocumentos documentos, IConfiguration config, IRelojSistema reloj, ILogger<SembradorDemo> log)
+        ServicioClientes clientes, ServicioGeneracionObligaciones motor, Aplicacion.Documental.ServicioDocumentos documentos, Aserta.Verifactu.Servicios.ServicioEmision emision, IConfiguration config, IRelojSistema reloj, ILogger<SembradorDemo> log)
     {
         _reloj = reloj;
         _documentos = documentos;
+        _emision = emision;
         _contexto = contexto;
         _db = db;
         _roles = roles;
@@ -175,6 +177,75 @@ public sealed class SembradorDemo
 
         await SimularHistoricoAsync(ct);
         await SembrarDocumentalAsync(panaderia, ct);
+        await SembrarFacturacionAsync(panaderia, fontanero, ct);
+    }
+
+    /// <summary>
+    /// Escenario Veri*Factu de la demo: certificado FICTICIO de la gestoria (sin
+    /// material), apoderamientos para varios clientes (uno queda sin apoderar a
+    /// proposito para ensenar el bloqueo), series y tres facturas de la panaderia
+    /// emitidas por el flujo real (huella encadenada, QR, cola y PDF).
+    /// </summary>
+    private async Task SembrarFacturacionAsync(Guid panaderiaId, Guid fontaneroId, CancellationToken ct)
+    {
+        const string marcador = "SeedFacturacionDemo";
+        if (await _db.EjecucionesProgramadas.AnyAsync(e => e.Tarea == marcador, ct)) return;
+        _db.EjecucionesProgramadas.Add(new EjecucionProgramada { Tarea = marcador, UltimaEjecucionUtc = _reloj.AhoraUtc, Estado = "Correcto" });
+
+        var gestoria = await _db.Gestorias.FirstAsync(g => g.Id == GestoriaDemoId, ct);
+        var hoy = _reloj.Hoy;
+        if (!await _db.Certificados.AnyAsync(ct))
+        {
+            _db.Certificados.Add(new Dominio.Facturacion.Certificado
+            {
+                Id = Guid.NewGuid(), GestoriaId = GestoriaDemoId, NifTitular = gestoria.Nif, Tipo = Dominio.Facturacion.TipoCertificado.Gestoria,
+                Alias = "Certificado de representante de la gestoría (FICTICIO)", HuellaDigital = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes("cert-demo-gestoria"))),
+                ValidoDesde = hoy.AddMonths(-6), ValidoHasta = hoy.AddDays(45), Estado = Dominio.Facturacion.EstadoCertificado.Vigente,   // caduca en 45 dias: se ve la alerta
+            });
+        }
+        // Apoderamientos: todos los clientes salvo "Consultoría Delta SL" (para ensenar BLOQUEADO_SIN_CERTIFICADO)
+        var clientes = await _db.Clientes.AsNoTracking().Where(c => c.Estado == Dominio.Clientes.EstadoCliente.Activo).ToListAsync(ct);
+        foreach (var c in clientes.Where(c => !c.RazonSocial.StartsWith("Consultoría Delta")))
+            if (!await _db.Apoderamientos.AnyAsync(a => a.ClienteId == c.Id, ct))
+                _db.Apoderamientos.Add(new Dominio.Facturacion.Apoderamiento { Id = Guid.NewGuid(), GestoriaId = GestoriaDemoId, ClienteId = c.Id, FechaAlta = hoy.AddMonths(-3) });
+        await _db.SaveChangesAsync(ct);
+
+        // Destinatarios y articulos de la panaderia
+        if (!await _db.Destinatarios.AnyAsync(d => d.ClienteEmisorId == panaderiaId, ct))
+        {
+            _db.Destinatarios.AddRange(
+                new Dominio.Facturacion.Destinatario { Id = Guid.NewGuid(), GestoriaId = GestoriaDemoId, ClienteEmisorId = panaderiaId, Nif = ValidadorNif.ConstruirCif('B', 5550001), Nombre = "Restaurante La Plaza SL", Direccion = "Plaza Mayor 3, Madrid" },
+                new Dominio.Facturacion.Destinatario { Id = Guid.NewGuid(), GestoriaId = GestoriaDemoId, ClienteEmisorId = panaderiaId, Nif = ValidadorNif.ConstruirCif('A', 5550002), Nombre = "Hoteles Ficticios SA", Direccion = "Gran Vía 100, Madrid" },
+                new Dominio.Facturacion.Destinatario { Id = Guid.NewGuid(), GestoriaId = GestoriaDemoId, ClienteEmisorId = panaderiaId, Nif = ValidadorNif.ConstruirNif(67890123), Nombre = "María Sánchez Ruiz" });
+            _db.ArticulosServicio.AddRange(
+                new Dominio.Facturacion.ArticuloServicio { Id = Guid.NewGuid(), GestoriaId = GestoriaDemoId, ClienteEmisorId = panaderiaId, Descripcion = "Pan artesano (kg)", PrecioUnitario = 3.20m, TipoIva = 4m },
+                new Dominio.Facturacion.ArticuloServicio { Id = Guid.NewGuid(), GestoriaId = GestoriaDemoId, ClienteEmisorId = panaderiaId, Descripcion = "Bollería surtida (bandeja)", PrecioUnitario = 18.50m, TipoIva = 10m },
+                new Dominio.Facturacion.ArticuloServicio { Id = Guid.NewGuid(), GestoriaId = GestoriaDemoId, ClienteEmisorId = panaderiaId, Descripcion = "Servicio de catering", PrecioUnitario = 250m, TipoIva = 21m });
+            await _db.SaveChangesAsync(ct);
+        }
+
+        // Tres facturas de la panaderia por el flujo real (como el usuario del cliente)
+        var clienteAdmin = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000101");
+        _contexto.EstablecerUsuario(clienteAdmin, GestoriaDemoId, panaderiaId, "Luis López Herrero", [Roles.ClienteAdmin], "127.0.0.1", "SembradorDemo");
+        if (!await _db.FacturasEmitidas.AnyAsync(f => f.ClienteEmisorId == panaderiaId, ct))
+        {
+            var facturas = new[]
+            {
+                new Aserta.Verifactu.Servicios.FacturaNueva { ClienteEmisorId = panaderiaId, DestinatarioNif = ValidadorNif.ConstruirCif('B', 5550001), DestinatarioNombre = "Restaurante La Plaza SL", Descripcion = "Suministro de pan y bollería, semana 36",
+                    Lineas = [new() { Descripcion = "Pan artesano (kg)", Cantidad = 40, PrecioUnitario = 3.20m, TipoIva = 4m }, new() { Descripcion = "Bollería surtida (bandeja)", Cantidad = 6, PrecioUnitario = 18.50m, TipoIva = 10m }] },
+                new Aserta.Verifactu.Servicios.FacturaNueva { ClienteEmisorId = panaderiaId, DestinatarioNif = ValidadorNif.ConstruirCif('A', 5550002), DestinatarioNombre = "Hoteles Ficticios SA", Descripcion = "Catering desayuno de empresa",
+                    Lineas = [new() { Descripcion = "Servicio de catering", Cantidad = 2, PrecioUnitario = 250m, TipoIva = 21m }, new() { Descripcion = "Pan artesano (kg)", Cantidad = 10, PrecioUnitario = 3.20m, TipoIva = 4m }] },
+                new Aserta.Verifactu.Servicios.FacturaNueva { ClienteEmisorId = panaderiaId, Simplificada = true, Descripcion = "Venta en mostrador",
+                    Lineas = [new() { Descripcion = "Bollería surtida (bandeja)", Cantidad = 1, PrecioUnitario = 18.50m, TipoIva = 10m }] },
+            };
+            foreach (var f in facturas)
+            {
+                try { await _emision.EmitirAsync(f, clienteAdmin, ct); }
+                catch (Exception ex) { _log.LogWarning("Seed: no se pudo emitir una factura de demo: {Error}", ex.Message); }
+            }
+        }
+        _contexto.EstablecerUsuario(UsuariosGestoria[0].Id, GestoriaDemoId, null, UsuariosGestoria[0].Nombre, [Roles.SocioDirector], "127.0.0.1", "SembradorDemo");
+        _log.LogInformation("Seed: escenario Veri*Factu creado");
     }
 
     /// <summary>

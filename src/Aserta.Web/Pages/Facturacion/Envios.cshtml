@@ -1,0 +1,46 @@
+@page
+@model Aserta.Web.Pages.Facturacion.EnviosModel
+@{
+    ViewData["Titulo"] = "Bandeja de envíos";
+}
+<div class="pagina-cabecera">
+    <div><h1>Bandeja de envíos a la AEAT</h1><p class="subtitulo">Cola persistente (outbox): cada registro se envía en segundo plano por emisor, con reintentos exponenciales. Los rechazados no se reintentan: se subsanan con un registro nuevo.</p></div>
+    <div class="acciones">
+        <form method="post" asp-page-handler="Ciclo"><button class="boton boton-primario" title="Ejecuta ahora un ciclo del worker de envío">Procesar cola ahora</button></form>
+        @if (Model.SimuladorActivo) { <a class="boton" asp-page="/Facturacion/Simulador">Simulador AEAT: @Model.ModoSimulador</a> }
+        <a class="boton" asp-page="/Facturacion/Index">Facturas</a>
+    </div>
+</div>
+@if (Model.AceptadosConErrores > 0) { <div class="alerta alerta-error">@Icono.Aviso <div><strong>ALERTA ROJA: @Model.AceptadosConErrores registros aceptados con errores.</strong> Suele significar que la huella no coincide con la calculada por la AEAT: un defecto estructural que afectará a todas las facturas siguientes.</div></div> }
+@if (Model.DeadLetter > 0) { <div class="alerta alerta-error">@Icono.Aviso <div><strong>@Model.DeadLetter registros con los reintentos agotados.</strong> No se descartan nunca: reenvíelos manualmente cuando la AEAT vuelva a responder.</div></div> }
+<div class="rejilla rejilla-4 mb-4">
+    <div class="panel kpi"><div class="kpi-valor">@Model.EnCola</div><div class="kpi-etiqueta">En cola / reintentando</div></div>
+    <div class="panel kpi"><div class="kpi-valor">@Model.Aceptados</div><div class="kpi-etiqueta">Aceptados</div></div>
+    <div class="panel kpi"><div class="kpi-valor">@(Model.Rechazados + Model.AceptadosConErrores)</div><div class="kpi-etiqueta">Rechazados / con errores</div></div>
+    <div class="panel kpi"><div class="kpi-valor">@(Model.DeadLetter + Model.Bloqueados)</div><div class="kpi-etiqueta">Agotados / bloqueados</div></div>
+</div>
+<form method="get" class="filtros">
+    <div class="campo"><label for="estado">Estado</label><select id="estado" name="estado"><option value="">Pendientes y problemas</option>@foreach (var e in Enum.GetValues<EstadoEnvio>()) { <option value="@e" selected="@(Model.Estado == e.ToString())">@e.Etiqueta()</option> }<option value="Todos" selected="@(Model.Estado == "Todos")">Todos</option></select></div>
+    <button class="boton">Filtrar</button>
+</form>
+<div class="panel"><div class="tabla-envoltorio"><table class="tabla tabla-compacta">
+    <thead><tr><th>Registro</th><th>Factura</th><th>Emisor</th><th>Estado</th><th class="num">Intentos</th><th>Próximo intento</th><th>Detalle</th><th></th></tr></thead>
+    <tbody>
+    @if (Model.Filas.Count == 0) { <tr><td colspan="8" class="vacio">Nada pendiente.</td></tr> }
+    @foreach (var f in Model.Filas)
+    {
+        <tr>
+            <td class="mono">@f.Registro.Tipo #@f.Registro.NumeroEnCadena</td>
+            <td><a asp-page="/Facturacion/Factura" asp-route-id="@f.Registro.FacturaEmitidaId" class="mono">@f.NumFactura</a></td>
+            <td>@f.Emisor<br /><small class="mono">@f.Registro.NifEmisor</small></td>
+            <td><span class="insignia @Aserta.Web.Pages.Facturacion.IndexModel.ClaseEstado(f.Estado.Estado)">@f.Estado.Estado.Etiqueta()</span></td>
+            <td class="num">@f.Estado.Intentos</td>
+            <td class="tabular texto-sm">@(f.Cola?.Estado == EstadoEnvioPendiente.PENDIENTE ? f.Cola.ProximoIntentoUtc.ToLocalTime().ToString("dd/MM HH:mm:ss") : "—")</td>
+            <td class="texto-xs texto-2">@(f.Estado.CsvAeat is not null ? $"CSV {f.Estado.CsvAeat} · " : "")@f.Estado.DescripcionErrorAeat</td>
+            <td class="texto-derecha">@if (f.Estado.Estado is EstadoEnvio.DEAD_LETTER or EstadoEnvio.ERROR_TECNICO or EstadoEnvio.BLOQUEADO_SIN_CERTIFICADO) { <form method="post" asp-page-handler="Reenviar" asp-route-registroId="@f.Registro.Id"><button class="boton boton-pequeno">Reenviar</button></form> }</td>
+        </tr>
+    }
+    </tbody></table></div></div>
+<div class="panel mt-4"><div class="panel-cabecera"><h2>Últimos lotes enviados</h2></div>
+    <div class="tabla-envoltorio"><table class="tabla tabla-compacta"><thead><tr><th>Fecha</th><th>Emisor</th><th class="num">Registros</th><th>Cliente</th><th>Resultado</th><th>Espera</th></tr></thead>
+    <tbody>@foreach (var l in Model.Lotes) { <tr><td class="tabular">@l.FechaEnvioUtc.ToLocalTime().ToString("dd/MM HH:mm:ss")</td><td class="mono">@l.NifEmisor</td><td class="num">@l.NumRegistros</td><td>@l.Cliente</td><td>@l.Resultado @if (l.Error is not null) { <small class="texto-3">@l.Error</small> }</td><td>@(l.TiempoEsperaSegundos is > 0 ? $"{l.TiempoEsperaSegundos} s" : "—")</td></tr> }</tbody></table></div></div>

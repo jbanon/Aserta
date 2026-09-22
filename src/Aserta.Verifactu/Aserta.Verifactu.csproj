@@ -1,6 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- ADR-001 §2.2 regla 4: no referencia a Infraestructura ni a EF/ASP.NET. -->
+  <!-- ADR-001 §2.2 regla 4: no referencia a Infraestructura ni a EF/ASP.NET. Solo BCL + QRCoder (puro C#). -->
   <ItemGroup>
     <ProjectReference Include="..\Aserta.Dominio\Aserta.Dominio.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="QRCoder" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Esquemas oficiales de la AEAT (descargados del portal, versionados). Se copian junto a la aplicacion para validar el XML antes de enviar. -->
+    <None Include="Esquemas\**\*" CopyToOutputDirectory="PreserveNewest" Link="Esquemas\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>

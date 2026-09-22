@@ -5,6 +5,8 @@ using Aserta.Infraestructura.Identidad;
 using Aserta.Infraestructura.Migraciones;
 using Aserta.Infraestructura.Persistencia;
 using Aserta.Infraestructura.Seed;
+using Aserta.Infraestructura.Facturacion;
+using Aserta.Verifactu.Servicios;
 using Aserta.Web.Infraestructura;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -78,6 +80,9 @@ builder.Services.AddRazorPages(o =>
     o.Conventions.AllowAnonymousToPage("/Documentos/Contenido"); // se vuelve a autorizar abajo: el servicio exige sesion y comprueba cliente/tenant
     o.Conventions.AuthorizePage("/Documentos/Contenido");
     o.Conventions.AuthorizeFolder("/Portal", Politicas.Cliente);
+    o.Conventions.AuthorizeFolder("/Facturacion", Politicas.Gestoria);
+    o.Conventions.AllowAnonymousToPage("/Facturacion/Pdf");     // gestoria y cliente emisor: el modelo exige sesion y comprueba el cliente (la carpeta exige rol de gestoria)
+    o.Conventions.AllowAnonymousToPage("/DeclaracionResponsable/Index");
     o.Conventions.AuthorizeFolder("/Usuarios", Politicas.SocioDirector);
     o.Conventions.AuthorizeFolder("/Gestoria", Politicas.SocioDirector);
 }).AddMvcOptions(o =>
@@ -119,6 +124,20 @@ app.UseRequestLocalization(new RequestLocalizationOptions
     SupportedUICultures = [culturaEs],
 });
 
+// --- Comprobaciones de arranque del modulo Veri*Factu (la aplicacion NO arranca si fallan) ----------------------
+{
+    var vf = app.Services.GetRequiredService<OpcionesVerifactu>();
+    if (app.Environment.IsProduction() && vf.UsarSimulador)
+        throw new InvalidOperationException("Configuración vetada: entorno Production con Verifactu:UsarSimulador = true (envio-y-cola-reintentos.md §6).");
+    if (app.Environment.IsProduction() && vf.DeclaracionResponsable.DatosDeDemostracion)
+        throw new InvalidOperationException("Configuración vetada: entorno Production con datos de demostración en la declaración responsable (DA-02).");
+    if (!string.Equals(vf.Sistema.Version, vf.DeclaracionResponsable.Version, StringComparison.Ordinal) ||
+        !string.Equals(vf.Sistema.IdSistemaInformatico, vf.DeclaracionResponsable.IdSistemaInformatico, StringComparison.Ordinal) ||
+        !string.Equals(vf.Sistema.NifProductor, vf.DeclaracionResponsable.Nif, StringComparison.Ordinal))
+        throw new InvalidOperationException("La declaración responsable y el bloque SistemaInformatico no coinciden (versión, identificador o NIF del productor). declaracion-responsable.md §3.1.");
+    vf.SistemaInformatico.Validar();
+}
+
 // --- Arranque: migraciones y, si procede, datos de demo. Si fallan, la aplicacion NO arranca. ------------
 using (var ambito = app.Services.CreateScope())
 {
@@ -132,6 +151,42 @@ using (var ambito = app.Services.CreateScope())
         log.LogInformation("Sembrando datos de demostración…");
         await ambito.ServiceProvider.GetRequiredService<SembradorDemo>().SembrarAsync();
     }
+
+    // Historico de la declaracion responsable: una fila por version desplegada
+    await RegistrarDeclaracionResponsableAsync(ambito.ServiceProvider);
+
+    // Chromium para PDF: se comprueba al arrancar; si falta, respaldo basico (Pdf:ExigirChromium = true lo convierte en fallo de arranque)
+    var chromium = ambito.ServiceProvider.GetRequiredService<GeneradorPdfPlaywright>();
+    if (string.Equals(config["Pdf:Motor"], "Basico", StringComparison.OrdinalIgnoreCase))
+        log.LogWarning("PDF: motor básico configurado (sin Chromium)");
+    else if (!await chromium.ComprobarAsync())
+    {
+        if (config.GetValue<bool>("Pdf:ExigirChromium")) throw new InvalidOperationException("Chromium no disponible para generar PDF: " + chromium.UltimoError);
+        log.LogWarning("PDF: Chromium no disponible ({Error}); se usará el generador básico sin navegador", chromium.UltimoError);
+    }
+    else log.LogInformation("PDF: Chromium disponible (Playwright)");
+}
+
+static async Task RegistrarDeclaracionResponsableAsync(IServiceProvider sp)
+{
+    var vf = sp.GetRequiredService<OpcionesVerifactu>();
+    var db = sp.GetRequiredService<AsertaDbContext>();
+    using var mantenimiento = sp.GetRequiredService<ContextoEjecucion>().AbrirAmbitoMantenimiento();
+    var d = vf.DeclaracionResponsable;
+    var contenido = System.Text.Json.JsonSerializer.Serialize(new { d.RazonSocial, d.Nif, d.Domicilio, d.NombreSistema, d.IdSistemaInformatico, d.Version, vf.Sistema.NumeroInstalacion, d.Componentes, Modalidad = "Solo VERI*FACTU", d.FechaSuscripcion, d.LugarSuscripcion, d.Firmante, d.DatosDeDemostracion });
+    var hash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(contenido)));
+    var existente = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(db.DeclaracionesResponsables, h => h.Version == d.Version);
+    if (existente is null)
+    {
+        db.DeclaracionesResponsables.Add(new Aserta.Dominio.Facturacion.DeclaracionResponsableHistorico
+        {
+            Version = d.Version, FechaSuscripcion = DateOnly.TryParseExact(d.FechaSuscripcion, "dd/MM/yyyy", null, System.Globalization.DateTimeStyles.None, out var f) ? f : DateOnly.FromDateTime(DateTime.Today),
+            Contenido = contenido, HashSha256 = hash, FechaRegistroUtc = DateTime.UtcNow,
+        });
+        await db.SaveChangesAsync();
+    }
+    else if (existente.HashSha256 != hash)
+        sp.GetRequiredService<ILogger<Program>>().LogWarning("La declaración responsable de la versión {Version} ha cambiado sin cambiar de versión: revise la configuración", d.Version);
 }
 
 app.UseForwardedHeaders();

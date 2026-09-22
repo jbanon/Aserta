@@ -1,6 +1,7 @@
 using Aserta.Dominio.Catalogo;
 using Aserta.Dominio.Clientes;
 using Aserta.Dominio.Documental;
+using Aserta.Dominio.Facturacion;
 using Aserta.Dominio.Mensajeria;
 using Aserta.Dominio.Nucleo;
 using Aserta.Dominio.Obligaciones;
@@ -38,6 +39,23 @@ public interface IAsertaDb
     DbSet<ReglaRequisito> ReglasRequisito { get; }
     DbSet<Hilo> Hilos { get; }
     DbSet<Mensaje> Mensajes { get; }
+
+    // Facturacion Veri*Factu (solo lectura desde la aplicacion web; la escritura pasa por Aserta.Verifactu y su repositorio)
+    DbSet<SerieFacturacion> SeriesFacturacion { get; }
+    DbSet<Destinatario> Destinatarios { get; }
+    DbSet<ArticuloServicio> ArticulosServicio { get; }
+    DbSet<CadenaEmisor> CadenasEmisor { get; }
+    DbSet<FacturaEmitida> FacturasEmitidas { get; }
+    DbSet<LineaFactura> LineasFactura { get; }
+    DbSet<RegistroFacturacion> RegistrosFacturacion { get; }
+    DbSet<EstadoEnvioRegistro> EstadosEnvio { get; }
+    DbSet<EnvioPendiente> EnviosPendientes { get; }
+    DbSet<LoteEnvio> LotesEnvio { get; }
+    DbSet<FacturaPdf> FacturasPdf { get; }
+    DbSet<Certificado> Certificados { get; }
+    DbSet<Apoderamiento> Apoderamientos { get; }
+    DbSet<AccesoCertificadoLog> AccesosCertificado { get; }
+    DbSet<DeclaracionResponsableHistorico> DeclaracionesResponsables { get; }
 
     Task<int> GuardarCambiosAsync(CancellationToken ct = default);
 }

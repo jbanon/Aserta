@@ -1,0 +1,38 @@
+@page
+@model Aserta.Web.Pages.Facturacion.IndexModel
+@{
+    ViewData["Titulo"] = "Facturación";
+}
+<div class="pagina-cabecera">
+    <div><h1>Facturación Veri*Factu <span class="insignia">@Model.Filas.Count</span></h1>
+    <p class="subtitulo">Facturas emitidas en nombre de los clientes. Cada una lleva su registro encadenado, su QR y su envío a la AEAT (@Model.NombreCliente).</p></div>
+    <div class="acciones">
+        <a class="boton" asp-page="/Facturacion/Envios">Bandeja de envíos @if (Model.Problemas > 0) { <span class="insignia insignia-error">@Model.Problemas</span> }</a>
+        <a class="boton" asp-page="/Facturacion/Certificados">Certificados</a>
+        @if (Model.SimuladorActivo) { <a class="boton" asp-page="/Facturacion/Simulador">Simulador AEAT</a> }
+        <a class="boton boton-primario" asp-page="/Facturacion/Nueva" asp-route-emisorId="@Model.EmisorId">@Icono.Mas Nueva factura</a>
+    </div>
+</div>
+@if (!Model.EsProduccion) { <div class="alerta alerta-aviso">@Icono.Aviso <div><strong>Entorno de pruebas.</strong> Los QR apuntan al portal de pruebas de la AEAT y los envíos van al @Model.NombreCliente. Datos ficticios.</div></div> }
+<form method="get" class="filtros">
+    <div class="campo"><label for="emisorId">Emisor</label><select id="emisorId" name="emisorId"><option value="">Todos</option>@foreach (var e in Model.Emisores) { <option value="@e.Key" selected="@(Model.EmisorId == e.Key)">@e.Value</option> }</select></div>
+    <button class="boton">Filtrar</button>
+</form>
+<div class="panel"><div class="tabla-envoltorio"><table class="tabla">
+    <thead><tr><th>Número</th><th>Fecha</th><th>Emisor</th><th>Tipo</th><th>Destinatario</th><th class="num">Total</th><th>Envío AEAT</th><th>PDF</th></tr></thead>
+    <tbody>
+    @if (Model.Filas.Count == 0) { <tr><td colspan="8" class="vacio">Sin facturas. Emita la primera con «Nueva factura».</td></tr> }
+    @foreach (var f in Model.Filas)
+    {
+        <tr data-href="/Facturacion/Factura/@f.Factura.Id" class="@(f.Anulada ? "texto-3" : "")">
+            <td><a asp-page="/Facturacion/Factura" asp-route-id="@f.Factura.Id" class="mono">@f.Factura.NumSerieFactura</a> @if (f.Anulada) { <span class="insignia insignia-error">Anulada</span> }</td>
+            <td class="tabular">@f.Factura.FechaExpedicion.ToString("dd/MM/yyyy")</td>
+            <td>@f.Emisor</td>
+            <td><span class="insignia">@f.Factura.TipoFactura</span></td>
+            <td>@(f.Factura.DestinatarioNombre ?? "—")</td>
+            <td class="num tabular">@f.Factura.ImporteTotal.ToString("N2") €</td>
+            <td><span class="insignia @Aserta.Web.Pages.Facturacion.IndexModel.ClaseEstado(f.Estado)">@(f.Estado?.Etiqueta() ?? "—")</span></td>
+            <td>@if (f.PdfListo) { <a class="boton boton-pequeno" href="@Url.Page("/Facturacion/Pdf", new { id = f.Factura.Id })">PDF</a> } else { <span class="texto-3 texto-xs">generando…</span> }</td>
+        </tr>
+    }
+    </tbody></table></div></div>

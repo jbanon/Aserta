@@ -8,7 +8,7 @@ Plataforma SaaS para gestorías españolas y sus clientes: obligaciones fiscales
 src/Aserta.Dominio          entidades, motor de obligaciones, máquina de estados (sin dependencias)
 src/Aserta.Aplicacion       casos de uso y puertos (IAsertaDb, IRelojSistema, IGestorIdentidad…)
 src/Aserta.Infraestructura  EF Core, Identity, runner de migraciones, interceptores de tenant y auditoría, seed
-src/Aserta.Verifactu        huella, XML, QR, cliente AEAT (fase 4)
+src/Aserta.Verifactu        huella, XML validado contra XSD oficial, QR, simulador y cliente AEAT, emisión y envío
 src/Aserta.Exportacion      exportadores contables (fase 5)
 src/Aserta.Web              Razor Pages, htmx, CSS propio, composición
 tests/                      Dominio.Tests · Integracion.Tests · Verifactu.Tests
@@ -26,7 +26,7 @@ dotnet run --project src/Aserta.Web      # http://127.0.0.1:5110
 dotnet test                              # dominio + integración (necesita la base)
 ```
 
-Al arrancar se aplican las migraciones pendientes y, con `Demo:Sembrar = true` (por defecto en `Development`), se siembran datos **ficticios**. Usuarios de demo: `socio@demo.aserta.local`, `carlos@…`, `lucia@…`, `pedro@…`, `panaderia@…`; contraseña `Aserta-Demo-2026!`. Segundo factor opcional (TOTP) desde «Mi cuenta». El usuario `panaderia@…` entra en el **portal del cliente** (móvil primero).
+Al arrancar se aplican las migraciones pendientes y, con `Demo:Sembrar = true` (por defecto en `Development`), se siembran datos **ficticios**. Usuarios de demo: `socio@demo.aserta.local`, `carlos@…`, `lucia@…`, `pedro@…`, `panaderia@…`; contraseña `Aserta-Demo-2026!`. Segundo factor opcional (TOTP) desde «Mi cuenta». El usuario `panaderia@…` entra en el **portal del cliente** (móvil primero) y puede emitir facturas Veri*Factu. La AEAT es un **simulador** (`/Facturacion/Simulador`) que permite provocar caídas y rechazos; la declaración responsable pública está en `/DeclaracionResponsable`.
 
 ## Reglas de trabajo
 

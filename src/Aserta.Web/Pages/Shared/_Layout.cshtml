@@ -61,6 +61,7 @@
                 <li><a href="/Obligaciones/Tablero" aria-current="@(ruta.StartsWith("/Obligaciones/Tablero", StringComparison.OrdinalIgnoreCase) ? "page" : null)">@Icono.Tablero Tablero</a></li>
                 <li><a href="/Obligaciones/Calendario" aria-current="@(ruta.StartsWith("/Obligaciones/Calendario", StringComparison.OrdinalIgnoreCase) ? "page" : null)">@Icono.Calendario Calendario</a></li>
                 <li><a href="/Obligaciones" aria-current="@(ruta.Equals("/Obligaciones", StringComparison.OrdinalIgnoreCase) || ruta.StartsWith("/Obligaciones/Index", StringComparison.OrdinalIgnoreCase) || ruta.StartsWith("/Obligaciones/Detalle", StringComparison.OrdinalIgnoreCase) ? "page" : null)">@Icono.Historial Lista de obligaciones</a></li>
+                <li><a href="/Facturacion" aria-current="@(ruta.StartsWith("/Facturacion", StringComparison.OrdinalIgnoreCase) ? "page" : null)">@Icono.Catalogo Facturación Veri*Factu</a></li>
                 <li><a href="/Documentos" aria-current="@(ruta.StartsWith("/Documentos", StringComparison.OrdinalIgnoreCase) ? "page" : null)">@Icono.Catalogo Bandeja documental</a></li>
                 <li><a href="/Mensajes" aria-current="@(ruta.StartsWith("/Mensajes", StringComparison.OrdinalIgnoreCase) ? "page" : null)">@Icono.Historial Mensajes</a></li>
                 <li><a href="/Obligaciones/Carga" aria-current="@(ruta.StartsWith("/Obligaciones/Carga", StringComparison.OrdinalIgnoreCase) ? "page" : null)">@Icono.Usuarios Carga por asesor</a></li>
@@ -74,6 +75,7 @@
                     <li><a href="/Gestoria/Configuracion" aria-current="@Actual("/Gestoria")">@Icono.Ajustes Configuración</a></li>
                 }
                 <li class="nav-titulo">Sistema</li>
+                <li><a href="/DeclaracionResponsable" aria-current="@Actual("/DeclaracionResponsable")">@Icono.Auditoria Declaración responsable</a></li>
                 <li><a href="/Estilo" aria-current="@Actual("/Estilo")">@Icono.Paleta Guía de estilo</a></li>
             </ul>
         }

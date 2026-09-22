@@ -32,6 +32,8 @@ public sealed class FabricaAplicacion : WebApplicationFactory<Program>
             cfg.AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["Demo:Sembrar"] = "false",
+                ["Pdf:Motor"] = "Basico",                 // sin Chromium en el host de tests (RAM)
+                ["Verifactu:WorkerActivo"] = "false",     // los ciclos del worker se lanzan a mano desde los tests
                 ["Migraciones:Carpeta"] = Path.Combine(RaizRepo(), "Scripts", "Migrations"),
             });
         });

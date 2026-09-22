@@ -1,0 +1,29 @@
+@page
+@model Aserta.Web.Pages.Facturacion.CertificadosModel
+@{
+    ViewData["Titulo"] = "Certificados y apoderamientos";
+}
+<div class="pagina-cabecera">
+    <div><h1>Certificados y apoderamientos</h1><p class="subtitulo">ADR-002: cada envío se firma con el certificado propio del obligado si lo hay; si no, con el de la gestoría <strong>siempre que exista apoderamiento vigente</strong> para ese cliente. Sin ninguno de los dos, el registro queda bloqueado (nunca se cae al certificado del productor).</p></div>
+</div>
+<partial name="_ResumenErrores" />
+<div class="rejilla rejilla-2">
+    <div class="panel"><div class="panel-cabecera"><h2>Certificados</h2></div>
+        <div class="tabla-envoltorio"><table class="tabla"><thead><tr><th>Alias</th><th>Tipo</th><th>Titular</th><th>Validez</th><th>Estado</th></tr></thead>
+        <tbody>@foreach (var c in Model.Certificados) { <tr><td>@c.Alias<br /><small class="mono texto-3">@c.HuellaDigital[..16]…</small></td><td>@c.Tipo</td><td class="mono">@c.NifTitular</td><td class="tabular">@c.ValidoDesde.ToString("dd/MM/yyyy") – @c.ValidoHasta.ToString("dd/MM/yyyy") @if (c.DiasParaCaducar(Model.Hoy) <= 60) { <span class="insignia insignia-aviso">caduca en @c.DiasParaCaducar(Model.Hoy) d</span> }</td><td><span class="insignia @(c.Estado == EstadoCertificado.Vigente ? "insignia-ok" : "insignia-error")">@c.Estado</span></td></tr> }</tbody></table></div>
+        <div class="panel-cuerpo texto-xs texto-3">En la demo los certificados son ficticios (sin material criptográfico): el simulador no los valida. En real: PFX cifrado con Data Protection, un HttpClient por certificado y alertas a 60/30/7 días.</div>
+    </div>
+    <div class="panel"><div class="panel-cabecera"><h2>Apoderamientos por cliente</h2></div>
+        <div class="tabla-envoltorio"><table class="tabla"><thead><tr><th>Cliente</th><th>Alcance</th><th>Vigencia</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var a in Model.Apoderamientos) { <tr><td>@a.Cliente</td><td class="texto-sm">@a.Apoderamiento.Alcance</td><td class="tabular">@a.Apoderamiento.FechaAlta.ToString("dd/MM/yyyy") @(a.Apoderamiento.FechaFin is { } f ? $"– {f:dd/MM/yyyy}" : "") @if (!a.Apoderamiento.VigenteEn(Model.Hoy)) { <span class="insignia insignia-error">No vigente</span> }</td>
+            <td>@if (a.Apoderamiento.FechaFin is null) { <form method="post" asp-page-handler="Revocar" asp-route-id="@a.Apoderamiento.Id"><button class="boton boton-pequeno boton-peligro">Revocar</button></form> }</td></tr> }
+        </tbody></table></div>
+        <div class="panel-cuerpo">
+            <form method="post" asp-page-handler="Apoderar" class="flex">
+                <select name="clienteId" aria-label="Cliente">@foreach (var c in Model.ClientesSinApoderamiento) { <option value="@c.Key">@c.Value</option> }</select>
+                <button class="boton boton-pequeno" @(Model.ClientesSinApoderamiento.Count == 0 ? "disabled" : "")>Registrar apoderamiento</button>
+            </form>
+        </div>
+    </div>
+</div>

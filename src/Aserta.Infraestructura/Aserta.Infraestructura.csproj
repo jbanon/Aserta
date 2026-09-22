@@ -2,12 +2,15 @@
   <ItemGroup>
     <ProjectReference Include="..\Aserta.Aplicacion\Aserta.Aplicacion.csproj" />
     <ProjectReference Include="..\Aserta.Dominio\Aserta.Dominio.csproj" />
+    <ProjectReference Include="..\Aserta.Verifactu\Aserta.Verifactu.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.Data.SqlClient" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection" />
+    <PackageReference Include="Microsoft.Playwright" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />

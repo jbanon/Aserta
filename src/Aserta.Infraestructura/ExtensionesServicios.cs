@@ -8,6 +8,10 @@ using Aserta.Aplicacion.Mensajeria;
 using Aserta.Aplicacion.PortalCliente;
 using Aserta.Infraestructura.Documental;
 using Aserta.Infraestructura.Eventos;
+using Aserta.Infraestructura.Facturacion;
+using Aserta.Verifactu.Cliente;
+using Aserta.Verifactu.Servicios;
+using Aserta.Verifactu.Xml;
 using Aserta.Infraestructura.Migraciones;
 using Aserta.Infraestructura.Notificaciones;
 using Aserta.Infraestructura.Trabajos;
@@ -48,11 +52,9 @@ public static class ExtensionesServicios
 
         servicios.AddDbContext<AsertaDbContext>((sp, opciones) =>
         {
-            opciones.UseSqlServer(cadena, sql =>
-            {
-                sql.EnableRetryOnFailure(3);
-                sql.CommandTimeout(60);
-            });
+            // Sin EnableRetryOnFailure: la emision Veri*Factu usa transacciones explicitas (bloqueo de CadenaEmisor + outbox),
+            // incompatibles con la estrategia de reintentos de EF. Base local e instancia unica: no hace falta.
+            opciones.UseSqlServer(cadena, sql => sql.CommandTimeout(60));
             opciones.AddInterceptors(sp.GetRequiredService<InterceptorSesionTenant>(), sp.GetRequiredService<InterceptorAuditoria>());
         });
         servicios.AddScoped<IAsertaDb>(sp => sp.GetRequiredService<AsertaDbContext>());
@@ -82,6 +84,35 @@ public static class ExtensionesServicios
         servicios.AddScoped<ServicioMensajeria>();
         servicios.AddScoped<IManejadorEvento<MensajeNuevo>>(sp => sp.GetRequiredService<ServicioMensajeria>());
         servicios.AddScoped<ServicioPortal>();
+
+        // Facturacion Veri*Factu (M6). Aserta.Verifactu no conoce EF: Infraestructura implementa sus puertos.
+        var opcionesVf = new OpcionesVerifactu();
+        config.GetSection(OpcionesVerifactu.Seccion).Bind(opcionesVf);
+        servicios.AddSingleton(opcionesVf);
+        servicios.AddSingleton(new ValidadorXsd(config["Verifactu:CarpetaEsquemas"] ?? ValidadorXsd.CarpetaPorDefecto));
+        servicios.AddSingleton<EstadoSimuladorAeat>();
+        servicios.AddHttpClient();
+        if (opcionesVf.UsarSimulador) servicios.AddSingleton<IClienteAeatVerifactu, SimuladorAeat>();
+        else servicios.AddSingleton<IClienteAeatVerifactu, ClienteAeatSoap>();
+        servicios.AddScoped<IRepositorioFacturacion, RepositorioFacturacion>();
+        servicios.AddScoped<IProveedorCertificado, ProveedorCertificadoDemo>();
+        servicios.AddSingleton<IAlmacenPdf, AlmacenPdfAdaptador>();
+        servicios.AddScoped<IRelojVerifactu, RelojVerifactu>();
+        servicios.AddSingleton<GeneradorPdfPlaywright>();
+        servicios.AddSingleton<GeneradorPdfBasico>();
+        servicios.AddSingleton<IGeneradorPdf>(sp =>
+        {
+            var pw = sp.GetRequiredService<GeneradorPdfPlaywright>();
+            return string.Equals(config["Pdf:Motor"], "Basico", StringComparison.OrdinalIgnoreCase) || !pw.Disponible ? sp.GetRequiredService<GeneradorPdfBasico>() : pw;
+        });
+        servicios.AddSingleton<ColaPdf>();
+        servicios.AddSingleton<IColaPdf>(sp => sp.GetRequiredService<ColaPdf>());
+        servicios.AddHostedService<ColaPdfWorker>();
+        servicios.AddSingleton<EnvioVerifactuWorker>();
+        servicios.AddHostedService(sp => sp.GetRequiredService<EnvioVerifactuWorker>());
+        servicios.AddScoped<ServicioEmision>();
+        servicios.AddScoped<ServicioEnvio>();
+        servicios.AddScoped<ServicioPdfFactura>();
         servicios.AddScoped<ServicioUsuarios>();
         servicios.AddScoped<ServicioGestoria>();
         servicios.AddScoped<SembradorDemo>();

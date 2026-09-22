@@ -1,8 +1,5 @@
 using System.Net;
 using System.Text.RegularExpressions;
-using Aserta.Aplicacion.Clientes;
-using Aserta.Aplicacion.Obligaciones;
-using Aserta.Dominio.Clientes;
 using Aserta.Dominio.Obligaciones;
 using Aserta.Infraestructura.Persistencia;
 using Microsoft.EntityFrameworkCore;
@@ -39,28 +36,19 @@ public class FlujoKanbanTests
         return http;
     }
 
-    /// <summary>Asegura que el cliente de prueba del tenant A tiene perfil y obligaciones del ejercicio actual.</summary>
+    /// <summary>Crea una obligacion nueva y aislada (ejercicio ficticio) para que el test no dependa de otros.</summary>
     private async Task<Guid> ObligacionAbiertaAsync()
     {
         using var scope = _app.AmbitoComo(FabricaAplicacion.TenantA);
         var db = scope.ServiceProvider.GetRequiredService<AsertaDbContext>();
         var reloj = scope.ServiceProvider.GetRequiredService<Aserta.Aplicacion.Puertos.IRelojSistema>();
-        var cliente = await db.Clientes.Include(c => c.Perfiles).FirstAsync(c => c.GestoriaId == FabricaAplicacion.TenantA);
-        if (cliente.Perfiles.Count == 0)
-        {
-            scope.ServiceProvider.GetRequiredService<ContextoEjecucion>().EstablecerUsuario(cliente.AsesorResponsableId, FabricaAplicacion.TenantA, null, "test", ["SocioDirector"], "127.0.0.1", "tests");
-            await scope.ServiceProvider.GetRequiredService<ServicioClientes>().NuevaVersionPerfilAsync(cliente.Id,
-                new DatosPerfilFiscal { VigenteDesde = cliente.FechaAlta, RegimenIva = RegimenIva.General, PeriodicidadIva = PeriodicidadIva.Trimestral, TieneEmpleados = true });
-            await scope.ServiceProvider.GetRequiredService<ServicioGeneracionObligaciones>().GenerarParaClienteAsync(cliente.Id, [reloj.Hoy.Year]);
-        }
-        var pendiente = await db.Obligaciones.Where(o => o.ClienteId == cliente.Id && o.Estado == EstadoObligacion.PendienteDocumentacion).OrderBy(o => o.Periodo).FirstOrDefaultAsync();
-        if (pendiente is null)
-        {
-            // Todas usadas por ejecuciones anteriores: se reabre una cerrada creando un cliente nuevo no es posible sin NIF nuevo; reactivamos por SQL una NoAplica o creamos obligacion directa.
-            pendiente = new Obligacion { Id = Guid.NewGuid(), GestoriaId = FabricaAplicacion.TenantA, ClienteId = cliente.Id, ModeloCodigo = "303", Ejercicio = (short)(reloj.Hoy.Year - 5 - Random.Shared.Next(0, 1000)), Periodo = "1T", FechaLimitePresentacion = reloj.Hoy.AddDays(30), FechaLimiteDomiciliacion = reloj.Hoy.AddDays(25), FechaGeneracionUtc = DateTime.UtcNow };
-            db.Obligaciones.Add(pendiente);
-            await db.SaveChangesAsync();
-        }
+        var cliente = await db.Clientes.FirstAsync(c => c.GestoriaId == FabricaAplicacion.TenantA);
+        short ejercicio;
+        do { ejercicio = (short)Random.Shared.Next(1900, 1999); }
+        while (await db.Obligaciones.AnyAsync(o => o.ClienteId == cliente.Id && o.Ejercicio == ejercicio && o.ModeloCodigo == "303" && o.Periodo == "1T"));
+        var pendiente = new Obligacion { Id = Guid.NewGuid(), GestoriaId = FabricaAplicacion.TenantA, ClienteId = cliente.Id, ModeloCodigo = "303", Ejercicio = ejercicio, Periodo = "1T", AsesorId = cliente.AsesorResponsableId, FechaLimitePresentacion = reloj.Hoy.AddDays(30), FechaLimiteDomiciliacion = reloj.Hoy.AddDays(25), FechaGeneracionUtc = DateTime.UtcNow };
+        db.Obligaciones.Add(pendiente);
+        await db.SaveChangesAsync();
         return pendiente.Id;
     }
 
