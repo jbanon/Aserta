@@ -19,3 +19,8 @@ obj/
 /publicado/
 /logs/
 *.log
+
+# === Aserta: artefactos locales de la aplicacion ===
+/publicado.*/
+/claves-dataprotection/
+/tests/**/TestResults/

@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- ADR-001 §2.2 regla 4: no referencia a Infraestructura ni a EF/ASP.NET. -->
+  <ItemGroup>
+    <ProjectReference Include="..\Aserta.Dominio\Aserta.Dominio.csproj" />
+  </ItemGroup>
+</Project>

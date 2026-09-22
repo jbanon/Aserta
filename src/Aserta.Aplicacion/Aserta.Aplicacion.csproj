@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    ADR-001 §2.2 regla 2: solo referencia al PROYECTO Dominio y declara los puertos.
+    Referencia el paquete Microsoft.EntityFrameworkCore (no SqlServer, no Infraestructura)
+    para expresar la unidad de trabajo como IAsertaDb con DbSet<T>: el ADR dice que el
+    DbContext YA es la unidad de trabajo y prohibe repositorios genericos encima.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\Aserta.Dominio\Aserta.Dominio.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+</Project>

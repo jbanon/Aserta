@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <UserSecretsId>aserta-web-dev</UserSecretsId>
+    <RootNamespace>Aserta.Web</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Aserta.Aplicacion\Aserta.Aplicacion.csproj" />
+    <ProjectReference Include="..\Aserta.Infraestructura\Aserta.Infraestructura.csproj" />
+    <ProjectReference Include="..\Aserta.Verifactu\Aserta.Verifactu.csproj" />
+    <ProjectReference Include="..\Aserta.Exportacion\Aserta.Exportacion.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="QRCoder" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Los scripts SQL viajan con la publicacion: el runner los aplica al arrancar. -->
+    <Content Include="..\..\Scripts\**\*.sql" Link="Scripts\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

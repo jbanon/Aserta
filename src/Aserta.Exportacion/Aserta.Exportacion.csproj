@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\Aserta.Dominio\Aserta.Dominio.csproj" />
+  </ItemGroup>
+</Project>

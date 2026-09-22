@@ -1,0 +1,3 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- ADR-001 §2.2 regla 1: el Dominio no referencia a nadie. Solo BCL. -->
+</Project>

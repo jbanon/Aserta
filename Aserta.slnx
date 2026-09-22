@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Aserta.Aplicacion/Aserta.Aplicacion.csproj" />
+    <Project Path="src/Aserta.Dominio/Aserta.Dominio.csproj" />
+    <Project Path="src/Aserta.Exportacion/Aserta.Exportacion.csproj" />
+    <Project Path="src/Aserta.Infraestructura/Aserta.Infraestructura.csproj" />
+    <Project Path="src/Aserta.Verifactu/Aserta.Verifactu.csproj" />
+    <Project Path="src/Aserta.Web/Aserta.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Aserta.Dominio.Tests/Aserta.Dominio.Tests.csproj" />
+    <Project Path="tests/Aserta.Integracion.Tests/Aserta.Integracion.Tests.csproj" />
+    <Project Path="tests/Aserta.Verifactu.Tests/Aserta.Verifactu.Tests.csproj" />
+  </Folder>
+</Solution>
