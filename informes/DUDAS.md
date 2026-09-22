@@ -23,7 +23,7 @@
 | D-14 | `Scripts/Seed/` queda vacía: el seed de demo es C# (`SembradorDemo`) porque necesita `UserManager` para las contraseñas. | Documentado en el informe 03. | Estructura | Abierta |
 | D-15 | Design system: sin `08-ux-ui/design-system.md` he definido tokens propios y la fuente Inter (OFL). ¿Sustituir cuando exista el documento? | Sí; los componentes solo leen tokens. | Front | Abierta |
 | D-16 | `CLAUDE.md` dice "estructura pendiente de definir". ¿Lo actualizo yo con la estructura real de ADR-001? | No lo toco: es del arquitecto. | Documentación | Abierta |
-| D-17 | `git push origin master` falla: GitHub responde *"Invalid username or token"* con el token embebido en la URL del remoto (`origin`). ¿Token caducado, sin permiso `repo`, o el repositorio `jbanon/Aserta` no existe todavía (DA-15)? | Los commits quedan en `master` local (7 commits de la fase 1); reintentaré el push en cuanto el remoto funcione. | Despliegue automático, revisión del arquitecto | **Necesita acción del usuario** |
+| D-17 | `git push origin master` falla: GitHub responde *"Invalid username or token"* con el token embebido en la URL del remoto (`origin`). ¿Token caducado, sin permiso `repo`, o el repositorio `jbanon/Aserta` no existe todavía (DA-15)? | Los commits quedan en `master` local (12 commits, fases 1–5 completas); reintentaré el push en cuanto el remoto funcione. | Despliegue automático, revisión del arquitecto | **Necesita acción del usuario** |
 
 ## Fase 2
 
