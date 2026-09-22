@@ -1,0 +1,27 @@
+@page
+@model Aserta.Web.Pages.Usuarios.AltaModel
+@{
+    ViewData["Titulo"] = "Nuevo usuario";
+}
+<div class="migas"><a asp-page="/Usuarios/Index">Usuarios</a> › Nuevo usuario</div>
+<div class="pagina-cabecera"><div><h1>Nuevo usuario de la gestoría</h1></div></div>
+<form method="post" class="ancho-max-sm">
+    <partial name="_ResumenErrores" />
+    <fieldset><legend>Datos</legend>
+        <div class="campo-fila">
+            <div class="campo"><label asp-for="Datos.NombreCompleto">Nombre completo</label><input class="entrada" asp-for="Datos.NombreCompleto" required /><span class="error" asp-validation-for="Datos.NombreCompleto"></span></div>
+            <div class="campo"><label asp-for="Datos.Email">Correo (será el usuario)</label><input class="entrada" asp-for="Datos.Email" type="email" required /><span class="error" asp-validation-for="Datos.Email"></span></div>
+        </div>
+        <div class="campo-fila">
+            <div class="campo"><label asp-for="Datos.Rol">Rol</label>
+                <select asp-for="Datos.Rol">
+                    <option value="@Roles.SocioDirector">Socio / director</option>
+                    <option value="@Roles.Asesor">Asesor</option>
+                    <option value="@Roles.Administrativo">Administrativo</option>
+                </select></div>
+            <div class="campo"><label asp-for="Datos.Contrasena">Contraseña inicial</label><input class="entrada" asp-for="Datos.Contrasena" type="password" autocomplete="new-password" required /><span class="ayuda">Mínimo 10 caracteres con mayúscula y número.</span><span class="error" asp-validation-for="Datos.Contrasena"></span></div>
+        </div>
+        <label class="interruptor mt-3"><input type="checkbox" asp-for="Datos.MfaObligatorio" /><span>Exigir segundo factor<small>Se aplicará cuando esté disponible el enrolamiento de MFA</small></span></label>
+    </fieldset>
+    <div class="form-pie"><a class="boton" asp-page="/Usuarios/Index">Cancelar</a><button type="submit" class="boton boton-primario">Crear usuario</button></div>
+</form>

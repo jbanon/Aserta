@@ -1,0 +1,84 @@
+@page
+@model Aserta.Web.Pages.Clientes.IndexModel
+@{
+    ViewData["Titulo"] = "Clientes";
+}
+<div class="pagina-cabecera">
+    <div>
+        <h1>Clientes <span class="insignia">@Model.Total</span></h1>
+        <p class="subtitulo">Cartera de la gestoría. Cada cliente tiene un perfil fiscal del que se derivan sus obligaciones.</p>
+    </div>
+    <div class="acciones">
+        <a class="boton boton-primario" asp-page="/Clientes/Alta">@Icono.Mas Nuevo cliente</a>
+    </div>
+</div>
+
+<form method="get" class="filtros" role="search">
+    <div class="campo buscador">
+        <label class="oculto-visualmente" for="q">Buscar</label>
+        @Icono.Buscar
+        <input class="entrada" id="q" name="q" value="@Model.Q" placeholder="Nombre o NIF" />
+    </div>
+    <div class="campo">
+        <label for="asesor">Asesor</label>
+        <select id="asesor" name="asesor">
+            <option value="">Todos</option>
+            @foreach (var a in Model.Asesores) { <option value="@a.Id" selected="@(Model.Asesor == a.Id)">@a.NombreCompleto</option> }
+        </select>
+    </div>
+    <div class="campo">
+        <label for="estado">Estado</label>
+        <select id="estado" name="estado">
+            <option value="">Activos</option>
+            <option value="Baja" selected="@(Model.Estado == "Baja")">De baja</option>
+            <option value="Todos" selected="@(Model.Estado == "Todos")">Todos</option>
+        </select>
+    </div>
+    <button type="submit" class="boton">Filtrar</button>
+</form>
+
+<div class="panel">
+    <div class="tabla-envoltorio">
+        <table class="tabla">
+            <thead>
+                <tr>
+                    <th>Cliente</th>
+                    <th>NIF</th>
+                    <th>Forma jurídica</th>
+                    <th>Asesor</th>
+                    <th class="num">Obligaciones abiertas</th>
+                    <th>Próximo vencimiento</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Filas.Count == 0)
+                {
+                    <tr><td colspan="7" class="vacio">No hay clientes que coincidan con el filtro.</td></tr>
+                }
+                @foreach (var f in Model.Filas)
+                {
+                    <tr data-href="/Clientes/Ficha/@f.Cliente.Id">
+                        <td>
+                            <a asp-page="/Clientes/Ficha" asp-route-id="@f.Cliente.Id">@f.Cliente.NombreParaMostrar</a>
+                            @if (f.Cliente.NombreComercial is not null) { <br /><small>@f.Cliente.RazonSocial</small> }
+                        </td>
+                        <td class="mono">@f.Cliente.Nif</td>
+                        <td>@f.Cliente.FormaJuridica</td>
+                        <td>@f.Asesor</td>
+                        <td class="num">@f.Abiertas</td>
+                        <td>
+                            @if (f.Proxima is not null)
+                            {
+                                <partial name="_Semaforo" model="(f.Proxima, Model.Hoy)" />
+                                <small class="nowrap">@f.Proxima.ModeloCodigo · @f.Proxima.EtiquetaPeriodo</small>
+                            }
+                            else { <span class="texto-3">—</span> }
+                        </td>
+                        <td>@if (f.Cliente.Estado == EstadoCliente.Activo) { <span class="insignia insignia-ok">Activo</span> } else { <span class="insignia">Baja @f.Cliente.FechaBaja?.ToString("dd/MM/yyyy")</span> }</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,49 @@
+@page
+@model Aserta.Web.Pages.Estilo.IndexModel
+@{
+    ViewData["Titulo"] = "Guía de estilo";
+}
+<div class="pagina-cabecera"><div><h1>Guía de estilo</h1><p class="subtitulo">Todos los componentes del design system en el tema activo. Cambie de tema con el botón de la cabecera para comprobar el contraste.</p></div>
+<div class="acciones"><a class="boton boton-primario" href="#">Primario</a><a class="boton" href="#">Secundario</a><button class="boton boton-peligro">Peligro</button><button class="boton boton-sutil">Sutil</button><button class="boton boton-pequeno">Pequeño</button></div></div>
+
+<div class="rejilla rejilla-2">
+    <div class="panel"><div class="panel-cabecera"><h2>Colores semánticos</h2></div><div class="panel-cuerpo columna">
+        <div class="flex"><span class="insignia">Neutra</span><span class="insignia insignia-ok">Ok</span><span class="insignia insignia-aviso">Aviso</span><span class="insignia insignia-error">Error</span><span class="insignia insignia-info">Info</span><span class="insignia insignia-marca">Marca</span></div>
+        <div class="flex"><span class="semaforo semaforo-verde">12 d</span><span class="semaforo semaforo-ambar">6 d</span><span class="semaforo semaforo-rojo">2 d</span><span class="semaforo semaforo-vencido">Vencida hace 3 d</span><span class="semaforo">Cerrado</span></div>
+        <div class="flex">@foreach (var e in Enum.GetValues<EstadoObligacion>()) { <span class="estado estado-@e">@e.Etiqueta()</span> }</div>
+    </div></div>
+    <div class="panel"><div class="panel-cabecera"><h2>Alertas</h2></div><div class="panel-cuerpo">
+        <div class="alerta alerta-ok">@Icono.Ok <div>Cliente dado de alta. El motor ha generado 14 obligaciones.</div></div>
+        <div class="alerta alerta-aviso">@Icono.Aviso <div><strong>3 plazos sin confirmar.</strong> Ninguno debe llegar a producción sin verificar.</div></div>
+        <div class="alerta alerta-error">@Icono.Aviso <div>No se puede pasar de «Pendiente documentación» a «Presentado».</div></div>
+        <div class="alerta alerta-info">@Icono.Aviso <div>Ejemplo de información contextual.</div></div>
+    </div></div>
+</div>
+<div class="panel mt-4"><div class="panel-cabecera"><h2>Formulario</h2></div><div class="panel-cuerpo">
+    <div class="campo-fila">
+        <div class="campo"><label for="e1">Texto</label><input class="entrada" id="e1" value="Panadería López SL" /><span class="ayuda">Texto de ayuda.</span></div>
+        <div class="campo"><label for="e2">Con error</label><input class="entrada input-validation-error" id="e2" value="B1234567X" /><span class="error">La letra de control del CIF no es correcta.</span></div>
+        <div class="campo"><label for="e3">Selector</label><select id="e3"><option>Trimestral</option><option>Mensual</option></select></div>
+        <div class="campo"><label for="e4">Fecha</label><input class="entrada" type="date" id="e4" value="2026-07-01" /></div>
+    </div>
+    <div class="campo-fila mt-3"><label class="interruptor"><input type="checkbox" checked /><span>Tiene empleados<small>Activa 111 y 190</small></span></label><label class="interruptor"><input type="checkbox" /><span>Alquila un local<small>Activa 115 y 180</small></span></label></div>
+</div></div>
+<div class="panel mt-4"><div class="panel-cabecera"><h2>Tabla</h2></div>
+    <div class="tabla-envoltorio"><table class="tabla"><thead><tr><th>Modelo</th><th>Periodo</th><th>Estado</th><th class="num">Importe</th></tr></thead>
+    <tbody><tr><td class="mono">303</td><td>3T 2026</td><td><span class="estado estado-EnPreparacion">En preparación</span></td><td class="num tabular">1.234,56 €</td></tr>
+    <tr><td class="mono">111</td><td>3T 2026</td><td><span class="estado estado-Presentado">Presentado</span></td><td class="num tabular">312,00 €</td></tr></tbody></table></div>
+</div>
+<div class="rejilla rejilla-4 mt-4">
+    <div class="panel kpi"><div class="kpi-valor">148</div><div class="kpi-etiqueta">Obligaciones abiertas</div></div>
+    <div class="panel kpi"><div class="kpi-valor">23</div><div class="kpi-etiqueta">Vencen esta semana</div></div>
+    <div class="panel kpi"><div class="kpi-valor">4</div><div class="kpi-etiqueta">Vencidas</div></div>
+    <div class="panel kpi"><div class="kpi-valor">97 %</div><div class="kpi-etiqueta">Presentadas a tiempo</div></div>
+</div>
+<div class="panel mt-4"><div class="panel-cabecera"><h2>Línea de tiempo y menú</h2>
+    <div class="menu" data-menu><button type="button" class="boton boton-pequeno" data-menu-boton aria-haspopup="true" aria-expanded="false">Mover a… @Icono.Menu</button>
+        <ul class="menu-lista" data-menu-lista hidden role="menu"><li><button type="button" role="menuitem">Documentación completa</button></li><li><button type="button" role="menuitem" disabled>Presentado (requiere aprobación)</button></li><li><button type="button" role="menuitem">No aplica</button></li></ul></div></div>
+    <div class="panel-cuerpo"><ol class="linea-tiempo">
+        <li><time>22/09/2026 10:15</time><strong>CambioEstado</strong> · Documentación completa → En preparación <span class="autor">· Carlos Ruiz Peña</span></li>
+        <li><time>20/09/2026 09:02</time><strong>Generada</strong> <span class="autor">· motor de reglas</span><div class="texto-2">Generada por la regla «IVA trimestral».</div></li>
+    </ol></div>
+</div>

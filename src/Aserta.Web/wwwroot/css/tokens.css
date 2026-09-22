@@ -1,0 +1,168 @@
+/* =============================================================================
+   Aserta · Design tokens (ADR-003 §2.2)
+   Unica fuente de verdad del design system. Los componentes solo leen tokens.
+   Modo oscuro: prefers-color-scheme + data-tema="claro|oscuro" en <html>.
+   ============================================================================= */
+@layer tokens {
+  @font-face {
+    font-family: "Inter";
+    src: url("../fonts/InterVariable.woff2") format("woff2");
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  :root {
+    color-scheme: light;
+
+    /* Tipografia */
+    --fuente-base: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --fuente-mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", Menlo, monospace;
+    --tamano-xs: 0.75rem;
+    --tamano-sm: 0.8125rem;
+    --tamano-base: 0.9375rem;
+    --tamano-md: 1.0625rem;
+    --tamano-lg: 1.25rem;
+    --tamano-xl: 1.5rem;
+    --tamano-2xl: 1.875rem;
+    --peso-normal: 450;
+    --peso-medio: 550;
+    --peso-negrita: 650;
+    --interlineado: 1.45;
+
+    /* Espaciado (densidad alta en gestoria) */
+    --esp-1: 0.25rem;
+    --esp-2: 0.5rem;
+    --esp-3: 0.75rem;
+    --esp-4: 1rem;
+    --esp-5: 1.5rem;
+    --esp-6: 2rem;
+    --esp-7: 3rem;
+
+    /* Radios y sombras */
+    --radio-sm: 4px;
+    --radio: 6px;
+    --radio-lg: 10px;
+    --sombra-sm: 0 1px 2px rgb(15 23 42 / 0.06);
+    --sombra: 0 2px 8px rgb(15 23 42 / 0.08), 0 1px 2px rgb(15 23 42 / 0.06);
+    --sombra-lg: 0 12px 32px rgb(15 23 42 / 0.16);
+
+    /* Duraciones */
+    --dur-rapida: 120ms;
+    --dur: 200ms;
+
+    /* Paleta base (claro) */
+    --color-fondo: #f5f6f8;
+    --color-superficie: #ffffff;
+    --color-superficie-2: #f0f2f5;
+    --color-superficie-3: #e6e9ee;
+    --color-borde: #d9dee6;
+    --color-borde-fuerte: #b8c0cc;
+    --color-texto: #1a2130;
+    --color-texto-2: #4a5568;
+    --color-texto-3: #7b8794;
+    --color-texto-inverso: #ffffff;
+
+    --color-marca: #1f4e79;
+    --color-marca-fuerte: #163a5a;
+    --color-marca-suave: #e3edf7;
+    --color-marca-texto: #1f4e79;
+    --color-acento: #0f766e;
+
+    --color-foco: #2563eb;
+    --anillo-foco: 0 0 0 3px rgb(37 99 235 / 0.35);
+
+    /* Estados semanticos */
+    --color-ok: #15803d;
+    --color-ok-suave: #dcfce7;
+    --color-ok-texto: #14532d;
+    --color-aviso: #b45309;
+    --color-aviso-suave: #fef3c7;
+    --color-aviso-texto: #78350f;
+    --color-error: #b91c1c;
+    --color-error-suave: #fee2e2;
+    --color-error-texto: #7f1d1d;
+    --color-info: #1d4ed8;
+    --color-info-suave: #dbeafe;
+    --color-info-texto: #1e3a8a;
+
+    /* Semaforo de vencimiento (RD-02) */
+    --color-semaforo-verde: #16a34a;
+    --color-semaforo-ambar: #d97706;
+    --color-semaforo-rojo: #dc2626;
+    --color-semaforo-vencido: #7f1d1d;
+    --color-semaforo-gris: #9ca3af;
+
+    /* Estados de obligacion (columnas Kanban) */
+    --color-estado-pendiente: #9ca3af;
+    --color-estado-completa: #0ea5e9;
+    --color-estado-preparacion: #6366f1;
+    --color-estado-revision: #a855f7;
+    --color-estado-aprobacion: #f59e0b;
+    --color-estado-presentado: #10b981;
+    --color-estado-cerrado: #64748b;
+    --color-estado-noaplica: #cbd5e1;
+
+    --ancho-contenido: 1440px;
+    --alto-cabecera: 52px;
+    --ancho-lateral: 232px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-tema="claro"]) {
+      color-scheme: dark;
+      --color-fondo: #0f141b;
+      --color-superficie: #171d26;
+      --color-superficie-2: #1f2733;
+      --color-superficie-3: #283241;
+      --color-borde: #2c3644;
+      --color-borde-fuerte: #435063;
+      --color-texto: #e6eaf0;
+      --color-texto-2: #b3bcc9;
+      --color-texto-3: #7f8b9b;
+      --color-texto-inverso: #0f141b;
+      --color-marca: #7db3e8;
+      --color-marca-fuerte: #a3c9f0;
+      --color-marca-suave: #1b2f45;
+      --color-marca-texto: #a3c9f0;
+      --color-acento: #2dd4bf;
+      --color-foco: #60a5fa;
+      --anillo-foco: 0 0 0 3px rgb(96 165 250 / 0.45);
+      --color-ok: #4ade80; --color-ok-suave: #14301f; --color-ok-texto: #bbf7d0;
+      --color-aviso: #fbbf24; --color-aviso-suave: #3a2a08; --color-aviso-texto: #fde68a;
+      --color-error: #f87171; --color-error-suave: #3b1212; --color-error-texto: #fecaca;
+      --color-info: #93c5fd; --color-info-suave: #14243d; --color-info-texto: #bfdbfe;
+      --sombra-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+      --sombra: 0 2px 8px rgb(0 0 0 / 0.5);
+      --sombra-lg: 0 12px 32px rgb(0 0 0 / 0.6);
+    }
+  }
+
+  :root[data-tema="oscuro"] {
+    color-scheme: dark;
+    --color-fondo: #0f141b;
+    --color-superficie: #171d26;
+    --color-superficie-2: #1f2733;
+    --color-superficie-3: #283241;
+    --color-borde: #2c3644;
+    --color-borde-fuerte: #435063;
+    --color-texto: #e6eaf0;
+    --color-texto-2: #b3bcc9;
+    --color-texto-3: #7f8b9b;
+    --color-texto-inverso: #0f141b;
+    --color-marca: #7db3e8;
+    --color-marca-fuerte: #a3c9f0;
+    --color-marca-suave: #1b2f45;
+    --color-marca-texto: #a3c9f0;
+    --color-acento: #2dd4bf;
+    --color-foco: #60a5fa;
+    --anillo-foco: 0 0 0 3px rgb(96 165 250 / 0.45);
+    --color-ok: #4ade80; --color-ok-suave: #14301f; --color-ok-texto: #bbf7d0;
+    --color-aviso: #fbbf24; --color-aviso-suave: #3a2a08; --color-aviso-texto: #fde68a;
+    --color-error: #f87171; --color-error-suave: #3b1212; --color-error-texto: #fecaca;
+    --color-info: #93c5fd; --color-info-suave: #14243d; --color-info-texto: #bfdbfe;
+    --sombra-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+    --sombra: 0 2px 8px rgb(0 0 0 / 0.5);
+    --sombra-lg: 0 12px 32px rgb(0 0 0 / 0.6);
+  }
+}

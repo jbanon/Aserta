@@ -1,0 +1,18 @@
+@page
+@model Aserta.Web.Pages.Gestoria.ConfiguracionModel
+@{
+    ViewData["Titulo"] = "Configuración";
+}
+<div class="pagina-cabecera"><div><h1>Configuración de la gestoría</h1><p class="subtitulo">Las reglas RD-07 y RD-09 son interruptores del tenant, no constantes de código.</p></div></div>
+<form method="post" class="ancho-max-sm">
+    <partial name="_ResumenErrores" />
+    <fieldset><legend>Identidad</legend>
+        <div class="campo"><label asp-for="Nombre">Nombre de la gestoría</label><input class="entrada" asp-for="Nombre" required /></div>
+        <p class="texto-sm texto-3 mt-2">NIF: <span class="mono">@Model.Nif</span> · Zona horaria: @Model.ZonaHoraria</p>
+    </fieldset>
+    <fieldset><legend>Reglas de trabajo</legend>
+        <label class="interruptor"><input type="checkbox" asp-for="ExigeAprobacionCliente" /><span>Exigir aprobación del cliente antes de marcar una obligación como presentada<small>RD-09. Si se desactiva, el gestor puede presentar sin conformidad registrada.</small></span></label>
+        <label class="interruptor mt-2"><input type="checkbox" asp-for="AsesorVeTodosLosClientes" /><span>Los asesores ven todos los clientes de la gestoría<small>RD-07. Si se desactiva, cada asesor solo ve los clientes que tiene asignados.</small></span></label>
+    </fieldset>
+    <div class="form-pie"><button type="submit" class="boton boton-primario">Guardar</button></div>
+</form>

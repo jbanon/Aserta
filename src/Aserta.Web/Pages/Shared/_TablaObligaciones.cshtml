@@ -1,0 +1,39 @@
+@model IReadOnlyList<Aserta.Dominio.Obligaciones.Obligacion>
+@{
+    var hoy = ViewData["Hoy"] is DateOnly h ? h : DateOnly.FromDateTime(DateTime.Today);
+    var mostrarCliente = ViewData["MostrarCliente"] as bool? ?? false;
+    var nombresClientes = ViewData["NombresClientes"] as IReadOnlyDictionary<Guid, string>;
+    var nombresAsesores = ViewData["NombresAsesores"] as IReadOnlyDictionary<Guid, string>;
+}
+<div class="tabla-envoltorio">
+    <table class="tabla tabla-compacta">
+        <thead>
+            <tr>
+                <th>Modelo</th>
+                <th>Periodo</th>
+                @if (mostrarCliente) { <th>Cliente</th> }
+                <th>Estado</th>
+                <th>Semáforo</th>
+                <th>Domiciliación</th>
+                <th>Presentación</th>
+                @if (nombresAsesores is not null) { <th>Asesor</th> }
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Count == 0) { <tr><td colspan="8" class="vacio">Sin obligaciones.</td></tr> }
+            @foreach (var o in Model)
+            {
+                <tr data-href="/Obligaciones/Detalle/@o.Id">
+                    <td><a asp-page="/Obligaciones/Detalle" asp-route-id="@o.Id" class="mono">@o.ModeloCodigo</a></td>
+                    <td>@o.EtiquetaPeriodo</td>
+                    @if (mostrarCliente) { <td>@(nombresClientes?.GetValueOrDefault(o.ClienteId) ?? "—")</td> }
+                    <td><span class="estado estado-@o.Estado">@o.Estado.Etiqueta()</span></td>
+                    <td><partial name="_Semaforo" model="(o, hoy)" /></td>
+                    <td class="tabular">@(o.FechaLimiteDomiciliacion?.ToString("dd/MM/yyyy") ?? "—")</td>
+                    <td class="tabular">@o.FechaLimitePresentacion.ToString("dd/MM/yyyy")</td>
+                    @if (nombresAsesores is not null) { <td>@(o.AsesorId is Guid a ? nombresAsesores.GetValueOrDefault(a, "—") : "—")</td> }
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

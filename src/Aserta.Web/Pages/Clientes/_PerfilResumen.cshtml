@@ -1,0 +1,17 @@
+@model Aserta.Dominio.Clientes.PerfilFiscal
+<dl class="datos">
+    <dt>Régimen IRPF</dt><dd>@Model.RegimenIrpf</dd>
+    <dt>Régimen IVA</dt><dd>@Model.RegimenIva · @Model.PeriodicidadIva</dd>
+    <dt>Territorio</dt><dd>@Model.Territorio</dd>
+    <dt>Situaciones</dt>
+    <dd class="flex">
+        @if (Model.TieneEmpleados) { <span class="insignia insignia-marca">Empleados</span> }
+        @if (Model.PagaProfesionalesConRetencion) { <span class="insignia insignia-marca">Profesionales con retención</span> }
+        @if (Model.AlquilaLocal) { <span class="insignia insignia-marca">Alquila local</span> }
+        @if (Model.RepartePagosCapitalMobiliario) { <span class="insignia insignia-marca">Capital mobiliario</span> }
+        @if (Model.OperacionesIntracomunitarias) { <span class="insignia insignia-marca">Intracomunitarias</span> }
+        @if (Model.SuperaUmbral347) { <span class="insignia insignia-marca">Supera 347</span> }
+        @if (!Model.TieneEmpleados && !Model.PagaProfesionalesConRetencion && !Model.AlquilaLocal && !Model.RepartePagosCapitalMobiliario && !Model.OperacionesIntracomunitarias && !Model.SuperaUmbral347) { <span class="texto-3">Ninguna</span> }
+    </dd>
+    <dt>Cierre del ejercicio</dt><dd>@Model.CierreEjercicioDia/@Model.CierreEjercicioMes</dd>
+</dl>

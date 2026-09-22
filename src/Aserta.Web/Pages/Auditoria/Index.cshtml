@@ -1,0 +1,35 @@
+@page
+@model Aserta.Web.Pages.Auditoria.IndexModel
+@{
+    ViewData["Titulo"] = "Auditoría";
+}
+<div class="pagina-cabecera"><div><h1>Auditoría</h1><p class="subtitulo">Registro de solo anexado (RD-08): no se puede modificar ni borrar, ni siquiera desde la base de datos.</p></div></div>
+<form method="get" class="filtros">
+    <div class="campo"><label for="entidad">Entidad</label><select id="entidad" name="entidad"><option value="">Todas</option>@foreach (var e in Model.Entidades) { <option value="@e" selected="@(Model.Entidad == e)">@e</option> }</select></div>
+    <div class="campo"><label for="accion">Acción</label><select id="accion" name="accion"><option value="">Todas</option>@foreach (var a in Model.Acciones) { <option value="@a" selected="@(Model.Accion == a)">@a</option> }</select></div>
+    <button type="submit" class="boton">Filtrar</button>
+</form>
+<div class="panel"><div class="tabla-envoltorio"><table class="tabla tabla-compacta">
+    <thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Entidad</th><th>Id</th><th>IP</th><th>Detalle</th></tr></thead>
+    <tbody>
+    @foreach (var a in Model.Filas)
+    {
+        <tr>
+            <td class="tabular nowrap">@a.FechaUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss")</td>
+            <td>@(Model.NombresUsuarios.GetValueOrDefault(a.UsuarioId ?? Guid.Empty, "sistema"))</td>
+            <td>@a.Accion</td>
+            <td>@a.EntidadTipo</td>
+            <td class="mono texto-xs">@a.EntidadId[..Math.Min(8, a.EntidadId.Length)]…</td>
+            <td class="texto-xs">@a.DireccionIp</td>
+            <td>@if (a.Detalle is not null) { <details><summary class="texto-xs">ver</summary><code class="texto-xs">@a.Detalle</code></details> }</td>
+        </tr>
+    }
+    </tbody></table></div>
+    <div class="panel-cuerpo flex flex-entre">
+        <span class="texto-sm texto-3">Página @Model.Pagina · @Model.Total registros</span>
+        <span class="acciones">
+            @if (Model.Pagina > 1) { <a class="boton boton-pequeno" asp-route-pagina="@(Model.Pagina - 1)" asp-route-entidad="@Model.Entidad" asp-route-accion="@Model.Accion">Anterior</a> }
+            @if (Model.Pagina * Aserta.Web.Pages.Auditoria.IndexModel.PorPagina < Model.Total) { <a class="boton boton-pequeno" asp-route-pagina="@(Model.Pagina + 1)" asp-route-entidad="@Model.Entidad" asp-route-accion="@Model.Accion">Siguiente</a> }
+        </span>
+    </div>
+</div>

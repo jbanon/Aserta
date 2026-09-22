@@ -1,0 +1,39 @@
+@page
+@model Aserta.Web.Pages.Cuenta.EntrarModel
+@{
+    Layout = "_LayoutCuenta";
+    ViewData["Titulo"] = "Acceso";
+}
+<div class="cuenta-tarjeta">
+    <div class="marca"><span class="marca-logo" aria-hidden="true">A</span> Aserta</div>
+    <h1>Acceso a la plataforma</h1>
+    <partial name="_ResumenErrores" />
+    <form method="post">
+        <input type="hidden" asp-for="Volver" />
+        <div class="campo">
+            <label asp-for="Datos.Email">Correo electrónico</label>
+            <input class="entrada" asp-for="Datos.Email" type="email" autocomplete="username" autofocus required />
+            <span class="error" asp-validation-for="Datos.Email"></span>
+        </div>
+        <div class="campo mt-3">
+            <label asp-for="Datos.Contrasena">Contraseña</label>
+            <input class="entrada" asp-for="Datos.Contrasena" type="password" autocomplete="current-password" required />
+            <span class="error" asp-validation-for="Datos.Contrasena"></span>
+        </div>
+        <label class="interruptor mt-3"><input type="checkbox" asp-for="Datos.Recordar" /> <span>Mantener la sesión iniciada en este equipo</span></label>
+        <div class="mt-4"><button type="submit" class="boton boton-primario">Entrar</button></div>
+    </form>
+    @if (Model.MostrarCredencialesDemo)
+    {
+        <div class="cuenta-demo">
+            <strong>Entorno de demostración.</strong> Usuarios ficticios (contraseña común <code>@Model.ContrasenaDemo</code>):
+            <ul>
+                <li><code>socio@demo.aserta.local</code> · socia directora</li>
+                <li><code>carlos@demo.aserta.local</code> · asesor</li>
+                <li><code>lucia@demo.aserta.local</code> · asesora</li>
+                <li><code>pedro@demo.aserta.local</code> · administrativo</li>
+                <li><code>panaderia@demo.aserta.local</code> · cliente (portal, fase 3)</li>
+            </ul>
+        </div>
+    }
+</div>

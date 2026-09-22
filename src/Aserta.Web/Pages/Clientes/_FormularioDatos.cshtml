@@ -1,0 +1,74 @@
+@model Aserta.Aplicacion.Clientes.DatosCliente
+@{
+    var asesores = ViewData["Asesores"] as IReadOnlyList<Usuario> ?? [];
+    var esAlta = ViewData["EsAlta"] as bool? ?? false;
+}
+<fieldset>
+    <legend>Identificación</legend>
+    <div class="campo-fila">
+        <div class="campo">
+            <label asp-for="Nif">NIF / CIF</label>
+            <input class="entrada mono" asp-for="Nif" maxlength="9" required autocomplete="off" />
+            <span class="ayuda">Se valida el dígito de control. Datos ficticios en la demo.</span>
+            <span class="error" asp-validation-for="Nif"></span>
+        </div>
+        <div class="campo">
+            <label asp-for="FormaJuridica">Forma jurídica</label>
+            <select asp-for="FormaJuridica">
+                <option value="Autonomo">Autónomo</option>
+                <option value="SL">Sociedad limitada (SL)</option>
+                <option value="SA">Sociedad anónima (SA)</option>
+                <option value="CB">Comunidad de bienes (CB)</option>
+                <option value="Particular">Particular</option>
+            </select>
+            <span class="error" asp-validation-for="FormaJuridica"></span>
+        </div>
+    </div>
+    <div class="campo-fila">
+        <div class="campo">
+            <label asp-for="RazonSocial">Razón social / nombre completo</label>
+            <input class="entrada" asp-for="RazonSocial" maxlength="200" required />
+            <span class="error" asp-validation-for="RazonSocial"></span>
+        </div>
+        <div class="campo">
+            <label asp-for="NombreComercial">Nombre comercial</label>
+            <input class="entrada" asp-for="NombreComercial" maxlength="200" />
+        </div>
+    </div>
+</fieldset>
+<fieldset>
+    <legend>Contacto y dirección</legend>
+    <div class="campo-fila">
+        <div class="campo"><label asp-for="Email">Correo</label><input class="entrada" asp-for="Email" type="email" /><span class="error" asp-validation-for="Email"></span></div>
+        <div class="campo"><label asp-for="Telefono">Teléfono</label><input class="entrada" asp-for="Telefono" /></div>
+    </div>
+    <div class="campo-fila">
+        <div class="campo"><label asp-for="DireccionCalle">Dirección</label><input class="entrada" asp-for="DireccionCalle" /></div>
+        <div class="campo"><label asp-for="DireccionCodigoPostal">Código postal</label><input class="entrada" asp-for="DireccionCodigoPostal" maxlength="10" /></div>
+        <div class="campo"><label asp-for="DireccionMunicipio">Municipio</label><input class="entrada" asp-for="DireccionMunicipio" /></div>
+        <div class="campo"><label asp-for="DireccionProvincia">Provincia</label><input class="entrada" asp-for="DireccionProvincia" /></div>
+    </div>
+</fieldset>
+<fieldset>
+    <legend>Gestión</legend>
+    <div class="campo-fila">
+        <div class="campo">
+            <label asp-for="AsesorResponsableId">Asesor responsable</label>
+            <select asp-for="AsesorResponsableId">
+                <option value="">— Seleccione —</option>
+                @foreach (var a in asesores) { <option value="@a.Id" selected="@(Model.AsesorResponsableId == a.Id)">@a.NombreCompleto</option> }
+            </select>
+            <span class="error" asp-validation-for="AsesorResponsableId"></span>
+        </div>
+        <div class="campo">
+            <label asp-for="FechaAlta">Fecha de alta en la gestoría</label>
+            <input class="entrada" type="date" asp-for="FechaAlta" required />
+            <span class="ayuda">RD-10: no se generan obligaciones de periodos anteriores al alta.</span>
+            <span class="error" asp-validation-for="FechaAlta"></span>
+        </div>
+    </div>
+    <div class="campo mt-3">
+        <label asp-for="Notas">Notas internas</label>
+        <textarea asp-for="Notas" rows="3"></textarea>
+    </div>
+</fieldset>

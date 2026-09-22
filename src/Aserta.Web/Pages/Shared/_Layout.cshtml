@@ -1,0 +1,93 @@
+@using Aserta.Aplicacion.Puertos
+@inject IContextoUsuarioActual Usuario
+@inject IAsertaDb Db
+@{
+    var titulo = ViewData["Titulo"] as string;
+    var ruta = ViewContext.HttpContext.Request.Path.Value ?? "/";
+    string Actual(string prefijo) => ruta.StartsWith(prefijo, StringComparison.OrdinalIgnoreCase) ? "page" : null!;
+    var nombreGestoria = ViewData["NombreGestoria"] as string;
+    if (nombreGestoria is null && Usuario.EstaAutenticado)
+    {
+        nombreGestoria = (await Db.Gestorias.AsNoTracking().Select(g => g.Nombre).FirstOrDefaultAsync()) ?? "";
+    }
+    var esGestoria = Usuario.TieneRol(Roles.SocioDirector) || Usuario.TieneRol(Roles.Asesor) || Usuario.TieneRol(Roles.Administrativo);
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@(titulo is null ? "Aserta" : $"{titulo} · Aserta")</title>
+    <link rel="stylesheet" href="~/css/tokens.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/app.css" asp-append-version="true" />
+    <link rel="icon" href="~/favicon.svg" type="image/svg+xml" />
+</head>
+<body>
+<div class="app">
+    <header class="app-cabecera">
+        <a class="marca" href="/">
+            <span class="marca-logo" aria-hidden="true">A</span>
+            <span>Aserta</span>
+            @if (!string.IsNullOrEmpty(nombreGestoria)) { <span class="marca-tenant">· @nombreGestoria</span> }
+        </a>
+        <div class="cabecera-derecha">
+            <button type="button" class="boton boton-sutil tema-boton" data-accion="alternar-tema" aria-label="Cambiar entre tema claro y oscuro" title="Tema claro/oscuro">
+                <span class="icono-sol">@Icono.Sol</span><span class="icono-luna">@Icono.Luna</span>
+            </button>
+            @if (Usuario.EstaAutenticado)
+            {
+                <div class="usuario-actual">
+                    <span class="medio texto-sm">@Usuario.NombreCompleto</span>
+                    <small>@string.Join(", ", Usuario.Roles)</small>
+                </div>
+                <form method="post" asp-page="/Cuenta/Salir">
+                    <button type="submit" class="boton boton-sutil" title="Cerrar sesión" aria-label="Cerrar sesión">@Icono.Salir</button>
+                </form>
+            }
+        </div>
+    </header>
+
+    <nav class="app-lateral" aria-label="Principal">
+        @if (esGestoria)
+        {
+            <ul class="nav">
+                <li class="nav-titulo">Trabajo</li>
+                <li><a href="/Clientes" aria-current="@Actual("/Clientes")">@Icono.Clientes Clientes</a></li>
+                <li><a href="/Obligaciones" aria-current="@Actual("/Obligaciones")">@Icono.Tablero Obligaciones</a></li>
+                <li class="nav-titulo">Referencia</li>
+                <li><a href="/Catalogo" aria-current="@Actual("/Catalogo")">@Icono.Catalogo Catálogo normativo</a></li>
+                <li><a href="/Auditoria" aria-current="@Actual("/Auditoria")">@Icono.Auditoria Auditoría</a></li>
+                @if (Usuario.TieneRol(Roles.SocioDirector))
+                {
+                    <li class="nav-titulo">Administración</li>
+                    <li><a href="/Usuarios" aria-current="@Actual("/Usuarios")">@Icono.Usuarios Usuarios</a></li>
+                    <li><a href="/Gestoria/Configuracion" aria-current="@Actual("/Gestoria")">@Icono.Ajustes Configuración</a></li>
+                }
+                <li class="nav-titulo">Sistema</li>
+                <li><a href="/Estilo" aria-current="@Actual("/Estilo")">@Icono.Paleta Guía de estilo</a></li>
+            </ul>
+        }
+        else if (Usuario.EstaAutenticado)
+        {
+            <ul class="nav">
+                <li class="nav-titulo">Mi empresa</li>
+                <li><a href="/Portal" aria-current="@Actual("/Portal")">@Icono.Clientes Portal</a></li>
+            </ul>
+        }
+    </nav>
+
+    <main class="app-contenido" id="contenido">
+        <partial name="_Alertas" />
+        @RenderBody()
+    </main>
+</div>
+
+<div id="anuncios" class="oculto-visualmente" aria-live="polite" aria-atomic="true"></div>
+<form id="antiforgery" class="oculto-visualmente" aria-hidden="true">@Html.AntiForgeryToken()</form>
+
+<script src="~/lib/htmx-2.0.8.min.js" asp-append-version="true"></script>
+<script src="~/lib/sortable-1.15.6.min.js" asp-append-version="true"></script>
+<script src="~/js/app.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

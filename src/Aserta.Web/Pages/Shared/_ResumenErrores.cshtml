@@ -1,0 +1,12 @@
+@if (!ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
+{
+    var generales = ViewData.ModelState[string.Empty]?.Errors.Select(e => e.ErrorMessage).ToList() ?? [];
+    var deCampos = ViewData.ModelState.Where(kv => kv.Key != string.Empty).SelectMany(kv => kv.Value!.Errors.Select(e => e.ErrorMessage)).ToList();
+    <div class="resumen-errores" role="alert">
+        <strong>Revise el formulario.</strong>
+        <ul>
+            @foreach (var e in generales) { <li>@e</li> }
+            @foreach (var e in deCampos) { <li>@e</li> }
+        </ul>
+    </div>
+}

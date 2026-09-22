@@ -1,0 +1,34 @@
+@page
+@model Aserta.Web.Pages.Usuarios.IndexModel
+@{
+    ViewData["Titulo"] = "Usuarios";
+}
+<div class="pagina-cabecera">
+    <div><h1>Usuarios de la gestoría</h1><p class="subtitulo">Socio/director, asesores y administrativos. Los usuarios del lado cliente se gestionan desde la ficha de cada cliente (fase 3).</p></div>
+    <div class="acciones"><a class="boton boton-primario" asp-page="/Usuarios/Alta">@Icono.Mas Nuevo usuario</a></div>
+</div>
+<partial name="_ResumenErrores" />
+<div class="panel"><div class="tabla-envoltorio"><table class="tabla">
+    <thead><tr><th>Nombre</th><th>Correo</th><th>Roles</th><th>Estado</th><th>MFA</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var u in Model.Filas)
+    {
+        <tr>
+            <td>@u.Usuario.NombreCompleto</td>
+            <td>@u.Email</td>
+            <td>@string.Join(", ", u.Roles)</td>
+            <td>@if (u.Usuario.Estado == EstadoUsuario.Activo) { <span class="insignia insignia-ok">Activo</span> } else { <span class="insignia insignia-error">@u.Usuario.Estado</span> }</td>
+            <td>@(u.Usuario.MfaObligatorio ? "Obligatorio" : "—")</td>
+            <td class="texto-derecha">
+                @if (u.Usuario.Estado == EstadoUsuario.Activo)
+                {
+                    <form method="post" asp-page-handler="Estado" asp-route-usuarioId="@u.Usuario.Id" asp-route-estado="Bloqueado" data-confirmar="¿Bloquear a @u.Usuario.NombreCompleto? No podrá iniciar sesión."><button class="boton boton-pequeno boton-peligro">Bloquear</button></form>
+                }
+                else
+                {
+                    <form method="post" asp-page-handler="Estado" asp-route-usuarioId="@u.Usuario.Id" asp-route-estado="Activo"><button class="boton boton-pequeno">Reactivar</button></form>
+                }
+            </td>
+        </tr>
+    }
+    </tbody></table></div></div>

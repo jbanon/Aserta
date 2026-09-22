@@ -1,0 +1,82 @@
+@page
+@model Aserta.Web.Pages.Catalogo.IndexModel
+@{
+    ViewData["Titulo"] = "Catálogo normativo";
+}
+<div class="pagina-cabecera">
+    <div><h1>Catálogo normativo</h1>
+    <p class="subtitulo">Modelos, reglas y plazos son <strong>datos</strong>, no código (RD-01). Un plazo con <span class="sin-confirmar">¿?</span> está cargado del patrón general y todavía no se ha contrastado con el calendario oficial de la AEAT.</p></div>
+</div>
+@if (Model.SinConfirmar > 0)
+{
+    <div class="alerta alerta-aviso">@Icono.Aviso <div><strong>@Model.SinConfirmar plazos sin confirmar</strong> de @Model.TotalPlazos. Ninguno debe llegar a producción sin verificar. Al contrastarlos se marcan como confirmados mediante un script de migración nuevo.</div></div>
+}
+<nav class="pestanas" aria-label="Secciones">
+    <a asp-page="/Catalogo/Index" asp-route-seccion="reglas" aria-current="@(Model.Seccion == "reglas" ? "page" : null)">Reglas de obligación <span class="insignia">@Model.Reglas.Count</span></a>
+    <a asp-page="/Catalogo/Index" asp-route-seccion="plazos" aria-current="@(Model.Seccion == "plazos" ? "page" : null)">Plazos por ejercicio</a>
+    <a asp-page="/Catalogo/Index" asp-route-seccion="modelos" aria-current="@(Model.Seccion == "modelos" ? "page" : null)">Modelos <span class="insignia">@Model.Modelos.Count</span></a>
+    <a asp-page="/Catalogo/Index" asp-route-seccion="festivos" aria-current="@(Model.Seccion == "festivos" ? "page" : null)">Días inhábiles</a>
+</nav>
+
+@if (Model.Seccion == "reglas")
+{
+    <div class="panel"><div class="tabla-envoltorio"><table class="tabla">
+        <thead><tr><th>Clave</th><th>Modelo</th><th>Descripción</th><th>Periodicidad</th><th>Condiciones (todas deben cumplirse)</th><th class="num">Prioridad</th><th>Vigencia</th></tr></thead>
+        <tbody>
+        @foreach (var r in Model.Reglas)
+        {
+            <tr>
+                <td class="mono">@r.Clave</td>
+                <td class="mono">@r.ModeloCodigo</td>
+                <td>@r.Descripcion</td>
+                <td>@r.Periodicidad</td>
+                <td>@if (r.Condiciones.Count == 0) { <span class="texto-3">Siempre</span> } else { <ul class="texto-xs mono">@foreach (var c in r.Condiciones) { <li>@c.Atributo @c.Operador @c.Valor</li> }</ul> }</td>
+                <td class="num">@r.Prioridad</td>
+                <td>@r.VigenteDesdeEjercicio – @(r.VigenteHastaEjercicio?.ToString() ?? "…") @if (!r.Activa) { <span class="insignia">Inactiva</span> }</td>
+            </tr>
+        }
+        </tbody></table></div></div>
+}
+else if (Model.Seccion == "plazos")
+{
+    <form method="get" class="filtros"><input type="hidden" name="seccion" value="plazos" />
+        <div class="campo"><label for="ejercicio">Ejercicio</label><select id="ejercicio" name="ejercicio">@foreach (var e in Model.EjerciciosDisponibles) { <option value="@e" selected="@(Model.Ejercicio == e)">@e</option> }</select></div>
+        <button type="submit" class="boton">Ver</button>
+    </form>
+    <div class="panel"><div class="tabla-envoltorio"><table class="tabla tabla-compacta">
+        <thead><tr><th>Modelo</th><th>Periodo</th><th>Inicio</th><th>Límite domiciliación</th><th>Límite presentación</th><th>Confirmado</th><th>Fuente</th></tr></thead>
+        <tbody>
+        @foreach (var p in Model.Plazos)
+        {
+            <tr>
+                <td class="mono">@p.ModeloCodigo</td>
+                <td>@Periodo.Etiqueta(p.Ejercicio, p.Periodo)</td>
+                <td class="tabular">@p.FechaInicioPresentacion.ToString("dd/MM/yyyy")</td>
+                <td class="tabular">@(p.FechaLimiteDomiciliacion?.ToString("dd/MM/yyyy") ?? "—")</td>
+                <td class="tabular">@p.FechaLimitePresentacion.ToString("dd/MM/yyyy")</td>
+                <td>@if (p.Confirmado) { <span class="insignia insignia-ok">Sí</span> } else { <span class="insignia insignia-aviso">Sin confirmar</span> }</td>
+                <td class="texto-xs texto-3">@p.Fuente</td>
+            </tr>
+        }
+        </tbody></table></div></div>
+}
+else if (Model.Seccion == "modelos")
+{
+    <div class="panel"><div class="tabla-envoltorio"><table class="tabla">
+        <thead><tr><th>Código</th><th>Nombre</th><th>Periodicidad</th><th>Tipo</th><th>Organismo</th><th>Cómo se lo explicamos al cliente</th></tr></thead>
+        <tbody>
+        @foreach (var m in Model.Modelos)
+        {
+            <tr><td class="mono">@m.Codigo</td><td>@m.Nombre<br /><small>@m.Descripcion</small></td><td>@m.Periodicidad</td>
+                <td>@(m.EsInformativo ? "Informativo" : "Con ingreso") @if (m.EsResumenAnualDe is not null) { <small>(resumen del @m.EsResumenAnualDe)</small> }</td>
+                <td>@m.Organismo</td><td class="texto-sm">@m.DescripcionCliente</td></tr>
+        }
+        </tbody></table></div></div>
+}
+else
+{
+    <div class="panel"><div class="tabla-envoltorio"><table class="tabla tabla-compacta">
+        <thead><tr><th>Fecha</th><th>Ámbito</th><th>Descripción</th></tr></thead>
+        <tbody>@foreach (var d in Model.Festivos) { <tr><td class="tabular">@d.Fecha.ToString("dd/MM/yyyy") (@d.Fecha.ToString("ddd"))</td><td>@d.Ambito</td><td>@d.Descripcion</td></tr> }</tbody>
+    </table></div></div>
+}

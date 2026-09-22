@@ -1,0 +1,119 @@
+@page "{id:guid}"
+@model Aserta.Web.Pages.Clientes.FichaModel
+@{
+    var c = Model.Cliente;
+    ViewData["Titulo"] = c.NombreParaMostrar;
+    string Pest(string p) => Model.Pestana == p ? "page" : null!;
+}
+<div class="migas"><a asp-page="/Clientes/Index">Clientes</a> › @c.NombreParaMostrar</div>
+<div class="pagina-cabecera">
+    <div>
+        <h1>@c.NombreParaMostrar
+            @if (c.Estado == EstadoCliente.Baja) { <span class="insignia">Baja @c.FechaBaja?.ToString("dd/MM/yyyy")</span> }
+        </h1>
+        <p class="subtitulo"><span class="mono">@c.Nif</span> · @c.FormaJuridica · Asesor: @Model.NombreAsesor · Alta @c.FechaAlta.ToString("dd/MM/yyyy")</p>
+    </div>
+    <div class="acciones">
+        <a class="boton" asp-page="/Clientes/Editar" asp-route-id="@c.Id">@Icono.Editar Editar datos</a>
+        <a class="boton" asp-page="/Clientes/PerfilFiscal" asp-route-id="@c.Id">Nueva versión del perfil</a>
+        <form method="post" asp-page-handler="Regenerar" asp-route-id="@c.Id">
+            <button type="submit" class="boton" title="Reejecuta el motor de reglas (idempotente)">@Icono.Refrescar Recalcular obligaciones</button>
+        </form>
+    </div>
+</div>
+
+<div class="rejilla rejilla-4 mb-4">
+    <div class="panel kpi"><div class="kpi-valor">@Model.Abiertas</div><div class="kpi-etiqueta">Obligaciones abiertas</div></div>
+    <div class="panel kpi"><div class="kpi-valor">@Model.VencenEn30</div><div class="kpi-etiqueta">Vencen en 30 días</div></div>
+    <div class="panel kpi"><div class="kpi-valor">@Model.Vencidas</div><div class="kpi-etiqueta">Vencidas sin presentar</div></div>
+    <div class="panel kpi"><div class="kpi-valor">@Model.Cerradas</div><div class="kpi-etiqueta">Presentadas o cerradas</div></div>
+</div>
+
+<nav class="pestanas" aria-label="Secciones de la ficha">
+    <a asp-page="/Clientes/Ficha" asp-route-id="@c.Id" asp-route-pestana="resumen" aria-current="@Pest("resumen")">Resumen</a>
+    <a asp-page="/Clientes/Ficha" asp-route-id="@c.Id" asp-route-pestana="obligaciones" aria-current="@Pest("obligaciones")">Obligaciones <span class="insignia">@Model.Obligaciones.Count</span></a>
+    <a asp-page="/Clientes/Ficha" asp-route-id="@c.Id" asp-route-pestana="perfil" aria-current="@Pest("perfil")">Perfil fiscal <span class="insignia">@c.Perfiles.Count</span></a>
+    <a asp-page="/Clientes/Ficha" asp-route-id="@c.Id" asp-route-pestana="historial" aria-current="@Pest("historial")">Historial</a>
+</nav>
+
+@if (Model.Pestana == "resumen")
+{
+    <div class="rejilla rejilla-2">
+        <div class="panel">
+            <div class="panel-cabecera"><h2>Datos</h2></div>
+            <div class="panel-cuerpo">
+                <dl class="datos">
+                    <dt>Razón social</dt><dd>@c.RazonSocial</dd>
+                    <dt>Nombre comercial</dt><dd>@(c.NombreComercial ?? "—")</dd>
+                    <dt>NIF</dt><dd class="mono">@c.Nif</dd>
+                    <dt>Forma jurídica</dt><dd>@c.FormaJuridica</dd>
+                    <dt>Correo</dt><dd>@(c.Email ?? "—")</dd>
+                    <dt>Teléfono</dt><dd>@(c.Telefono ?? "—")</dd>
+                    <dt>Dirección</dt><dd>@string.Join(", ", new[] { c.DireccionCalle, c.DireccionCodigoPostal, c.DireccionMunicipio, c.DireccionProvincia }.Where(s => !string.IsNullOrWhiteSpace(s)))</dd>
+                    <dt>Asesor responsable</dt><dd>@Model.NombreAsesor</dd>
+                    <dt>Alta / baja</dt><dd>@c.FechaAlta.ToString("dd/MM/yyyy") @(c.FechaBaja is { } fb ? $"→ {fb:dd/MM/yyyy}" : "")</dd>
+                    <dt>Notas</dt><dd>@(c.Notas ?? "—")</dd>
+                </dl>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="panel-cabecera"><h2>Perfil fiscal vigente</h2><a class="texto-sm" asp-page="/Clientes/Ficha" asp-route-id="@c.Id" asp-route-pestana="perfil">Ver versiones</a></div>
+            <div class="panel-cuerpo">
+                @if (c.PerfilActual is { } p)
+                {
+                    <partial name="_PerfilResumen" model="p" />
+                }
+                else { <p class="vacio">Sin perfil fiscal.</p> }
+            </div>
+        </div>
+    </div>
+    <div class="panel mt-4">
+        <div class="panel-cabecera"><h2>Próximos vencimientos</h2><a class="texto-sm" asp-page="/Clientes/Ficha" asp-route-id="@c.Id" asp-route-pestana="obligaciones">Ver todas</a></div>
+        <partial name="_TablaObligaciones" model="Model.Proximas" view-data="@(new ViewDataDictionary(ViewData) { ["Hoy"] = Model.Hoy })" />
+    </div>
+}
+else if (Model.Pestana == "obligaciones")
+{
+    @foreach (var grupo in Model.Obligaciones.GroupBy(o => o.Ejercicio).OrderBy(g => g.Key))
+    {
+        <div class="panel mb-4">
+            <div class="panel-cabecera"><h2>Ejercicio @grupo.Key</h2><span class="texto-3 texto-sm">@grupo.Count(o => o.Estado != EstadoObligacion.NoAplica) obligaciones</span></div>
+            <partial name="_TablaObligaciones" model="grupo.OrderBy(o => Semaforo.FechaDeReferencia(o)).ThenBy(o => o.ModeloCodigo).ToList()" view-data="@(new ViewDataDictionary(ViewData) { ["Hoy"] = Model.Hoy })" />
+        </div>
+    }
+    @if (Model.Obligaciones.Count == 0) { <div class="panel"><p class="vacio">Este cliente no tiene obligaciones generadas. Compruebe el perfil fiscal o pulse «Recalcular obligaciones».</p></div> }
+}
+else if (Model.Pestana == "perfil")
+{
+    @foreach (var p in c.Perfiles.OrderByDescending(p => p.VigenteDesde))
+    {
+        <div class="panel mb-4">
+            <div class="panel-cabecera">
+                <h2>Desde @p.VigenteDesde.ToString("dd/MM/yyyy") @(p.VigenteHasta is { } h ? $"hasta {h:dd/MM/yyyy}" : "") </h2>
+                @if (p.VigenteHasta is null) { <span class="insignia insignia-ok">Vigente</span> } else { <span class="insignia">Histórico</span> }
+            </div>
+            <div class="panel-cuerpo"><partial name="_PerfilResumen" model="p" /></div>
+        </div>
+    }
+}
+else
+{
+    <div class="panel">
+        <div class="panel-cabecera"><h2>Auditoría del cliente</h2><span class="texto-3 texto-sm">Quién, qué, cuándo y desde dónde (RD-08)</span></div>
+        <div class="panel-cuerpo">
+            @if (Model.Auditoria.Count == 0) { <p class="vacio">Sin registros.</p> }
+            <ol class="linea-tiempo">
+                @foreach (var a in Model.Auditoria)
+                {
+                    <li>
+                        <time datetime="@a.FechaUtc.ToString("O")">@a.FechaUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</time>
+                        <strong>@a.Accion</strong> · @a.EntidadTipo
+                        <span class="autor">· @(Model.NombresUsuarios.GetValueOrDefault(a.UsuarioId ?? Guid.Empty, "sistema"))</span>
+                        @if (a.DireccionIp is not null) { <span class="texto-3">· @a.DireccionIp</span> }
+                        @if (a.Detalle is not null) { <details><summary class="texto-xs texto-3">detalle</summary><code class="texto-xs">@a.Detalle</code></details> }
+                    </li>
+                }
+            </ol>
+        </div>
+    </div>
+}

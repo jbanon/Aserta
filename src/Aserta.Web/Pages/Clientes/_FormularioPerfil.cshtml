@@ -1,0 +1,78 @@
+@model Aserta.Aplicacion.Clientes.DatosPerfilFiscal
+@{
+    var prefijo = ViewData["Prefijo"] as string ?? "Perfil";
+    string N(string campo) => $"{prefijo}.{campo}";
+    var perfil = Model;
+}
+<fieldset>
+    <legend>Régimen fiscal</legend>
+    <div class="campo-fila">
+        <div class="campo">
+            <label for="@N("VigenteDesde")">Vigente desde</label>
+            <input class="entrada" type="date" id="@N("VigenteDesde")" name="@N("VigenteDesde")" value="@(perfil.VigenteDesde == default ? "" : perfil.VigenteDesde.ToString("yyyy-MM-dd"))" required />
+            <span class="ayuda">Fecha desde la que se aplica esta versión del perfil.</span>
+            <span class="error">@Html.ValidationMessage(N("VigenteDesde"))</span>
+        </div>
+        <div class="campo">
+            <label for="@N("RegimenIrpf")">Régimen de IRPF</label>
+            <select id="@N("RegimenIrpf")" name="@N("RegimenIrpf")">
+                <option value="NoAplica" selected="@(perfil.RegimenIrpf == RegimenIrpf.NoAplica)">No aplica (sociedad / sin actividad)</option>
+                <option value="DirectaNormal" selected="@(perfil.RegimenIrpf == RegimenIrpf.DirectaNormal)">Estimación directa normal</option>
+                <option value="DirectaSimplificada" selected="@(perfil.RegimenIrpf == RegimenIrpf.DirectaSimplificada)">Estimación directa simplificada</option>
+                <option value="Objetiva" selected="@(perfil.RegimenIrpf == RegimenIrpf.Objetiva)">Estimación objetiva (módulos)</option>
+            </select>
+            <span class="ayuda">Determina 130 (directa) o 131 (módulos).</span>
+        </div>
+        <div class="campo">
+            <label for="@N("RegimenIva")">Régimen de IVA</label>
+            <select id="@N("RegimenIva")" name="@N("RegimenIva")">
+                <option value="General" selected="@(perfil.RegimenIva == RegimenIva.General)">General</option>
+                <option value="Simplificado" selected="@(perfil.RegimenIva == RegimenIva.Simplificado)">Simplificado</option>
+                <option value="CriterioCaja" selected="@(perfil.RegimenIva == RegimenIva.CriterioCaja)">Criterio de caja</option>
+                <option value="RecargoEquivalencia" selected="@(perfil.RegimenIva == RegimenIva.RecargoEquivalencia)">Recargo de equivalencia (no presenta 303)</option>
+                <option value="Exento" selected="@(perfil.RegimenIva == RegimenIva.Exento)">Exento</option>
+                <option value="NoAplica" selected="@(perfil.RegimenIva == RegimenIva.NoAplica)">No aplica</option>
+            </select>
+            <span class="error">@Html.ValidationMessage(N("RegimenIva"))</span>
+        </div>
+        <div class="campo">
+            <label for="@N("PeriodicidadIva")">Periodicidad del IVA</label>
+            <select id="@N("PeriodicidadIva")" name="@N("PeriodicidadIva")">
+                <option value="Trimestral" selected="@(perfil.PeriodicidadIva == PeriodicidadIva.Trimestral)">Trimestral</option>
+                <option value="Mensual" selected="@(perfil.PeriodicidadIva == PeriodicidadIva.Mensual)">Mensual (REDEME / SII)</option>
+                <option value="NoAplica" selected="@(perfil.PeriodicidadIva == PeriodicidadIva.NoAplica)">No aplica</option>
+            </select>
+            <span class="error">@Html.ValidationMessage(N("PeriodicidadIva"))</span>
+        </div>
+        <div class="campo">
+            <label for="@N("Territorio")">Territorio</label>
+            <select id="@N("Territorio")" name="@N("Territorio")">
+                <option value="Comun" selected="@(perfil.Territorio == Territorio.Comun)">Común (Península y Baleares)</option>
+                <option value="Foral" selected="@(perfil.Territorio == Territorio.Foral)">Foral (País Vasco / Navarra) — fuera de alcance</option>
+            </select>
+            <span class="error">@Html.ValidationMessage(N("Territorio"))</span>
+        </div>
+    </div>
+</fieldset>
+<fieldset>
+    <legend>Situaciones que añaden obligaciones</legend>
+    <div class="campo-fila">
+        <label class="interruptor"><input type="checkbox" name="@N("TieneEmpleados")" value="true" checked="@perfil.TieneEmpleados" /><span>Tiene empleados<small>Activa 111 trimestral y 190 anual</small></span></label>
+        <label class="interruptor"><input type="checkbox" name="@N("PagaProfesionalesConRetencion")" value="true" checked="@perfil.PagaProfesionalesConRetencion" /><span>Paga a profesionales con retención<small>Activa 111 y 190</small></span></label>
+        <label class="interruptor"><input type="checkbox" name="@N("AlquilaLocal")" value="true" checked="@perfil.AlquilaLocal" /><span>Alquila un local<small>Activa 115 trimestral y 180 anual</small></span></label>
+        <label class="interruptor"><input type="checkbox" name="@N("RepartePagosCapitalMobiliario")" value="true" checked="@perfil.RepartePagosCapitalMobiliario" /><span>Reparte dividendos o intereses<small>Activa 123 y 193</small></span></label>
+        <label class="interruptor"><input type="checkbox" name="@N("OperacionesIntracomunitarias")" value="true" checked="@perfil.OperacionesIntracomunitarias" /><span>Operaciones intracomunitarias<small>Activa 349</small></span></label>
+        <label class="interruptor"><input type="checkbox" name="@N("SuperaUmbral347")" value="true" checked="@perfil.SuperaUmbral347" /><span>Supera 3.005,06 € con algún tercero<small>Activa 347 en febrero</small></span></label>
+    </div>
+    <div class="campo-fila mt-3">
+        <div class="campo">
+            <label for="@N("CierreEjercicioMes")">Cierre del ejercicio (mes)</label>
+            <input class="entrada" type="number" min="1" max="12" id="@N("CierreEjercicioMes")" name="@N("CierreEjercicioMes")" value="@perfil.CierreEjercicioMes" />
+        </div>
+        <div class="campo">
+            <label for="@N("CierreEjercicioDia")">Cierre del ejercicio (día)</label>
+            <input class="entrada" type="number" min="1" max="31" id="@N("CierreEjercicioDia")" name="@N("CierreEjercicioDia")" value="@perfil.CierreEjercicioDia" />
+            <span class="ayuda">Normalmente 31 de diciembre. Desplaza el 200 y las cuentas anuales (pendiente en el catálogo).</span>
+        </div>
+    </div>
+</fieldset>

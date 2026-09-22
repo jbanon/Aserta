@@ -1,0 +1,73 @@
+@page "{id:guid}"
+@model Aserta.Web.Pages.Obligaciones.DetalleModel
+@{
+    var o = Model.Obligacion;
+    ViewData["Titulo"] = $"{o.ModeloCodigo} · {o.EtiquetaPeriodo}";
+}
+<div class="migas"><a asp-page="/Clientes/Index">Clientes</a> › <a asp-page="/Clientes/Ficha" asp-route-id="@o.ClienteId" asp-route-pestana="obligaciones">@Model.NombreCliente</a> › @o.Titulo</div>
+<div class="pagina-cabecera">
+    <div>
+        <h1><span class="mono">@o.ModeloCodigo</span> @o.EtiquetaPeriodo <span class="estado estado-@o.Estado">@o.Estado.Etiqueta()</span></h1>
+        <p class="subtitulo">@Model.NombreModelo · @Model.NombreCliente · Asesor: @Model.NombreAsesor</p>
+    </div>
+    <div class="acciones">
+        <partial name="_Semaforo" model="(o, Model.Hoy)" />
+    </div>
+</div>
+<partial name="_ResumenErrores" />
+<div class="rejilla rejilla-2">
+    <div class="panel">
+        <div class="panel-cabecera"><h2>Plazos y resultado</h2></div>
+        <div class="panel-cuerpo">
+            <dl class="datos">
+                <dt>Límite domiciliación</dt><dd class="tabular">@(o.FechaLimiteDomiciliacion?.ToString("dd/MM/yyyy") ?? "— (sin ingreso)")</dd>
+                <dt>Límite presentación</dt><dd class="tabular">@o.FechaLimitePresentacion.ToString("dd/MM/yyyy") @if (!Model.PlazoConfirmado) { <span class="sin-confirmar" title="Plazo cargado del patrón general, sin contrastar con el calendario de la AEAT">¿?</span> }</dd>
+                <dt>Borrador</dt><dd>@(o.ImporteResultado is { } imp ? $"{imp:N2} € a {o.SignoResultado?.ToString().ToLowerInvariant()}" : "—")</dd>
+                <dt>Aprobación del cliente</dt><dd>@(o.FechaAprobacionClienteUtc is { } ap ? ap.ToLocalTime().ToString("dd/MM/yyyy HH:mm") : "Pendiente")</dd>
+                <dt>Regla de origen</dt><dd>@(Model.ReglaOrigen ?? "—")</dd>
+                <dt>Generada</dt><dd>@o.FechaGeneracionUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
+            </dl>
+        </div>
+    </div>
+    <div class="panel">
+        <div class="panel-cabecera"><h2>Mover a…</h2><span class="texto-3 texto-xs">El servidor valida cada transición</span></div>
+        <div class="panel-cuerpo">
+            @if (Model.Destinos.Count == 0) { <p class="texto-3">Estado final: no hay transiciones posibles.</p> }
+            else
+            {
+                <form method="post" asp-page-handler="Mover" asp-route-id="@o.Id" class="columna">
+                    <div class="campo">
+                        <label for="destino">Nuevo estado</label>
+                        <select id="destino" name="destino">@foreach (var d in Model.Destinos) { <option value="@d">@d.Etiqueta()</option> }</select>
+                    </div>
+                    <div class="campo"><label for="comentario">Comentario (opcional)</label><input class="entrada" id="comentario" name="comentario" maxlength="500" /></div>
+                    <div><button type="submit" class="boton boton-primario">Mover</button></div>
+                </form>
+            }
+            @if (o.Estado == EstadoObligacion.PendienteAprobacionCliente && o.FechaAprobacionClienteUtc is null)
+            {
+                <form method="post" asp-page-handler="RegistrarAprobacion" asp-route-id="@o.Id" class="mt-4">
+                    <p class="texto-sm texto-2 mb-2">En la fase 3 el cliente aprobará desde el portal. Mientras tanto, el gestor puede registrar una conformidad recibida por otro canal:</p>
+                    <button type="submit" class="boton">Registrar aprobación del cliente</button>
+                </form>
+            }
+        </div>
+    </div>
+</div>
+<div class="panel mt-4">
+    <div class="panel-cabecera"><h2>@Icono.Historial Historial completo</h2></div>
+    <div class="panel-cuerpo">
+        <ol class="linea-tiempo">
+            @foreach (var h in o.Historial.OrderByDescending(h => h.FechaUtc).ThenByDescending(h => h.Id))
+            {
+                <li>
+                    <time datetime="@h.FechaUtc.ToString("O")">@h.FechaUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</time>
+                    <strong>@h.TipoEvento</strong>
+                    @if (h.EstadoAnterior is not null || h.EstadoNuevo is not null) { <span>· @(h.EstadoAnterior?.Etiqueta() ?? "—") → @(h.EstadoNuevo?.Etiqueta() ?? "—")</span> }
+                    <span class="autor">· @(h.UsuarioId is Guid u ? Model.NombresUsuarios.GetValueOrDefault(u, "—") : "motor de reglas")</span>
+                    @if (!string.IsNullOrEmpty(h.Comentario)) { <div class="texto-2">@h.Comentario</div> }
+                </li>
+            }
+        </ol>
+    </div>
+</div>

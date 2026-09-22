@@ -1,0 +1,22 @@
+@page
+@model Aserta.Web.Pages.Clientes.AltaModel
+@{
+    ViewData["Titulo"] = "Nuevo cliente";
+    ViewData["Asesores"] = Model.Asesores;
+    ViewData["EsAlta"] = true;
+    ViewData["Prefijo"] = "Perfil";
+}
+<div class="migas"><a asp-page="/Clientes/Index">Clientes</a> › Nuevo cliente</div>
+<div class="pagina-cabecera">
+    <div><h1>Nuevo cliente</h1><p class="subtitulo">Al guardar, el motor de reglas generará solo las obligaciones de 2026 y 2027 a partir del perfil fiscal.</p></div>
+</div>
+<form method="post" class="ancho-max-md">
+    <partial name="_ResumenErrores" />
+    <partial name="_FormularioDatos" model="Model.Datos" />
+    <h2 class="mt-5 mb-3">Perfil fiscal</h2>
+    <partial name="_FormularioPerfil" model="Model.Perfil" />
+    <div class="form-pie">
+        <a class="boton" asp-page="/Clientes/Index">Cancelar</a>
+        <button type="submit" class="boton boton-primario">Dar de alta y generar obligaciones</button>
+    </div>
+</form>

@@ -1,0 +1,16 @@
+@page "{id:guid}"
+@model Aserta.Web.Pages.Clientes.EditarModel
+@{
+    ViewData["Titulo"] = "Editar cliente";
+    ViewData["Asesores"] = Model.Asesores;
+}
+<div class="migas"><a asp-page="/Clientes/Index">Clientes</a> › <a asp-page="/Clientes/Ficha" asp-route-id="@Model.Id">@Model.Nombre</a> › Editar</div>
+<div class="pagina-cabecera"><div><h1>Editar datos del cliente</h1><p class="subtitulo">El perfil fiscal se cambia desde su propia pestaña, porque cada cambio crea una versión nueva.</p></div></div>
+<form method="post" class="ancho-max-md">
+    <partial name="_ResumenErrores" />
+    <partial name="_FormularioDatos" model="Model.Datos" />
+    <div class="form-pie">
+        <a class="boton" asp-page="/Clientes/Ficha" asp-route-id="@Model.Id">Cancelar</a>
+        <button type="submit" class="boton boton-primario">Guardar cambios</button>
+    </div>
+</form>

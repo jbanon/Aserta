@@ -1,0 +1,10 @@
+@page
+@model ErrorModel
+@{
+    ViewData["Titulo"] = "Error";
+}
+<div class="pagina-cabecera"><div><h1>@Model.Titulo</h1><p class="subtitulo">@Model.Mensaje</p></div></div>
+<div class="panel"><div class="panel-cuerpo">
+    @if (Model.Codigo is not null) { <p class="texto-3">Código @Model.Codigo</p> }
+    <p class="mt-3"><a class="boton" href="/">Volver al inicio</a></p>
+</div></div>

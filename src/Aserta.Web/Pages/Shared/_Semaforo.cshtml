@@ -1,0 +1,14 @@
+@model (Aserta.Dominio.Obligaciones.Obligacion Obligacion, DateOnly Hoy)
+@{
+    var color = Semaforo.Calcular(Model.Obligacion, Model.Hoy);
+    var dias = Semaforo.DiasRestantes(Model.Obligacion, Model.Hoy);
+    var clase = color.ToString().ToLowerInvariant();
+    string texto = color switch
+    {
+        ColorSemaforo.Gris => Model.Obligacion.Estado.Etiqueta(),
+        ColorSemaforo.Vencido => $"Vencida hace {-dias} d",
+        _ => dias == 0 ? "Vence hoy" : $"{dias} d"
+    };
+    var fecha = Semaforo.FechaDeReferencia(Model.Obligacion);
+}
+<span class="semaforo semaforo-@clase" title="Fecha de referencia: @fecha.ToString("dd/MM/yyyy") (@(Model.Obligacion.FechaLimiteDomiciliacion is null ? "presentación" : "domiciliación"))">@texto</span>

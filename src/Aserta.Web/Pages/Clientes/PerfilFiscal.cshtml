@@ -1,0 +1,20 @@
+@page "{id:guid}"
+@model Aserta.Web.Pages.Clientes.PerfilFiscalModel
+@{
+    ViewData["Titulo"] = "Nueva versión del perfil fiscal";
+    ViewData["Prefijo"] = "Perfil";
+}
+<div class="migas"><a asp-page="/Clientes/Index">Clientes</a> › <a asp-page="/Clientes/Ficha" asp-route-id="@Model.Id">@Model.Nombre</a> › Perfil fiscal</div>
+<div class="pagina-cabecera">
+    <div><h1>Nueva versión del perfil fiscal</h1>
+    <p class="subtitulo">El perfil se versiona en el tiempo: la versión vigente se cierra el día anterior y el motor recalcula las obligaciones de los periodos afectados (nunca toca las presentadas).</p></div>
+</div>
+<form method="post" class="ancho-max-md">
+    <partial name="_ResumenErrores" />
+    <div class="alerta alerta-info">@Icono.Aviso <div>Ejemplo: un autónomo que contrata a su primer empleado el 1 de julio marca <em>Tiene empleados</em> con vigencia 01/07: el 111 aparece desde el 3T, no desde enero.</div></div>
+    <partial name="_FormularioPerfil" model="Model.Perfil" />
+    <div class="form-pie">
+        <a class="boton" asp-page="/Clientes/Ficha" asp-route-id="@Model.Id" asp-route-pestana="perfil">Cancelar</a>
+        <button type="submit" class="boton boton-primario">Guardar versión y recalcular obligaciones</button>
+    </div>
+</form>
