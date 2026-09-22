@@ -4,6 +4,7 @@ using Aserta.Aplicacion.Puertos;
 using Aserta.Dominio.Clientes;
 using Aserta.Dominio.Comun;
 using Aserta.Dominio.Nucleo;
+using Aserta.Dominio.Obligaciones;
 using Aserta.Infraestructura.Identidad;
 using Aserta.Infraestructura.Persistencia;
 using Microsoft.AspNetCore.Identity;
@@ -41,11 +42,13 @@ public sealed class SembradorDemo
     private readonly ServicioClientes _clientes;
     private readonly ServicioGeneracionObligaciones _motor;
     private readonly IConfiguration _config;
+    private readonly IRelojSistema _reloj;
     private readonly ILogger<SembradorDemo> _log;
 
     public SembradorDemo(ContextoEjecucion contexto, AsertaDbContext db, RoleManager<RolIdentity> roles, UserManager<UsuarioIdentity> usuarios,
-        ServicioClientes clientes, ServicioGeneracionObligaciones motor, IConfiguration config, ILogger<SembradorDemo> log)
+        ServicioClientes clientes, ServicioGeneracionObligaciones motor, IConfiguration config, IRelojSistema reloj, ILogger<SembradorDemo> log)
     {
+        _reloj = reloj;
         _contexto = contexto;
         _db = db;
         _roles = roles;
@@ -167,6 +170,66 @@ public sealed class SembradorDemo
         var resultados = await _motor.GenerarParaTodosAsync([2026, 2027], ct);
         _log.LogInformation("Seed: motor de obligaciones ejecutado para {N} clientes; {Nuevas} obligaciones nuevas",
             resultados.Select(r => r.ClienteId).Distinct().Count(), resultados.Sum(r => r.Nuevas.Count));
+
+        await SimularHistoricoAsync(ct);
+    }
+
+    /// <summary>
+    /// Los datos de demo nacen "hoy": sin esto, todo lo anterior a la fecha actual
+    /// apareceria vencido. Se recorre la maquina de estados con fechas anteriores
+    /// al plazo para las obligaciones cuyo limite paso hace mas de 10 dias, dejando
+    /// dos vencidas a proposito (el semaforo rojo tambien hay que ensenarlo).
+    /// Solo la primera vez (si no hay ninguna cerrada todavia).
+    /// </summary>
+    private async Task SimularHistoricoAsync(CancellationToken ct)
+    {
+        const string marcador = "SeedHistoricoDemo";
+        if (await _db.EjecucionesProgramadas.AnyAsync(e => e.Tarea == marcador, ct)) return;
+        _db.EjecucionesProgramadas.Add(new EjecucionProgramada { Tarea = marcador, UltimaEjecucionUtc = _reloj.AhoraUtc, Estado = "Correcto" });
+
+        var hoy = _reloj.Hoy;
+        var pasadas = await _db.Obligaciones
+            .Where(o => o.Estado == EstadoObligacion.PendienteDocumentacion)
+            .ToListAsync(ct);
+        pasadas = pasadas.Where(o => Semaforo.FechaDeReferencia(o) < hoy.AddDays(-10)).OrderBy(Semaforo.FechaDeReferencia).ToList();
+        if (pasadas.Count == 0) { await _db.SaveChangesAsync(ct); return; }
+
+        var asesores = await _db.Usuarios.Where(u => u.ClienteId == null).Select(u => u.Id).ToListAsync(ct);
+        var clienteAdmin = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000101");
+        int i = 0, cerradas = 0;
+        foreach (var o in pasadas)
+        {
+            i++;
+            if (i % 23 == 0) continue; // unas pocas se quedan vencidas a proposito
+
+            var limite = Semaforo.FechaDeReferencia(o);
+            var t = limite.AddDays(-18).ToDateTime(new TimeOnly(9, 30), DateTimeKind.Utc);
+            var asesor = o.AsesorId ?? asesores[i % asesores.Count];
+            var pasos = new[] { EstadoObligacion.DocumentacionCompleta, EstadoObligacion.EnPreparacion, EstadoObligacion.RevisionInterna, EstadoObligacion.PendienteAprobacionCliente };
+            foreach (var paso in pasos)
+            {
+                t = t.AddDays(2).AddHours(i % 5);
+                o.CambiarEstado(paso, gestoriaExigeAprobacionCliente: true, asesor, t, paso == EstadoObligacion.DocumentacionCompleta ? "Documentación recibida por el portal." : null);
+            }
+            t = t.AddDays(1);
+            o.RegistrarAprobacionCliente(clienteAdmin, t);
+            t = t.AddHours(6);
+            o.CambiarEstado(EstadoObligacion.Presentado, true, asesor, t, "Presentado en la sede de la AEAT (justificante manual).");
+            // Un tercio se queda en Presentado (sin justificante archivado), el resto se cierra
+            if (i % 3 != 0)
+            {
+                t = t.AddDays(1);
+                o.CambiarEstado(EstadoObligacion.Cerrado, true, asesor, t, "Justificante archivado.");
+                cerradas++;
+            }
+            if (o.FechaLimiteDomiciliacion is not null)
+            {
+                o.ImporteResultado = Math.Round(150m + (i * 137 % 2400), 2);
+                o.SignoResultado = i % 7 == 0 ? SignoResultado.Devolver : SignoResultado.Ingresar;
+            }
+        }
+        await _db.SaveChangesAsync(ct);
+        _log.LogInformation("Seed: histórico simulado en {N} obligaciones pasadas ({C} cerradas)", pasadas.Count, cerradas);
     }
 
     private async Task AsegurarRolesAsync()

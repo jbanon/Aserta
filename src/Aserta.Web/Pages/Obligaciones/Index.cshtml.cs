@@ -1,5 +1,6 @@
 using Aserta.Aplicacion.Clientes;
 using Aserta.Aplicacion.Nucleo;
+using Aserta.Aplicacion.Obligaciones;
 using Aserta.Aplicacion.Puertos;
 using Aserta.Dominio.Nucleo;
 using Aserta.Dominio.Obligaciones;
@@ -14,13 +15,15 @@ public class IndexModel : PaginaBase
     private readonly IAsertaDb _db;
     private readonly ServicioClientes _clientes;
     private readonly ServicioUsuarios _usuarios;
+    private readonly ServicioObligaciones _obligaciones;
     private readonly IRelojSistema _reloj;
 
-    public IndexModel(IAsertaDb db, ServicioClientes clientes, ServicioUsuarios usuarios, IRelojSistema reloj)
+    public IndexModel(IAsertaDb db, ServicioClientes clientes, ServicioUsuarios usuarios, ServicioObligaciones obligaciones, IRelojSistema reloj)
     {
         _db = db;
         _clientes = clientes;
         _usuarios = usuarios;
+        _obligaciones = obligaciones;
         _reloj = reloj;
     }
 
@@ -28,6 +31,8 @@ public class IndexModel : PaginaBase
     [BindProperty(SupportsGet = true)] public string? Estado { get; set; }
     [BindProperty(SupportsGet = true)] public Guid? Asesor { get; set; }
     [BindProperty(SupportsGet = true)] public string? Modelo { get; set; }
+    [BindProperty(SupportsGet = true)] public DateOnly? Desde { get; set; }
+    [BindProperty(SupportsGet = true)] public DateOnly? Hasta { get; set; }
 
     public List<Obligacion> Filas { get; private set; } = [];
     public List<int> Ejercicios { get; private set; } = [];
@@ -54,5 +59,29 @@ public class IndexModel : PaginaBase
         if (!string.IsNullOrWhiteSpace(Modelo)) q = q.Where(o => o.ModeloCodigo == Modelo.Trim());
 
         Filas = (await q.ToListAsync()).OrderBy(Semaforo.FechaDeReferencia).ThenBy(o => o.ModeloCodigo).ToList();
+        if (Desde is DateOnly d1) Filas = Filas.Where(o => Semaforo.FechaDeReferencia(o) >= d1).ToList();
+        if (Hasta is DateOnly d2) Filas = Filas.Where(o => Semaforo.FechaDeReferencia(o) <= d2).ToList();
     }
+
+    /// <summary>Cambio de estado en lote desde la lista (ADR-003: la lista permite cambiar varias tarjetas a la vez).</summary>
+    public async Task<IActionResult> OnPostLoteAsync(List<Guid> ids, EstadoObligacion destino)
+    {
+        if (ids.Count == 0) { AvisoError = "Seleccione al menos una obligación."; return RedirectToPage(Ruta()); }
+        var errores = await _obligaciones.CambiarEstadoEnLoteAsync(ids, destino);
+        int ok = ids.Count - errores.Count;
+        if (ok > 0) AvisoOk = $"{ok} obligaciones movidas a «{destino.Etiqueta()}».";
+        if (errores.Count > 0) AvisoError = $"{errores.Count} no se han podido mover: " + string.Join(" · ", errores.Select(e => e.Error).Distinct().Take(3));
+        return RedirectToPage(Ruta());
+    }
+
+    /// <summary>Menu "Mover a…" de una fila (sin JavaScript: boton submit con formaction).</summary>
+    public async Task<IActionResult> OnPostMoverAsync(Guid id, EstadoObligacion destino)
+    {
+        var ok = await IntentarAsync(() => _obligaciones.CambiarEstadoAsync(id, destino));
+        if (ok) AvisoOk = $"Obligación movida a «{destino.Etiqueta()}».";
+        else AvisoError = string.Join(" ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+        return RedirectToPage(Ruta());
+    }
+
+    private object Ruta() => new { ejercicio = Ejercicio, estado = Estado, asesor = Asesor, modelo = Modelo };
 }

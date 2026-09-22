@@ -1,0 +1,30 @@
+@model Aserta.Aplicacion.Obligaciones.TarjetaObligacion
+@{
+    var o = Model.Obligacion;
+    var hoy = ViewData["Hoy"] is DateOnly h ? h : DateOnly.FromDateTime(DateTime.Today);
+    var nombres = ViewData["NombresUsuarios"] as IReadOnlyDictionary<Guid, string> ?? new Dictionary<Guid, string>();
+}
+<div class="dialogo-cabecera flex flex-entre">
+    <span id="dialogo-titulo"><span class="mono">@o.ModeloCodigo</span> @o.EtiquetaPeriodo · @Model.Cliente</span>
+    <button type="button" class="boton boton-sutil boton-pequeno" data-cerrar-dialogo aria-label="Cerrar">✕</button>
+</div>
+<div class="dialogo-cuerpo">
+    <div class="flex mb-3"><span class="estado estado-@o.Estado">@o.Estado.Etiqueta()</span><partial name="_Semaforo" model="(o, hoy)" /><span class="texto-sm texto-2">Asesor: @Model.Asesor</span></div>
+    <dl class="datos">
+        <dt>Domiciliación</dt><dd class="tabular">@(o.FechaLimiteDomiciliacion?.ToString("dd/MM/yyyy") ?? "—")</dd>
+        <dt>Presentación</dt><dd class="tabular">@o.FechaLimitePresentacion.ToString("dd/MM/yyyy") @if (!Model.PlazoConfirmado) { <span class="sin-confirmar" title="Plazo sin confirmar">¿?</span> }</dd>
+        <dt>Borrador</dt><dd>@(o.ImporteResultado is { } imp ? $"{imp:N2} € a {o.SignoResultado?.ToString().ToLowerInvariant()}" : "—")</dd>
+        <dt>Aprobación cliente</dt><dd>@(o.FechaAprobacionClienteUtc is { } ap ? ap.ToLocalTime().ToString("dd/MM/yyyy HH:mm") : "Pendiente")</dd>
+    </dl>
+    <h3 class="mt-4 mb-2">Historial</h3>
+    <ol class="linea-tiempo">
+        @foreach (var hi in o.Historial.OrderByDescending(x => x.FechaUtc).ThenByDescending(x => x.Id).Take(12))
+        {
+            <li><time>@hi.FechaUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</time><strong>@hi.TipoEvento</strong>
+                @if (hi.EstadoAnterior is not null || hi.EstadoNuevo is not null) { <span>· @(hi.EstadoAnterior?.Etiqueta() ?? "—") → @(hi.EstadoNuevo?.Etiqueta() ?? "—")</span> }
+                <span class="autor">· @(hi.UsuarioId is Guid u ? nombres.GetValueOrDefault(u, "—") : "motor de reglas")</span>
+                @if (!string.IsNullOrEmpty(hi.Comentario)) { <div class="texto-2">@hi.Comentario</div> }</li>
+        }
+    </ol>
+    <p class="mt-3"><a class="boton boton-pequeno" asp-page="/Obligaciones/Detalle" asp-route-id="@o.Id">Abrir ficha completa</a></p>
+</div>

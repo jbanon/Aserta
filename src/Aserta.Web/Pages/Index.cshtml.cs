@@ -14,6 +14,6 @@ public class IndexModel : PageModel
     {
         if (_usuario.TieneRol(Roles.ClienteAdmin) || _usuario.TieneRol(Roles.ClienteUsuario))
             return RedirectToPage("/Portal/Index");
-        return RedirectToPage("/Clientes/Index");
+        return RedirectToPage("/Obligaciones/Tablero");
     }
 }

@@ -1,0 +1,31 @@
+@model Aserta.Aplicacion.Obligaciones.TarjetaObligacion
+@{
+    var o = Model.Obligacion;
+    var hoy = ViewData["Hoy"] is DateOnly h ? h : DateOnly.FromDateTime(DateTime.Today);
+    var color = Semaforo.Calcular(o, hoy).ToString().ToLowerInvariant();
+    var destinos = MaquinaEstadosObligacion.DestinosDesde(o.Estado);
+}
+<li class="tarjeta semaforo-borde-@color" id="tarjeta-@o.Id" data-id="@o.Id" data-estado="@o.Estado" tabindex="0" aria-label="@o.Titulo, @Model.Cliente, @o.Estado.Etiqueta()">
+    <div class="tarjeta-cabecera">
+        <button type="button" class="tarjeta-titulo" data-detalle="@o.Id" hx-get="@Url.Page("/Obligaciones/Tablero", "Detalle", new { id = o.Id })" hx-target="#dialogo-contenido" hx-swap="innerHTML">
+            <span class="mono negrita">@o.ModeloCodigo</span> <span>@o.EtiquetaPeriodo</span>
+            @if (!Model.PlazoConfirmado) { <span class="sin-confirmar" title="Plazo sin confirmar con la AEAT">¿?</span> }
+        </button>
+        <div class="menu" data-menu>
+            <button type="button" class="boton boton-sutil boton-pequeno" data-menu-boton aria-haspopup="true" aria-expanded="false" aria-label="Mover @o.Titulo a otro estado">@Icono.Menu</button>
+            <ul class="menu-lista" data-menu-lista hidden role="menu">
+                @if (destinos.Count == 0) { <li><button type="button" role="menuitem" disabled>Estado final</button></li> }
+                @foreach (var d in destinos)
+                {
+                    <li><button type="button" role="menuitem" hx-post="@Url.Page("/Obligaciones/Tablero", "Mover")" hx-vals='{"id":"@o.Id","destino":"@d"}' hx-target="closest .tarjeta" hx-swap="outerHTML">Mover a @d.Etiqueta()</button></li>
+                }
+                <li><a role="menuitem" asp-page="/Obligaciones/Detalle" asp-route-id="@o.Id">Abrir ficha completa</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="tarjeta-cliente truncar" title="@Model.Cliente">@Model.Cliente</div>
+    <div class="tarjeta-pie">
+        <partial name="_Semaforo" model="(o, hoy)" />
+        <span class="avatar" title="@Model.Asesor" aria-label="Asesor: @Model.Asesor">@Model.IniciativasAsesor</span>
+    </div>
+</li>

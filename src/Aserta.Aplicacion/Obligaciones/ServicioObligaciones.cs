@@ -37,6 +37,39 @@ public sealed class ServicioObligaciones
         return obligacion;
     }
 
+    /// <summary>Movimiento desde el Kanban: transicion validada + posicion dentro de la columna destino.</summary>
+    public async Task<Obligacion> MoverAsync(Guid id, EstadoObligacion destino, int? orden, string? comentario = null, CancellationToken ct = default)
+    {
+        var obligacion = destino == (await ObtenerAsync(id, ct)).Estado
+            ? await ObtenerAsync(id, ct)
+            : await CambiarEstadoAsync(id, destino, comentario, ct);
+
+        if (orden.HasValue)
+        {
+            // Hueco para la tarjeta: las que estaban en esa posicion o despues se desplazan una.
+            var vecinas = await _db.Obligaciones
+                .Where(o => o.Id != id && o.Estado == destino && o.Ejercicio == obligacion.Ejercicio && o.OrdenEnColumna >= orden.Value)
+                .ToListAsync(ct);
+            foreach (var v in vecinas) v.OrdenEnColumna++;
+            obligacion.OrdenEnColumna = orden.Value;
+            await _db.GuardarCambiosAsync(ct);
+        }
+        return obligacion;
+    }
+
+    /// <summary>Cambio de estado en lote desde la vista de lista. Devuelve los errores por obligacion.</summary>
+    public async Task<IReadOnlyList<(Guid Id, string Error)>> CambiarEstadoEnLoteAsync(IReadOnlyCollection<Guid> ids, EstadoObligacion destino, CancellationToken ct = default)
+    {
+        var errores = new List<(Guid, string)>();
+        foreach (var id in ids)
+        {
+            try { await CambiarEstadoAsync(id, destino, "Cambio en lote", ct); }
+            catch (Dominio.Comun.ExcepcionDominio ex) { errores.Add((id, ex.Message)); }
+            catch (ExcepcionNoAutorizado ex) { errores.Add((id, ex.Message)); }
+        }
+        return errores;
+    }
+
     public async Task ReasignarAsync(Guid id, Guid? asesorId, CancellationToken ct = default)
     {
         var obligacion = await ObtenerAsync(id, ct);

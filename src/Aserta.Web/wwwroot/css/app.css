@@ -260,3 +260,62 @@
   .avisos-flotantes { position: fixed; right: var(--esp-4); bottom: var(--esp-4); display: flex; flex-direction: column; gap: var(--esp-2); z-index: 50; max-width: min(420px, 90vw); }
   .avisos-flotantes .alerta { margin: 0; box-shadow: var(--sombra-lg); }
 }
+
+/* ---- Kanban (M4) ------------------------------------------------------------------ */
+@layer componentes {
+  .kanban { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(230px, 1fr); gap: var(--esp-3); overflow-x: auto; padding-bottom: var(--esp-4); align-items: start; min-height: 60vh; }
+  .kanban-columna { background: var(--color-superficie-2); border: 1px solid var(--color-borde); border-radius: var(--radio-lg); display: flex; flex-direction: column; max-height: calc(100dvh - 240px); }
+  .kanban-cabecera { display: flex; align-items: center; justify-content: space-between; padding: var(--esp-2) var(--esp-3); border-bottom: 1px solid var(--color-borde); position: sticky; top: 0; background: var(--color-superficie-2); border-radius: var(--radio-lg) var(--radio-lg) 0 0; z-index: 1; }
+  .kanban-cabecera h2 { font-size: var(--tamano-sm); }
+  .kanban-contador { font-size: var(--tamano-xs); font-weight: var(--peso-negrita); background: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: 999px; padding: 1px 8px; }
+  .kanban-lista { list-style: none; padding: var(--esp-2); margin: 0; display: flex; flex-direction: column; gap: var(--esp-2); overflow-y: auto; min-height: 80px; flex: 1; }
+  .tarjeta { background: var(--color-superficie); border: 1px solid var(--color-borde); border-left: 4px solid var(--color-semaforo-gris); border-radius: var(--radio); padding: var(--esp-2) var(--esp-2) var(--esp-2) var(--esp-3); box-shadow: var(--sombra-sm); cursor: grab; transition: box-shadow var(--dur-rapida), transform var(--dur-rapida); }
+  .tarjeta:hover { box-shadow: var(--sombra); }
+  .tarjeta:focus-visible { box-shadow: var(--anillo-foco); outline: none; }
+  .tarjeta.semaforo-borde-verde { border-left-color: var(--color-semaforo-verde); }
+  .tarjeta.semaforo-borde-ambar { border-left-color: var(--color-semaforo-ambar); }
+  .tarjeta.semaforo-borde-rojo { border-left-color: var(--color-semaforo-rojo); }
+  .tarjeta.semaforo-borde-vencido { border-left-color: var(--color-semaforo-vencido); background: color-mix(in srgb, var(--color-error-suave) 40%, var(--color-superficie)); }
+  .tarjeta-fantasma { opacity: 0.4; }
+  .tarjeta-arrastrando { transform: rotate(1.5deg); cursor: grabbing; }
+  .tarjeta-rechazada { animation: sacudida 0.4s ease; border-color: var(--color-error); }
+  @keyframes sacudida { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+  .tarjeta-cabecera { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--esp-1); }
+  .tarjeta-titulo { text-align: left; font-size: var(--tamano-sm); color: var(--color-texto); padding: 0; display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
+  .tarjeta-titulo:hover { color: var(--color-marca-texto); text-decoration: underline; }
+  .tarjeta-cliente { font-size: var(--tamano-sm); color: var(--color-texto-2); margin: 2px 0 6px; }
+  .tarjeta-pie { display: flex; align-items: center; justify-content: space-between; }
+  .avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--color-marca-suave); color: var(--color-marca-texto); font-size: 10px; font-weight: var(--peso-negrita); display: inline-grid; place-items: center; letter-spacing: 0.02em; }
+  kbd { font-family: var(--fuente-mono); font-size: 0.8em; padding: 1px 5px; border: 1px solid var(--color-borde-fuerte); border-bottom-width: 2px; border-radius: 4px; background: var(--color-superficie-2); }
+  @media (prefers-reduced-motion: reduce) { .tarjeta, .tarjeta-rechazada { transition: none; animation: none; } }
+
+  /* ---- Calendario ---------------------------------------------------------------- */
+  .calendario { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 1px; background: var(--color-borde); border: 1px solid var(--color-borde); border-radius: var(--radio-lg); overflow: hidden; }
+  .calendario-dia-nombre { background: var(--color-superficie-2); padding: var(--esp-2); font-size: var(--tamano-xs); text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-texto-3); font-weight: var(--peso-medio); text-align: center; }
+  .calendario-dia { background: var(--color-superficie); min-height: 112px; padding: var(--esp-1) var(--esp-2); display: flex; flex-direction: column; gap: 3px; }
+  .calendario-dia.otro-mes { background: var(--color-superficie-2); color: var(--color-texto-3); }
+  .calendario-dia.inhabil .calendario-numero { color: var(--color-texto-3); }
+  .calendario-dia.hoy .calendario-numero { background: var(--color-marca); color: #fff; border-radius: 50%; width: 24px; height: 24px; display: inline-grid; place-items: center; }
+  .calendario-numero { font-size: var(--tamano-sm); font-weight: var(--peso-medio); }
+  .calendario-item { font-size: var(--tamano-xs); padding: 1px 6px; border-radius: 4px; background: var(--color-superficie-2); border-left: 3px solid var(--color-semaforo-gris); text-decoration: none; color: var(--color-texto); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .calendario-item:hover { background: var(--color-marca-suave); }
+  .calendario-item.semaforo-borde-verde { border-left-color: var(--color-semaforo-verde); }
+  .calendario-item.semaforo-borde-ambar { border-left-color: var(--color-semaforo-ambar); }
+  .calendario-item.semaforo-borde-rojo { border-left-color: var(--color-semaforo-rojo); }
+  .calendario-item.semaforo-borde-vencido { border-left-color: var(--color-semaforo-vencido); }
+  .calendario-item.gris { opacity: 0.6; }
+  .calendario-mas { font-size: var(--tamano-xs); color: var(--color-marca-texto); }
+  @media (max-width: 900px) { .calendario { grid-template-columns: 1fr; } .calendario-dia-nombre { display: none; } .calendario-dia.otro-mes { display: none; } .calendario-dia { min-height: 0; } }
+
+  /* ---- Carga por asesor -------------------------------------------------------------- */
+  progress.carga { width: 100%; height: 10px; border-radius: 999px; overflow: hidden; border: 0; background: var(--color-superficie-3); accent-color: var(--color-marca); }
+  progress.carga::-webkit-progress-bar { background: var(--color-superficie-3); border-radius: 999px; }
+  progress.carga::-webkit-progress-value { background: var(--color-marca); border-radius: 999px; }
+  progress.carga::-moz-progress-bar { background: var(--color-marca); border-radius: 999px; }
+  progress.carga.peligro::-webkit-progress-value, progress.carga.peligro::-moz-progress-bar { background: var(--color-semaforo-rojo); }
+
+  /* ---- Campana de avisos ---------------------------------------------------------------- */
+  .campana { position: relative; }
+  .campana-contador { position: absolute; top: -2px; right: -2px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: var(--color-error); color: #fff; font-size: 10px; font-weight: var(--peso-negrita); display: grid; place-items: center; }
+  .aviso-no-leido { font-weight: var(--peso-medio); }
+}

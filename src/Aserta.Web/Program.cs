@@ -73,6 +73,7 @@ builder.Services.AddRazorPages(o =>
     o.Conventions.AuthorizeFolder("/Obligaciones", Politicas.Gestoria);
     o.Conventions.AuthorizeFolder("/Catalogo", Politicas.Gestoria);
     o.Conventions.AuthorizeFolder("/Auditoria", Politicas.Gestoria);
+    o.Conventions.AuthorizeFolder("/Avisos", Politicas.Gestoria);
     o.Conventions.AuthorizeFolder("/Usuarios", Politicas.SocioDirector);
     o.Conventions.AuthorizeFolder("/Gestoria", Politicas.SocioDirector);
 }).AddMvcOptions(o =>

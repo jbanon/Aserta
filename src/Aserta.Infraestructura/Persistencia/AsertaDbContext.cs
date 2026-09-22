@@ -28,6 +28,7 @@ public sealed class AsertaDbContext : IdentityDbContext<UsuarioIdentity, RolIden
     public DbSet<Auditoria> Auditorias => Set<Auditoria>();
     public DbSet<EjecucionProgramada> EjecucionesProgramadas => Set<EjecucionProgramada>();
     public DbSet<MigracionAplicada> MigracionesAplicadas => Set<MigracionAplicada>();
+    public DbSet<Aviso> Avisos => Set<Aviso>();
 
     public DbSet<Cliente> Clientes => Set<Cliente>();
     public DbSet<PerfilFiscal> PerfilesFiscales => Set<PerfilFiscal>();
@@ -60,5 +61,6 @@ public sealed class AsertaDbContext : IdentityDbContext<UsuarioIdentity, RolIden
         mb.Entity<PerfilFiscal>().HasQueryFilter(p => Mantenimiento || p.GestoriaId == GestoriaActual);
         mb.Entity<Obligacion>().HasQueryFilter(o => Mantenimiento || o.GestoriaId == GestoriaActual);
         mb.Entity<ObligacionHistorial>().HasQueryFilter(h => Mantenimiento || h.GestoriaId == GestoriaActual);
+        mb.Entity<Aviso>().HasQueryFilter(a => Mantenimiento || a.GestoriaId == GestoriaActual);
     }
 }

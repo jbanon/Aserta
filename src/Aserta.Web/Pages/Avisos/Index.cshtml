@@ -1,0 +1,26 @@
+@page
+@model Aserta.Web.Pages.Avisos.IndexModel
+@{
+    ViewData["Titulo"] = "Avisos";
+}
+<div class="pagina-cabecera">
+    <div><h1>Avisos <span class="insignia">@Model.NoLeidos sin leer</span></h1><p class="subtitulo">Bandeja en pantalla del puerto de notificaciones (en producción: correo/SMS). Los avisos de vencimiento los genera una tarea diaria.</p></div>
+    <div class="acciones">
+        <form method="post" asp-page-handler="MarcarTodos"><button class="boton" @(Model.NoLeidos == 0 ? "disabled" : "")>Marcar todos como leídos</button></form>
+        @if (Model.PuedeGenerar) { <form method="post" asp-page-handler="Generar"><button class="boton boton-primario" title="Ejecuta ahora la tarea diaria de avisos de vencimiento para esta gestoría">Generar avisos de vencimiento ahora</button></form> }
+    </div>
+</div>
+<div class="panel"><div class="tabla-envoltorio"><table class="tabla">
+    <thead><tr><th>Fecha</th><th>Aviso</th><th>Tipo</th><th></th></tr></thead>
+    <tbody>
+    @if (Model.Filas.Count == 0) { <tr><td colspan="4" class="vacio">Sin avisos.</td></tr> }
+    @foreach (var a in Model.Filas)
+    {
+        <tr class="@(a.Leido ? "" : "aviso-no-leido")">
+            <td class="tabular nowrap">@a.FechaUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+            <td>@if (a.EntidadTipo == "Obligacion" && Guid.TryParse(a.EntidadId, out var oid)) { <a asp-page="/Obligaciones/Detalle" asp-route-id="@oid">@a.Titulo</a> } else { @a.Titulo }<br /><small>@a.Cuerpo</small></td>
+            <td><span class="insignia @(a.Tipo == TiposAviso.Vencida ? "insignia-error" : "insignia-aviso")">@a.Tipo</span></td>
+            <td class="texto-derecha">@if (!a.Leido) { <form method="post" asp-page-handler="Leer" asp-route-id="@a.Id"><button class="boton boton-pequeno">Leído</button></form> }</td>
+        </tr>
+    }
+    </tbody></table></div></div>

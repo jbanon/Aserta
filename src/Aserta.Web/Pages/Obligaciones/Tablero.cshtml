@@ -1,0 +1,45 @@
+@page
+@model Aserta.Web.Pages.Obligaciones.TableroModel
+@{
+    ViewData["Titulo"] = "Tablero";
+}
+<div class="pagina-cabecera">
+    <div><h1>Tablero de obligaciones <span class="insignia">@Model.Tarjetas.Count</span></h1>
+    <p class="subtitulo">Arrastre las tarjetas entre columnas o use el menú «Mover a…» (teclado: <kbd>Tab</kbd> hasta la tarjeta, <kbd>Enter</kbd> en el menú). El servidor valida cada transición.</p></div>
+    <div class="acciones">
+        <a class="boton" asp-page="/Obligaciones/Calendario" asp-route-asesor="@Model.Filtro.AsesorId">@Icono.Calendario Calendario</a>
+        <a class="boton" asp-page="/Obligaciones/Carga" asp-route-ejercicio="@Model.Filtro.Ejercicio">@Icono.Usuarios Carga por asesor</a>
+        <a class="boton" asp-page="/Obligaciones/Index" asp-route-ejercicio="@Model.Filtro.Ejercicio">Vista de lista</a>
+    </div>
+</div>
+<form method="get" class="filtros" id="filtros-tablero">
+    <div class="campo"><label for="ejercicio">Ejercicio</label><select id="ejercicio" name="ejercicio">@foreach (var e in Model.Ejercicios) { <option value="@e" selected="@(Model.Filtro.Ejercicio == e)">@e</option> }</select></div>
+    <div class="campo"><label for="asesorId">Asesor</label><select id="asesorId" name="asesorId"><option value="">Todos</option>@foreach (var a in Model.Asesores) { <option value="@a.Id" selected="@(Model.Filtro.AsesorId == a.Id)">@a.NombreCompleto</option> }</select></div>
+    <div class="campo"><label for="modelo">Modelo</label><input class="entrada" id="modelo" name="modelo" value="@Model.Filtro.Modelo" placeholder="303" size="6" /></div>
+    <div class="campo buscador"><label class="oculto-visualmente" for="texto">Cliente</label>@Icono.Buscar<input class="entrada" id="texto" name="texto" value="@Model.Filtro.Texto" placeholder="Cliente" /></div>
+    <label class="interruptor"><input type="checkbox" name="soloConIngreso" value="true" checked="@Model.Filtro.SoloConIngreso" /><span>Solo con ingreso</span></label>
+    <label class="interruptor"><input type="checkbox" name="ocultarCerradas" value="true" checked="@Model.OcultarCerradas" /><span>Ocultar cerradas</span></label>
+    <button type="submit" class="boton">Filtrar</button>
+</form>
+
+<div class="kanban" id="kanban" data-url-mover="@Url.Page("/Obligaciones/Tablero", "Mover")">
+    @foreach (var estado in EstadoObligacionExtensiones.ColumnasKanban)
+    {
+        var tarjetas = Model.Tarjetas.Where(t => t.Obligacion.Estado == estado).ToList();
+        <section class="kanban-columna estado-@estado" aria-labelledby="col-@estado">
+            <header class="kanban-cabecera">
+                <h2 id="col-@estado"><span class="estado estado-@estado">@estado.Etiqueta()</span></h2>
+                <span class="kanban-contador" data-contador="@estado">@tarjetas.Count</span>
+            </header>
+            <ol class="kanban-lista" data-columna="@estado" aria-label="Tarjetas en @estado.Etiqueta()">
+                @foreach (var t in tarjetas) { <partial name="_Tarjeta" model="t" view-data="@(new ViewDataDictionary(ViewData) { ["Hoy"] = Model.Hoy })" /> }
+            </ol>
+        </section>
+    }
+</div>
+
+<dialog id="dialogo-obligacion" aria-labelledby="dialogo-titulo">
+    <div id="dialogo-contenido"><div class="dialogo-cuerpo texto-3">Cargando…</div></div>
+</dialog>
+
+@section Scripts { <script src="~/js/kanban.js" asp-append-version="true"></script> }

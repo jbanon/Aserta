@@ -1,0 +1,43 @@
+@page
+@model Aserta.Web.Pages.Obligaciones.CalendarioModel
+@{
+    ViewData["Titulo"] = "Calendario fiscal";
+    var cultura = System.Globalization.CultureInfo.GetCultureInfo("es-ES");
+}
+<div class="pagina-cabecera">
+    <div><h1>Calendario fiscal</h1><p class="subtitulo">Cada obligación en su fecha de referencia (domiciliación si la tiene, presentación si no). Los días inhábiles aparecen atenuados.</p></div>
+    <div class="acciones">
+        <a class="boton" asp-page="/Obligaciones/Calendario" asp-route-mes="@Model.Anterior.ToString("yyyy-MM")" asp-route-asesor="@Model.Asesor" aria-label="Mes anterior">‹</a>
+        <span class="medio">@cultura.TextInfo.ToTitleCase(Model.Mes.ToString("MMMM yyyy", cultura))</span>
+        <a class="boton" asp-page="/Obligaciones/Calendario" asp-route-mes="@Model.Siguiente.ToString("yyyy-MM")" asp-route-asesor="@Model.Asesor" aria-label="Mes siguiente">›</a>
+        <a class="boton boton-sutil" asp-page="/Obligaciones/Calendario" asp-route-asesor="@Model.Asesor">Hoy</a>
+        <a class="boton" asp-page="/Obligaciones/Tablero">@Icono.Tablero Tablero</a>
+    </div>
+</div>
+<form method="get" class="filtros">
+    <input type="hidden" name="mes" value="@Model.Mes.ToString("yyyy-MM")" />
+    <div class="campo"><label for="asesor">Asesor</label><select id="asesor" name="asesor"><option value="">Todos</option>@foreach (var a in Model.Asesores) { <option value="@a.Id" selected="@(Model.Asesor == a.Id)">@a.NombreCompleto</option> }</select></div>
+    <button type="submit" class="boton">Filtrar</button>
+    <span class="texto-sm texto-2">@Model.Items.Count obligaciones este mes · @Model.Items.Count(i => !i.Obligacion.Estado.EsFinalOPresentado()) abiertas</span>
+</form>
+<div class="calendario" role="grid" aria-label="Calendario de @Model.Mes.ToString("MMMM yyyy", cultura)">
+    @foreach (var n in new[] { "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom" }) { <div class="calendario-dia-nombre" role="columnheader">@n</div> }
+    @foreach (var dia in Model.Dias)
+    {
+        var items = Model.PorDia.GetValueOrDefault(dia, []);
+        var clases = "calendario-dia" + (dia.Month != Model.Mes.Month ? " otro-mes" : "") + (dia == Model.Hoy ? " hoy" : "") + (Model.EsInhabil(dia) ? " inhabil" : "");
+        <div class="@clases" role="gridcell" aria-label="@dia.ToString("dddd d MMMM", cultura): @items.Count obligaciones">
+            <span class="calendario-numero" title="@(Model.NombreInhabil(dia) ?? "")">@dia.Day</span>
+            @foreach (var it in items.Take(4))
+            {
+                var color = Semaforo.Calcular(it.Obligacion, Model.Hoy).ToString().ToLowerInvariant();
+                <a class="calendario-item semaforo-borde-@color @(it.Obligacion.Estado.EsFinalOPresentado() ? "gris" : "")" asp-page="/Obligaciones/Detalle" asp-route-id="@it.Obligacion.Id" title="@it.Obligacion.Titulo · @it.Cliente · @it.Obligacion.Estado.Etiqueta()"><span class="mono">@it.Obligacion.ModeloCodigo</span> @it.Cliente</a>
+            }
+            @if (items.Count > 4) { <a class="calendario-mas" asp-page="/Obligaciones/Index" asp-route-ejercicio="@dia.Year" asp-route-estado="Todas" asp-route-desde="@dia.ToString("yyyy-MM-dd")" asp-route-hasta="@dia.ToString("yyyy-MM-dd")">+@(items.Count - 4) más</a> }
+        </div>
+    }
+</div>
+<div class="panel mt-4">
+    <div class="panel-cabecera"><h2>Próximos 30 días</h2></div>
+    <partial name="_TablaObligaciones" model="Model.Proximas.Select(p => p.Obligacion).ToList()" view-data="@(new ViewDataDictionary(ViewData) { ["Hoy"] = Model.Hoy, ["MostrarCliente"] = true, ["NombresClientes"] = Model.NombresClientes })" />
+</div>

@@ -16,6 +16,7 @@ public interface IAsertaDb
     DbSet<Usuario> Usuarios { get; }
     DbSet<Auditoria> Auditorias { get; }
     DbSet<EjecucionProgramada> EjecucionesProgramadas { get; }
+    DbSet<Aviso> Avisos { get; }
 
     DbSet<Cliente> Clientes { get; }
     DbSet<PerfilFiscal> PerfilesFiscales { get; }

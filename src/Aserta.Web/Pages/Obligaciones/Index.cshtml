@@ -21,6 +21,48 @@
     <div class="campo"><label for="modelo">Modelo</label><input class="entrada" id="modelo" name="modelo" value="@Model.Modelo" placeholder="303" /></div>
     <button type="submit" class="boton">Filtrar</button>
 </form>
+<partial name="_ResumenErrores" />
+<form method="post" asp-page-handler="Lote" asp-route-ejercicio="@Model.Ejercicio" asp-route-estado="@Model.Estado" asp-route-asesor="@Model.Asesor" asp-route-modelo="@Model.Modelo">
 <div class="panel">
-    <partial name="_TablaObligaciones" model="Model.Filas" view-data="@(new ViewDataDictionary(ViewData) { ["Hoy"] = Model.Hoy, ["MostrarCliente"] = true, ["NombresClientes"] = Model.NombresClientes, ["NombresAsesores"] = Model.NombresAsesores })" />
+    <div class="panel-cabecera">
+        <h2>@Model.Filas.Count obligaciones</h2>
+        <div class="flex">
+            <label for="destinoLote" class="texto-sm">Mover seleccionadas a</label>
+            <select id="destinoLote" name="destino">@foreach (var e in EstadoObligacionExtensiones.ColumnasKanban) { <option value="@e">@e.Etiqueta()</option> }</select>
+            <button type="submit" class="boton boton-pequeno">Aplicar</button>
+        </div>
+    </div>
+    <div class="tabla-envoltorio">
+        <table class="tabla tabla-compacta">
+            <thead><tr><th><span class="oculto-visualmente">Seleccionar</span></th><th>Modelo</th><th>Periodo</th><th>Cliente</th><th>Estado</th><th>Semáforo</th><th>Domiciliación</th><th>Presentación</th><th>Asesor</th><th><span class="oculto-visualmente">Acciones</span></th></tr></thead>
+            <tbody>
+            @if (Model.Filas.Count == 0) { <tr><td colspan="10" class="vacio">Sin obligaciones con este filtro.</td></tr> }
+            @foreach (var o in Model.Filas)
+            {
+                var destinos = MaquinaEstadosObligacion.DestinosDesde(o.Estado);
+                <tr>
+                    <td><input type="checkbox" name="ids" value="@o.Id" aria-label="Seleccionar @o.Titulo" /></td>
+                    <td><a asp-page="/Obligaciones/Detalle" asp-route-id="@o.Id" class="mono">@o.ModeloCodigo</a></td>
+                    <td>@o.EtiquetaPeriodo</td>
+                    <td>@(Model.NombresClientes.GetValueOrDefault(o.ClienteId) ?? "—")</td>
+                    <td><span class="estado estado-@o.Estado">@o.Estado.Etiqueta()</span></td>
+                    <td><partial name="_Semaforo" model="(o, Model.Hoy)" /></td>
+                    <td class="tabular">@(o.FechaLimiteDomiciliacion?.ToString("dd/MM/yyyy") ?? "—")</td>
+                    <td class="tabular">@o.FechaLimitePresentacion.ToString("dd/MM/yyyy")</td>
+                    <td>@(o.AsesorId is Guid a ? Model.NombresAsesores.GetValueOrDefault(a, "—") : "—")</td>
+                    <td class="texto-derecha">
+                        <div class="menu" data-menu>
+                            <button type="button" class="boton boton-sutil boton-pequeno" data-menu-boton aria-haspopup="true" aria-expanded="false" aria-label="Mover @o.Titulo">Mover a… @Icono.Menu</button>
+                            <ul class="menu-lista" data-menu-lista hidden role="menu">
+                                @if (destinos.Count == 0) { <li><button type="button" role="menuitem" disabled>Estado final</button></li> }
+                                @foreach (var d in destinos) { <li><button type="submit" role="menuitem" formaction="@Url.Page("/Obligaciones/Index", "Mover", new { id = o.Id, destino = d, ejercicio = Model.Ejercicio, estado = Model.Estado, asesor = Model.Asesor, modelo = Model.Modelo })">@d.Etiqueta()</button></li> }
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
 </div>
+</form>

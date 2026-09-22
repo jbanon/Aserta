@@ -24,3 +24,13 @@
 | D-15 | Design system: sin `08-ux-ui/design-system.md` he definido tokens propios y la fuente Inter (OFL). ¿Sustituir cuando exista el documento? | Sí; los componentes solo leen tokens. | Front | Abierta |
 | D-16 | `CLAUDE.md` dice "estructura pendiente de definir". ¿Lo actualizo yo con la estructura real de ADR-001? | No lo toco: es del arquitecto. | Documentación | Abierta |
 | D-17 | `git push origin master` falla: GitHub responde *"Invalid username or token"* con el token embebido en la URL del remoto (`origin`). ¿Token caducado, sin permiso `repo`, o el repositorio `jbanon/Aserta` no existe todavía (DA-15)? | Los commits quedan en `master` local (7 commits de la fase 1); reintentaré el push en cuanto el remoto funcione. | Despliegue automático, revisión del arquitecto | **Necesita acción del usuario** |
+
+## Fase 2
+
+| # | Duda | Supuesto aplicado | Afecta a | Estado |
+|---|---|---|---|---|
+| D-18 | ¿Quién recibe los avisos de vencimiento: el asesor responsable, el socio, o ambos? | **El asesor** de la obligación (o el primer usuario de gestoría activo si no tiene asesor). | Avisos, planificador | Abierta |
+| D-19 | El mapa de dominio §3.1 dice que las columnas del Kanban son "configurables". | Estados fijos (los de la máquina de estados); solo cambiaría el texto visible. No implementado. | Tablero | Abierta |
+| D-20 | El seed simula el histórico de las obligaciones pasadas (cerradas con historial completo y borrador). ¿Aceptable como dato de demo o prefiere el arquitecto que todo nazca pendiente? | Simulado, con 1 de cada 23 vencida a propósito. Marcador `SeedHistoricoDemo` en `EjecucionProgramada`. | Demo | Abierta |
+| D-21 | Tabla `dbo.Aviso` (script `0005`) no está en `04-modelo-datos.md`. | Añadida con RLS; columnas en el informe 05. | Modelo de datos | Abierta |
+| D-22 | Umbrales del semáforo: verde > 7 días, ámbar ≤ 7, rojo ≤ 3, vencido < 0 (sobre la fecha de domiciliación). No estaban especificados. | Constantes en `Semaforo` (`DiasAmbar`, `DiasRojo`). | Kanban, calendario, avisos | Abierta |

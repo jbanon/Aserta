@@ -18,6 +18,8 @@ public sealed class FabricaAplicacion : WebApplicationFactory<Program>
 {
     public static readonly Guid TenantA = Guid.Parse("7e57a000-0000-0000-0000-00000000000a");
     public static readonly Guid TenantB = Guid.Parse("7e57b000-0000-0000-0000-00000000000b");
+    public const string ContrasenaTecnico = "Pruebas-Aserta-2026!";
+    public static string EmailTecnico(Guid tenant) => $"tecnico-{tenant.ToString()[..8]}@pruebas.aserta.local";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -68,10 +70,9 @@ public sealed class FabricaAplicacion : WebApplicationFactory<Program>
 
         foreach (var (tenant, nif) in new[] { (TenantA, "A0000000J"), (TenantB, "A1111111H") })
         {
-            if (await db.Clientes.AnyAsync(c => c.GestoriaId == tenant && c.Nif == nif)) continue;
-            // Un asesor "tecnico" por tenant para satisfacer la FK: sin Identity, solo la fila de dbo.Usuario no es posible (FK a AspNetUsers),
-            // asi que se crea una identidad minima.
+            // Un usuario "tecnico" por tenant (identidad + dbo.Usuario + rol SocioDirector): asesor de la FK y sesion para los tests HTTP.
             var asesorId = await AsegurarUsuarioTecnicoAsync(scope.ServiceProvider, tenant);
+            if (await db.Clientes.AnyAsync(c => c.GestoriaId == tenant && c.Nif == nif)) continue;
             db.Clientes.Add(new Dominio.Clientes.Cliente
             {
                 Id = Guid.NewGuid(), GestoriaId = tenant, Nif = nif, RazonSocial = $"Cliente de {tenant.ToString()[..8]}",
@@ -84,15 +85,24 @@ public sealed class FabricaAplicacion : WebApplicationFactory<Program>
     private static async Task<Guid> AsegurarUsuarioTecnicoAsync(IServiceProvider sp, Guid tenant)
     {
         var db = sp.GetRequiredService<AsertaDbContext>();
-        var existente = await db.Usuarios.Where(u => u.GestoriaId == tenant && u.ClienteId == null).Select(u => (Guid?)u.Id).FirstOrDefaultAsync();
-        if (existente is Guid e) return e;
-
         var um = sp.GetRequiredService<Microsoft.AspNetCore.Identity.UserManager<Infraestructura.Identidad.UsuarioIdentity>>();
+        var rm = sp.GetRequiredService<Microsoft.AspNetCore.Identity.RoleManager<Infraestructura.Identidad.RolIdentity>>();
+        foreach (var rol in Dominio.Nucleo.Roles.Todos)
+            if (!await rm.RoleExistsAsync(rol)) await rm.CreateAsync(new Infraestructura.Identidad.RolIdentity(rol));
+
         var id = Guid.NewGuid();
-        var email = $"tecnico-{tenant.ToString()[..8]}@pruebas.aserta.local";
-        var r = await um.CreateAsync(new Infraestructura.Identidad.UsuarioIdentity { Id = id, UserName = email, Email = email, EmailConfirmed = true }, "Pruebas-Aserta-2026!");
-        if (!r.Succeeded) throw new InvalidOperationException(string.Join("; ", r.Errors.Select(x => x.Description)));
-        db.Usuarios.Add(new Dominio.Nucleo.Usuario { Id = id, GestoriaId = tenant, NombreCompleto = "Usuario técnico de pruebas" });
+        var email = EmailTecnico(tenant);
+        var identidad = await um.FindByEmailAsync(email);
+        if (identidad is null)
+        {
+            identidad = new Infraestructura.Identidad.UsuarioIdentity { Id = id, UserName = email, Email = email, EmailConfirmed = true };
+            var r = await um.CreateAsync(identidad, ContrasenaTecnico);
+            if (!r.Succeeded) throw new InvalidOperationException(string.Join("; ", r.Errors.Select(x => x.Description)));
+        }
+        else id = identidad.Id;
+        if (!await um.IsInRoleAsync(identidad, Dominio.Nucleo.Roles.SocioDirector)) await um.AddToRoleAsync(identidad, Dominio.Nucleo.Roles.SocioDirector);
+        if (!await db.Usuarios.AnyAsync(u => u.Id == id))
+            db.Usuarios.Add(new Dominio.Nucleo.Usuario { Id = id, GestoriaId = tenant, NombreCompleto = "Usuario técnico de pruebas" });
         await db.SaveChangesAsync();
         return id;
     }

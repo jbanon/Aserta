@@ -1,0 +1,34 @@
+@page
+@model Aserta.Web.Pages.Obligaciones.CargaModel
+@{
+    ViewData["Titulo"] = "Carga por asesor";
+    var maximo = Math.Max(1, Model.Filas.Count == 0 ? 1 : Model.Filas.Max(f => f.Abiertas));
+}
+<div class="pagina-cabecera">
+    <div><h1>Carga de trabajo por asesor · @Model.Ejercicio</h1><p class="subtitulo">Obligaciones abiertas por asesor y estado, con lo que vence esta semana y lo vencido. Base para repartir clientes.</p></div>
+    <div class="acciones">
+        <form method="get" class="flex"><label for="ejercicio" class="texto-sm">Ejercicio</label><select id="ejercicio" name="ejercicio">@foreach (var e in Model.Ejercicios) { <option value="@e" selected="@(Model.Ejercicio == e)">@e</option> }</select><button class="boton">Ver</button></form>
+        <a class="boton" asp-page="/Obligaciones/Tablero" asp-route-ejercicio="@Model.Ejercicio">@Icono.Tablero Tablero</a>
+    </div>
+</div>
+<div class="rejilla rejilla-4 mb-4">
+    <div class="panel kpi"><div class="kpi-valor">@Model.Filas.Sum(f => f.Abiertas)</div><div class="kpi-etiqueta">Obligaciones abiertas</div></div>
+    <div class="panel kpi"><div class="kpi-valor">@Model.Filas.Sum(f => f.VencenEn7)</div><div class="kpi-etiqueta">Vencen en 7 días</div></div>
+    <div class="panel kpi"><div class="kpi-valor">@Model.Filas.Sum(f => f.Vencidas)</div><div class="kpi-etiqueta">Vencidas</div></div>
+    <div class="panel kpi"><div class="kpi-valor">@Model.Filas.Count(f => f.AsesorId is not null)</div><div class="kpi-etiqueta">Asesores</div></div>
+</div>
+<div class="panel"><div class="tabla-envoltorio"><table class="tabla">
+    <thead><tr><th>Asesor</th><th class="num">Clientes</th><th>Carga (abiertas)</th>@foreach (var e in EstadoObligacionExtensiones.ColumnasKanban) { <th class="num" title="@e.Etiqueta()"><span class="estado estado-@e">@e.Etiqueta()</span></th> }<th class="num">Vencen 7 d</th><th class="num">Vencidas</th></tr></thead>
+    <tbody>
+    @foreach (var f in Model.Filas)
+    {
+        <tr>
+            <td>@if (f.AsesorId is Guid a) { <a asp-page="/Obligaciones/Tablero" asp-route-ejercicio="@Model.Ejercicio" asp-route-asesorId="@a">@f.Nombre</a> } else { <span class="texto-3">@f.Nombre</span> }</td>
+            <td class="num">@f.Clientes</td>
+            <td><div class="flex nowrap"><progress class="carga @(f.Vencidas > 0 ? "peligro" : "")" value="@f.Abiertas" max="@maximo" aria-label="@f.Abiertas abiertas"></progress><span class="tabular texto-sm">@f.Abiertas</span></div></td>
+            @foreach (var e in EstadoObligacionExtensiones.ColumnasKanban) { <td class="num tabular">@(f.PorEstado.GetValueOrDefault(e) == 0 ? "·" : f.PorEstado[e].ToString())</td> }
+            <td class="num tabular">@f.VencenEn7</td>
+            <td class="num tabular @(f.Vencidas > 0 ? "negrita" : "")">@f.Vencidas</td>
+        </tr>
+    }
+    </tbody></table></div></div>
