@@ -1,0 +1,31 @@
+# Unidad systemd de Aserta en el servidor de desarrollo.
+# Destino: /etc/systemd/system/aserta-dev.service   (requiere sudo; ver deploy/LEEME.md)
+# Kestrel escucha solo en 127.0.0.1:5110; nginx hace de proxy inverso (deploy/nginx-aserta-dev.conf).
+# La cadena de conexion viaja en /etc/aserta-dev.env (permisos 600), fuera del repositorio.
+
+[Unit]
+Description=Aserta (demo para gestorias) ASP.NET Core
+After=network.target docker.service
+
+[Service]
+WorkingDirectory=/home/dev/proyectos/Aserta/publicado
+ExecStart=/usr/bin/dotnet /home/dev/proyectos/Aserta/publicado/Aserta.Web.dll
+Restart=always
+RestartSec=10
+# El runner de migraciones corre al arrancar: margen para scripts lentos (ADR-001 §6)
+TimeoutStartSec=180
+KillSignal=SIGINT
+SyslogIdentifier=aserta-dev
+User=dev
+Environment=ASPNETCORE_ENVIRONMENT=Development
+Environment=ASPNETCORE_URLS=http://127.0.0.1:5110
+Environment=DOTNET_gcServer=0
+Environment=DataProtection__RutaClaves=/home/dev/proyectos/Aserta/claves-dataprotection
+Environment=Demo__Sembrar=true
+EnvironmentFile=/etc/aserta-dev.env
+# Presupuesto de memoria (12-infraestructura-despliegue.md §5): ~350 MB en reposo; Chromium se anade en la fase 4
+MemoryMax=700M
+MemoryHigh=550M
+
+[Install]
+WantedBy=multi-user.target
