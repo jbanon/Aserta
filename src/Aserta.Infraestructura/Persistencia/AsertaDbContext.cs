@@ -1,6 +1,8 @@
 using Aserta.Aplicacion.Puertos;
 using Aserta.Dominio.Catalogo;
 using Aserta.Dominio.Clientes;
+using Aserta.Dominio.Documental;
+using Aserta.Dominio.Mensajeria;
 using Aserta.Dominio.Nucleo;
 using Aserta.Dominio.Obligaciones;
 using Aserta.Infraestructura.Identidad;
@@ -42,6 +44,13 @@ public sealed class AsertaDbContext : IdentityDbContext<UsuarioIdentity, RolIden
     public DbSet<Obligacion> Obligaciones => Set<Obligacion>();
     public DbSet<ObligacionHistorial> ObligacionHistoriales => Set<ObligacionHistorial>();
 
+    public DbSet<Documento> Documentos => Set<Documento>();
+    public DbSet<DocumentoObligacion> DocumentosObligacion => Set<DocumentoObligacion>();
+    public DbSet<RequisitoPeriodo> RequisitosPeriodo => Set<RequisitoPeriodo>();
+    public DbSet<ReglaRequisito> ReglasRequisito => Set<ReglaRequisito>();
+    public DbSet<Hilo> Hilos => Set<Hilo>();
+    public DbSet<Mensaje> Mensajes => Set<Mensaje>();
+
     public Task<int> GuardarCambiosAsync(CancellationToken ct = default) => SaveChangesAsync(ct);
 
     // Se leen como parametros en cada consulta: cambiar el ambito cambia el filtro sin recompilar el modelo.
@@ -62,5 +71,10 @@ public sealed class AsertaDbContext : IdentityDbContext<UsuarioIdentity, RolIden
         mb.Entity<Obligacion>().HasQueryFilter(o => Mantenimiento || o.GestoriaId == GestoriaActual);
         mb.Entity<ObligacionHistorial>().HasQueryFilter(h => Mantenimiento || h.GestoriaId == GestoriaActual);
         mb.Entity<Aviso>().HasQueryFilter(a => Mantenimiento || a.GestoriaId == GestoriaActual);
+        mb.Entity<Documento>().HasQueryFilter(d => Mantenimiento || d.GestoriaId == GestoriaActual);
+        mb.Entity<DocumentoObligacion>().HasQueryFilter(d => Mantenimiento || d.GestoriaId == GestoriaActual);
+        mb.Entity<RequisitoPeriodo>().HasQueryFilter(r => Mantenimiento || r.GestoriaId == GestoriaActual);
+        mb.Entity<Hilo>().HasQueryFilter(h => Mantenimiento || h.GestoriaId == GestoriaActual);
+        mb.Entity<Mensaje>().HasQueryFilter(m => Mantenimiento || m.GestoriaId == GestoriaActual);
     }
 }

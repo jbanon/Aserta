@@ -1,0 +1,23 @@
+@page
+@model Aserta.Web.Pages.Documentos.IndexModel
+@{
+    ViewData["Titulo"] = "Bandeja documental";
+}
+<div class="pagina-cabecera">
+    <div><h1>Bandeja documental <span class="insignia">@Model.Filas.Count</span></h1>
+    <p class="subtitulo">Lo que suben los clientes desde el portal y lo que registra la gestoría. Ciclo: recibido → en revisión → validado | rechazado (con motivo).</p></div>
+    <div class="acciones"><a class="boton boton-primario" asp-page="/Documentos/Subir">@Icono.Mas Registrar documento</a></div>
+</div>
+<form method="get" class="filtros">
+    <div class="campo"><label for="estado">Estado</label><select id="estado" name="estado"><option value="">Pendientes de revisar</option>@foreach (var e in Enum.GetValues<EstadoDocumento>()) { <option value="@e" selected="@(Model.Estado == e.ToString())">@e.Etiqueta()</option> }<option value="Todos" selected="@(Model.Estado == "Todos")">Todos</option></select></div>
+    <div class="campo"><label for="clienteId">Cliente</label><select id="clienteId" name="clienteId"><option value="">Todos</option>@foreach (var c in Model.Clientes) { <option value="@c.Key" selected="@(Model.ClienteId == c.Key)">@c.Value</option> }</select></div>
+    <div class="campo"><label for="tipo">Tipo</label><select id="tipo" name="tipo"><option value="">Todos</option>@foreach (var t in Enum.GetValues<TipoDocumento>()) { <option value="@t" selected="@(Model.Tipo == t.ToString())">@t.Etiqueta()</option> }</select></div>
+    <button type="submit" class="boton">Filtrar</button>
+</form>
+<partial name="_ResumenErrores" />
+<div class="panel"><div class="tabla-envoltorio"><table class="tabla">
+    <thead><tr><th>Recibido</th><th>Cliente</th><th>Documento</th><th>Tipo · periodo</th><th>Estado</th><th>Datos sugeridos</th><th><span class="oculto-visualmente">Acciones</span></th></tr></thead>
+    <tbody>
+    @if (Model.Filas.Count == 0) { <tr><td colspan="7" class="vacio">Nada pendiente. Cuando un cliente suba algo desde el móvil aparecerá aquí.</td></tr> }
+    @foreach (var f in Model.Filas) { <partial name="_FilaDocumento" model="f" /> }
+    </tbody></table></div></div>

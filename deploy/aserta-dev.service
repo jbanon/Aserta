@@ -22,6 +22,7 @@ Environment=ASPNETCORE_URLS=http://127.0.0.1:5110
 Environment=DOTNET_gcServer=0
 Environment=DataProtection__RutaClaves=/home/dev/proyectos/Aserta/claves-dataprotection
 Environment=Demo__Sembrar=true
+Environment=Almacen__Ruta=/var/lib/aserta/documentos
 EnvironmentFile=/etc/aserta-dev.env
 # Presupuesto de memoria (12-infraestructura-despliegue.md §5): ~350 MB en reposo; Chromium se anade en la fase 4
 MemoryMax=700M

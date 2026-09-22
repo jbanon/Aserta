@@ -1,0 +1,72 @@
+@page "{id:guid}"
+@model Aserta.Web.Pages.Documentos.DetalleModel
+@{
+    var d = Model.Documento;
+    ViewData["Titulo"] = d.NombreOriginal;
+}
+<div class="migas"><a asp-page="/Documentos/Index">Bandeja documental</a> › @d.NombreOriginal</div>
+<div class="pagina-cabecera">
+    <div><h1>@d.Tipo.Etiqueta() <span class="insignia @(d.Estado switch { EstadoDocumento.Validado => "insignia-ok", EstadoDocumento.Rechazado => "insignia-error", EstadoDocumento.EnRevision => "insignia-info", _ => "" })">@d.Estado.Etiqueta()</span></h1>
+    <p class="subtitulo"><a asp-page="/Clientes/Ficha" asp-route-id="@d.ClienteId" asp-route-pestana="documentacion">@Model.Cliente</a> · @Periodo.Etiqueta(d.Ejercicio, d.Periodo) · subido por @Model.SubidoPor el @d.FechaSubidaUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</p></div>
+    <div class="acciones">
+        <a class="boton" href="@Url.Page("/Documentos/Contenido", new { id = d.Id, descargar = true })">Descargar</a>
+        @if (d.Estado is EstadoDocumento.Recibido or EstadoDocumento.EnRevision)
+        {
+            @if (d.Estado == EstadoDocumento.Recibido) { <form method="post" asp-page-handler="EnRevision"><button class="boton">Marcar en revisión</button></form> }
+            <form method="post" asp-page-handler="Validar"><button class="boton boton-primario">Validar</button></form>
+        }
+    </div>
+</div>
+<partial name="_ResumenErrores" />
+<div class="rejilla rejilla-2">
+    <div class="panel">
+        <div class="panel-cabecera"><h2>Documento</h2><small>@d.TipoMime · @(d.TamanoBytes / 1024) KB · SHA-256 <span class="mono">@d.HashSha256[..12]…</span></small></div>
+        <div class="panel-cuerpo">
+            @if (d.EsImagen) { <img class="vista-previa" src="@Url.Page("/Documentos/Contenido", new { id = d.Id })" alt="Vista previa de @d.NombreOriginal" /> }
+            else if (d.EsPdf) { <iframe class="vista-previa-pdf" src="@Url.Page("/Documentos/Contenido", new { id = d.Id })" title="Vista previa PDF"></iframe> }
+            else { <p class="texto-2">Sin vista previa para este tipo.</p> }
+            @if (d.MotivoRechazo is not null) { <div class="alerta alerta-error mt-3">@Icono.Aviso <div><strong>Rechazado:</strong> @d.MotivoRechazo</div></div> }
+            @if (d.Notas is not null) { <p class="texto-sm mt-3"><strong>Notas:</strong> @d.Notas</p> }
+        </div>
+    </div>
+    <div class="columna">
+        <div class="panel">
+            <div class="panel-cabecera"><h2>Datos sugeridos</h2><span class="insignia insignia-aviso">@(d.OrigenExtraccion ?? "sin extracción")</span></div>
+            <div class="panel-cuerpo">
+                @if (Model.Extraidos.Count == 0) { <p class="texto-3 texto-sm">Este tipo de documento no pasa por extracción.</p> }
+                else
+                {
+                    <p class="texto-xs texto-3 mb-2">Sugerido por el adaptador de OCR/IA (simulado en la demo). Nunca es autoritativo: lo confirma el gestor.</p>
+                    <dl class="datos">@foreach (var kv in Model.Extraidos) { <dt>@kv.Key</dt><dd>@kv.Value</dd> }</dl>
+                }
+            </div>
+        </div>
+        <div class="panel">
+            <div class="panel-cabecera"><h2>Obligaciones vinculadas</h2></div>
+            <div class="panel-cuerpo">
+                @if (Model.Vinculadas.Count == 0) { <p class="texto-3 texto-sm">Ninguna todavía.</p> }
+                <ul>@foreach (var o in Model.Vinculadas) { <li><a asp-page="/Obligaciones/Detalle" asp-route-id="@o.Id"><span class="mono">@o.ModeloCodigo</span> @o.EtiquetaPeriodo</a> <span class="estado estado-@o.Estado">@o.Estado.Etiqueta()</span></li> }</ul>
+                @if (Model.Vinculables.Count > 0)
+                {
+                    <form method="post" asp-page-handler="Vincular" class="flex mt-3">
+                        <select name="obligacionId" aria-label="Obligación a vincular">@foreach (var o in Model.Vinculables) { <option value="@o.Id">@o.ModeloCodigo · @o.EtiquetaPeriodo</option> }</select>
+                        <button class="boton boton-pequeno">Vincular</button>
+                    </form>
+                }
+            </div>
+        </div>
+        @if (d.Estado is EstadoDocumento.Recibido or EstadoDocumento.EnRevision)
+        {
+            <div class="panel"><div class="panel-cabecera"><h2>Rechazar</h2></div><div class="panel-cuerpo">
+                <form method="post" asp-page-handler="Rechazar" class="columna">
+                    <div class="campo"><label for="motivo">Motivo (lo verá el cliente en el portal)</label><input class="entrada" id="motivo" name="motivo" required /></div>
+                    <div><button class="boton boton-peligro">Rechazar documento</button></div>
+                </form>
+            </div></div>
+        }
+    </div>
+</div>
+<div class="panel mt-4">
+    <div class="panel-cabecera"><h2>Mensajes sobre este documento</h2><a class="boton boton-pequeno" asp-page="/Mensajes/Nuevo" asp-route-documentoId="@d.Id">Nuevo hilo</a></div>
+    <div class="panel-cuerpo"><partial name="_ListaHilos" model="Model.Hilos" /></div>
+</div>

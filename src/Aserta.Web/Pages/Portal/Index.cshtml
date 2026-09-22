@@ -1,6 +1,54 @@
 @page
 @model Aserta.Web.Pages.Portal.IndexModel
 @{
-    ViewData["Titulo"] = "Portal del cliente";
+    Layout = "_LayoutPortal";
+    ViewData["Titulo"] = "Inicio";
+    var r = Model.Resumen;
 }
-<div class="pagina-cabecera"><div><h1>Portal del cliente</h1><p class="subtitulo">Disponible en la fase 3 (portal móvil y gestión documental).</p></div></div>
+<h1 class="portal-saludo">Hola, @Model.Nombre</h1>
+@if (r.TotalFaltantes == 0)
+{
+    <div class="portal-hero portal-hero-ok">@Icono.Ok<div><strong>Estás al día.</strong> No te falta ningún documento.</div></div>
+}
+else
+{
+    <div class="portal-hero">@Icono.Aviso<div><strong>Te falta@(r.TotalFaltantes == 1 ? "" : "n") @r.TotalFaltantes documento@(r.TotalFaltantes == 1 ? "" : "s")</strong> para que tu gestoría pueda preparar tus impuestos.</div></div>
+    <ul class="portal-lista">
+        @foreach (var p in r.Pendientes.Take(6))
+        {
+            <li>
+                <div><strong>@p.Frase</strong><br /><small class="texto-3">@p.Requisito.Descripcion · recibidos @p.Recibidos de @p.Esperados</small></div>
+                <a class="boton boton-primario boton-pequeno" asp-page="/Portal/Documentos" asp-route-tipo="@p.Requisito.TipoDocumento" asp-route-ejercicio="@p.Requisito.Ejercicio" asp-route-periodo="@p.Requisito.Periodo">Subir</a>
+            </li>
+        }
+    </ul>
+    @if (r.Pendientes.Count > 6) { <p class="texto-sm"><a asp-page="/Portal/Documentos">Ver todo lo pendiente (@r.Pendientes.Count)</a></p> }
+}
+
+@if (r.PendientesAprobacion.Count > 0)
+{
+    <h2 class="portal-seccion">Impuestos que esperan tu aprobación</h2>
+    <ul class="portal-lista">
+        @foreach (var o in r.PendientesAprobacion)
+        {
+            <li>
+                <div><strong>@Model.NombreModelo(o.ModeloCodigo) · @o.EtiquetaPeriodo</strong><br />
+                    <small class="texto-2">@(o.ImporteResultado is { } imp ? $"{imp:N2} € a {o.SignoResultado?.ToString().ToLowerInvariant()}" : "importe pendiente") · límite @Semaforo.FechaDeReferencia(o).ToString("dd/MM")</small></div>
+                <a class="boton boton-primario boton-pequeno" asp-page="/Portal/Impuesto" asp-route-id="@o.Id">Revisar</a>
+            </li>
+        }
+    </ul>
+}
+
+@if (r.DocumentosRechazados > 0) { <div class="alerta alerta-aviso mt-3">@Icono.Aviso<div><strong>@r.DocumentosRechazados documento@(r.DocumentosRechazados == 1 ? "" : "s") rechazado@(r.DocumentosRechazados == 1 ? "" : "s").</strong> <a asp-page="/Portal/Documentos" asp-route-estado="Rechazado">Ver el motivo y volver a subir</a>.</div></div> }
+@if (r.MensajesSinLeer > 0) { <div class="alerta alerta-info">@Icono.Historial<div><strong>@r.MensajesSinLeer mensaje@(r.MensajesSinLeer == 1 ? "" : "s") de tu gestoría</strong> sin leer. <a asp-page="/Portal/Mensajes">Leer</a>.</div></div> }
+
+<h2 class="portal-seccion">Próximos impuestos</h2>
+<ul class="portal-lista portal-lista-compacta">
+    @if (r.Proximas.Count == 0) { <li class="texto-3">Nada a la vista.</li> }
+    @foreach (var o in r.Proximas)
+    {
+        <li><div><strong>@Model.NombreModelo(o.ModeloCodigo)</strong> <small class="texto-3">@o.EtiquetaPeriodo</small><br /><small class="texto-2">@Aserta.Web.Pages.Portal.IndexModel.EstadoLlano(o.Estado) · límite @Semaforo.FechaDeReferencia(o).ToString("dd/MM/yyyy")</small></div><partial name="_Semaforo" model="(o, Model.Hoy)" /></li>
+    }
+</ul>
+<p class="texto-xs texto-3 mt-4">Datos de demostración. Tu gestoría: @Model.NombreGestoria.</p>

@@ -1,9 +1,12 @@
 using Aserta.Aplicacion.Clientes;
+using Aserta.Aplicacion.Documental;
+using Aserta.Dominio.Documental;
 using Aserta.Aplicacion.Obligaciones;
 using Aserta.Aplicacion.Puertos;
 using Aserta.Dominio.Clientes;
 using Aserta.Dominio.Nucleo;
 using Aserta.Dominio.Obligaciones;
+using Aserta.Dominio.Catalogo;
 using Aserta.Web.Infraestructura;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,13 +19,34 @@ public class FichaModel : PaginaBase
     private readonly ServicioGeneracionObligaciones _motor;
     private readonly IAsertaDb _db;
     private readonly IRelojSistema _reloj;
+    private readonly ServicioRequisitos _requisitos;
 
-    public FichaModel(ServicioClientes clientes, ServicioGeneracionObligaciones motor, IAsertaDb db, IRelojSistema reloj)
+    public FichaModel(ServicioClientes clientes, ServicioGeneracionObligaciones motor, IAsertaDb db, IRelojSistema reloj, ServicioRequisitos requisitos)
     {
         _clientes = clientes;
         _motor = motor;
         _db = db;
         _reloj = reloj;
+        _requisitos = requisitos;
+    }
+
+    public List<EstadoRequisito> Requisitos { get; private set; } = [];
+    public List<Documento> Documentos { get; private set; } = [];
+    public int Faltantes { get; private set; }
+
+    public async Task<IActionResult> OnPostAjustarRequisitoAsync(Guid requisitoId, int? cantidad, bool obligatorio, bool noAplica)
+    {
+        var ok = await IntentarAsync(() => _requisitos.AjustarAsync(requisitoId, cantidad, obligatorio, noAplica));
+        if (ok) AvisoOk = "Requisito ajustado.";
+        return RedirectToPage(new { id = Id, pestana = "documentacion" });
+    }
+
+    public async Task<IActionResult> OnPostAnadirRequisitoAsync(int ejercicio, string periodo, TipoDocumento tipo, int? cantidad, string? descripcion)
+    {
+        var ok = await IntentarAsync(() => _requisitos.AnadirAsync(Id, ejercicio, periodo, tipo, cantidad, descripcion ?? ""));
+        if (ok) AvisoOk = "Requisito añadido.";
+        else AvisoError = string.Join(" ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+        return RedirectToPage(new { id = Id, pestana = "documentacion" });
     }
 
     [BindProperty(SupportsGet = true)] public Guid Id { get; set; }
@@ -42,7 +66,7 @@ public class FichaModel : PaginaBase
 
     public async Task<IActionResult> OnGetAsync()
     {
-        if (Pestana is not ("resumen" or "obligaciones" or "perfil" or "historial")) Pestana = "resumen";
+        if (Pestana is not ("resumen" or "obligaciones" or "perfil" or "historial" or "documentacion")) Pestana = "resumen";
         Cliente = await _clientes.ObtenerAsync(Id);
         NombresUsuarios = await _db.Usuarios.AsNoTracking().ToDictionaryAsync(u => u.Id, u => u.NombreCompleto);
         NombreAsesor = NombresUsuarios.GetValueOrDefault(Cliente.AsesorResponsableId, "—");
@@ -55,6 +79,10 @@ public class FichaModel : PaginaBase
         Cerradas = Obligaciones.Count(o => o.Estado is EstadoObligacion.Presentado or EstadoObligacion.Cerrado);
         Proximas = abiertas.OrderBy(Semaforo.FechaDeReferencia).Take(8).ToList();
 
+        Requisitos = await _requisitos.EstadoAsync(Id);
+        Faltantes = CompletitudDocumental.TotalFaltantes(Requisitos.Where(r => Periodo.Rango(r.Requisito.Ejercicio, r.Requisito.Periodo).Inicio >= Hoy.AddMonths(-12)).ToList());
+        if (Pestana == "documentacion")
+            Documentos = await _db.Documentos.AsNoTracking().Where(d => d.ClienteId == Id).OrderByDescending(d => d.FechaSubidaUtc).Take(100).ToListAsync();
         if (Pestana == "historial")
             Auditoria = await _db.Auditorias.AsNoTracking()
                 .Where(a => (a.EntidadTipo == nameof(Cliente) && a.EntidadId == Id.ToString()) ||

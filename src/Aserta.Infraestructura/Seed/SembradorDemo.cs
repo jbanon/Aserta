@@ -41,14 +41,16 @@ public sealed class SembradorDemo
     private readonly UserManager<UsuarioIdentity> _usuarios;
     private readonly ServicioClientes _clientes;
     private readonly ServicioGeneracionObligaciones _motor;
+    private readonly Aplicacion.Documental.ServicioDocumentos _documentos;
     private readonly IConfiguration _config;
     private readonly IRelojSistema _reloj;
     private readonly ILogger<SembradorDemo> _log;
 
     public SembradorDemo(ContextoEjecucion contexto, AsertaDbContext db, RoleManager<RolIdentity> roles, UserManager<UsuarioIdentity> usuarios,
-        ServicioClientes clientes, ServicioGeneracionObligaciones motor, IConfiguration config, IRelojSistema reloj, ILogger<SembradorDemo> log)
+        ServicioClientes clientes, ServicioGeneracionObligaciones motor, Aplicacion.Documental.ServicioDocumentos documentos, IConfiguration config, IRelojSistema reloj, ILogger<SembradorDemo> log)
     {
         _reloj = reloj;
+        _documentos = documentos;
         _contexto = contexto;
         _db = db;
         _roles = roles;
@@ -172,6 +174,124 @@ public sealed class SembradorDemo
             resultados.Select(r => r.ClienteId).Distinct().Count(), resultados.Sum(r => r.Nuevas.Count));
 
         await SimularHistoricoAsync(ct);
+        await SembrarDocumentalAsync(panaderia, ct);
+    }
+
+    /// <summary>
+    /// Escenario documental de la demo (criterios 3 y 4): la panaderia tiene 6 de
+    /// las 8 facturas de julio (=> "te faltan 2 facturas de julio"), extractos y
+    /// nominas, un documento pendiente de revisar, un 303 esperando su aprobacion
+    /// con importe, y un hilo abierto. Ficheros PDF ficticios generados aqui mismo.
+    /// </summary>
+    private async Task SembrarDocumentalAsync(Guid panaderiaId, CancellationToken ct)
+    {
+        const string marcador = "SeedDocumentalDemo";
+        if (await _db.EjecucionesProgramadas.AnyAsync(e => e.Tarea == marcador, ct)) return;
+        _db.EjecucionesProgramadas.Add(new EjecucionProgramada { Tarea = marcador, UltimaEjecucionUtc = _reloj.AhoraUtc, Estado = "Correcto" });
+        await _db.SaveChangesAsync(ct);
+
+        var hoy = _reloj.Hoy;
+        int ejercicio = hoy.Year;
+        var mesRef = hoy.AddMonths(-2);   // un mes de un trimestre ya cerrado
+        string periodoMes = mesRef.Month.ToString("00");
+        var clienteAdmin = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000101");
+
+        // 1. Requisito de facturas recibidas de ese mes: se esperan 8
+        var req = await _db.RequisitosPeriodo.FirstOrDefaultAsync(r => r.ClienteId == panaderiaId && r.Ejercicio == ejercicio && r.Periodo == periodoMes && r.TipoDocumento == Dominio.Documental.TipoDocumento.FacturaRecibida, ct);
+        if (req is not null) { req.CantidadEsperada = 8; req.ReglaOrigenId = null; await _db.SaveChangesAsync(ct); }
+
+        // 2. Documentos: actuamos como el usuario del cliente (sube desde el portal).
+        //    Todos los meses ya cerrados quedan cubiertos salvo el mes de referencia, al que le faltan 2 facturas.
+        _contexto.EstablecerUsuario(clienteAdmin, GestoriaDemoId, panaderiaId, "Luis López Herrero", [Roles.ClienteAdmin], "127.0.0.1", "SembradorDemo");
+        var docs = new List<Dominio.Documental.Documento>();
+        Dominio.Documental.Documento? pendienteDeRevisar = null;
+        var mesesCerrados = await _db.RequisitosPeriodo.AsNoTracking()
+            .Where(r => r.ClienteId == panaderiaId && r.Ejercicio == ejercicio && r.Periodo.CompareTo("12") <= 0 && r.Periodo != "AN")
+            .Select(r => r.Periodo).Distinct().ToListAsync(ct);
+        foreach (var mes in mesesCerrados.Where(m => m.Length == 2 && char.IsDigit(m[0])).OrderBy(m => m))
+        {
+            var fechaMes = new DateOnly(ejercicio, int.Parse(mes), 1);
+            bool esRef = mes == periodoMes;
+            int facturas = esRef ? 6 : 3;
+            for (int i = 1; i <= facturas; i++)
+            {
+                var d = await SubirPdfAsync(panaderiaId, Dominio.Documental.TipoDocumento.FacturaRecibida, ejercicio, mes, $"factura-proveedor-{i:00}-{fechaMes:yyyy-MM}.pdf", $"FACTURA {fechaMes:yyyy}-{mes}{i:00}  Proveedor ficticio {i}  Base 1{i}0,00  IVA 21%  Total 1{i}{i},00", ct);
+                docs.Add(d);
+                if (esRef && i == facturas) pendienteDeRevisar = d;
+            }
+            docs.Add(await SubirPdfAsync(panaderiaId, Dominio.Documental.TipoDocumento.ExtractoBancario, ejercicio, mes, $"extracto-{fechaMes:yyyy-MM}.pdf", $"EXTRACTO BANCARIO {fechaMes:MM/yyyy}  Banco Ficticio  Saldo 12.345,67", ct));
+            docs.Add(await SubirPdfAsync(panaderiaId, Dominio.Documental.TipoDocumento.Nomina, ejercicio, mes, $"nominas-{fechaMes:yyyy-MM}.pdf", $"NOMINAS {fechaMes:MM/yyyy}  2 empleados", ct));
+            docs.Add(await SubirPdfAsync(panaderiaId, Dominio.Documental.TipoDocumento.ReciboAlquiler, ejercicio, mes, $"alquiler-{fechaMes:yyyy-MM}.pdf", $"RECIBO ALQUILER LOCAL {fechaMes:MM/yyyy}  850,00", ct));
+            docs.Add(await SubirPdfAsync(panaderiaId, Dominio.Documental.TipoDocumento.FacturaEmitida, ejercicio, mes, $"ventas-{fechaMes:yyyy-MM}.pdf", $"RESUMEN VENTAS {fechaMes:MM/yyyy}", ct));
+        }
+
+        // 3. La gestoria valida todo menos la ultima factura del mes de referencia (queda "Recibido" en la bandeja)
+        _contexto.EstablecerUsuario(UsuariosGestoria[1].Id, GestoriaDemoId, null, UsuariosGestoria[1].Nombre, [Roles.Asesor], "127.0.0.1", "SembradorDemo");
+        foreach (var d in docs.Where(d => d != pendienteDeRevisar)) d.Validar(UsuariosGestoria[1].Id, _reloj.AhoraUtc.AddMinutes(-30));
+        await _db.SaveChangesAsync(ct);
+
+        // 4. Un 303 del trimestre anterior esperando aprobacion con borrador (criterio 4)
+        var trimestreAnterior = $"{(mesRef.Month - 1) / 3 + 1}T";
+        var o303 = await _db.Obligaciones.Include(o => o.Historial).FirstOrDefaultAsync(o => o.ClienteId == panaderiaId && o.ModeloCodigo == "303" && o.Ejercicio == ejercicio && o.Periodo == trimestreAnterior, ct);
+        if (o303 is not null && o303.Estado is EstadoObligacion.PendienteDocumentacion or EstadoObligacion.DocumentacionCompleta)
+        {
+            var t = _reloj.AhoraUtc.AddDays(-3);
+            var asesor = UsuariosGestoria[1].Id;
+            foreach (var paso in new[] { EstadoObligacion.DocumentacionCompleta, EstadoObligacion.EnPreparacion, EstadoObligacion.RevisionInterna })
+            { if (o303.Estado == paso) continue; t = t.AddHours(9); o303.CambiarEstado(paso, true, asesor, t); }
+            o303.ImporteResultado = 1234.56m; o303.SignoResultado = SignoResultado.Ingresar;
+            o303.Historial.Add(new ObligacionHistorial { GestoriaId = o303.GestoriaId, ObligacionId = o303.Id, FechaUtc = t.AddHours(1), UsuarioId = asesor, TipoEvento = TiposEventoHistorial.BorradorRegistrado, Comentario = "Borrador: 1.234,56 € a ingresar." });
+            o303.CambiarEstado(EstadoObligacion.PendienteAprobacionCliente, true, asesor, t.AddHours(2), "Borrador enviado al cliente para su conformidad.");
+            await _db.SaveChangesAsync(ct);
+
+            // 5. Hilo de ejemplo sobre ese 303
+            if (!await _db.Hilos.AnyAsync(h => h.ObligacionId == o303.Id, ct))
+            {
+                var hilo = Dominio.Mensajeria.Hilo.Nuevo(GestoriaDemoId, panaderiaId, o303.Id, null, $"Borrador del {o303.Titulo}", t.AddHours(2));
+                hilo.Responder(asesor, false, "Hola Luis, te hemos preparado el IVA del trimestre: 1.234,56 € a ingresar. Si te cuadra, dale a «Doy mi conformidad» en el portal y lo presentamos.", t.AddHours(2));
+                _db.Hilos.Add(hilo);
+                await _db.SaveChangesAsync(ct);
+            }
+        }
+        _contexto.EstablecerUsuario(UsuariosGestoria[0].Id, GestoriaDemoId, null, UsuariosGestoria[0].Nombre, [Roles.SocioDirector], "127.0.0.1", "SembradorDemo");
+        _log.LogInformation("Seed: escenario documental creado ({N} documentos)", docs.Count);
+    }
+
+    private async Task<Dominio.Documental.Documento> SubirPdfAsync(Guid clienteId, Dominio.Documental.TipoDocumento tipo, int ejercicio, string periodo, string nombre, string texto, CancellationToken ct)
+    {
+        var bytes = PdfMinimo(texto);
+        using var ms = new MemoryStream(bytes);
+        return await _documentos.SubirAsync(new Aplicacion.Documental.SubidaDocumento
+        {
+            ClienteId = clienteId, Tipo = tipo, Ejercicio = ejercicio, Periodo = periodo, NombreOriginal = nombre, TipoMime = "application/pdf", TamanoBytes = bytes.Length, Contenido = ms,
+        }, ct);
+    }
+
+    /// <summary>PDF de una pagina con una linea de texto (Helvetica), suficiente para previsualizar. Datos ficticios.</summary>
+    internal static byte[] PdfMinimo(string texto)
+    {
+        static string Esc(string t) => t.Replace("\\", "\\\\").Replace("(", "\\(").Replace(")", "\\)");
+        var contenido = $"BT /F1 14 Tf 40 780 Td ({Esc(texto)}) Tj 0 -24 Td /F1 10 Tf (Documento ficticio generado por la demo de Aserta) Tj ET";
+        var objetos = new List<string>
+        {
+            "<< /Type /Catalog /Pages 2 0 R >>",
+            "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
+            "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>",
+            $"<< /Length {System.Text.Encoding.Latin1.GetByteCount(contenido)} >>\nstream\n{contenido}\nendstream",
+        };
+        var sb = new System.Text.StringBuilder("%PDF-1.4\n");
+        var offsets = new List<int>();
+        for (int i = 0; i < objetos.Count; i++)
+        {
+            offsets.Add(System.Text.Encoding.Latin1.GetByteCount(sb.ToString()));
+            sb.Append($"{i + 1} 0 obj\n{objetos[i]}\nendobj\n");
+        }
+        int xref = System.Text.Encoding.Latin1.GetByteCount(sb.ToString());
+        sb.Append($"xref\n0 {objetos.Count + 1}\n0000000000 65535 f \n");
+        foreach (var o in offsets) sb.Append($"{o:0000000000} 00000 n \n");
+        sb.Append($"trailer\n<< /Size {objetos.Count + 1} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n");
+        return System.Text.Encoding.Latin1.GetBytes(sb.ToString());
     }
 
     /// <summary>

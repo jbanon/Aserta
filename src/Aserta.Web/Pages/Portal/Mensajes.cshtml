@@ -1,0 +1,9 @@
+@page
+@model Aserta.Web.Pages.Portal.MensajesModel
+@{
+    Layout = "_LayoutPortal";
+    ViewData["Titulo"] = "Mensajes";
+}
+<h1 class="portal-saludo">Mensajes con tu gestoría</h1>
+<p class="texto-sm texto-2">Cada conversación va ligada a un impuesto o a un documento. Para preguntar algo, entra en el impuesto o el documento y pulsa «Preguntar».</p>
+<div class="panel mt-3"><div class="panel-cuerpo"><partial name="_ListaHilos" model="Model.Hilos" /></div></div>

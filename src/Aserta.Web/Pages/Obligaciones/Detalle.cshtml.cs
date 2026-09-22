@@ -1,6 +1,11 @@
+using Aserta.Aplicacion.Documental;
+using Aserta.Aplicacion.Mensajeria;
 using Aserta.Aplicacion.Obligaciones;
+using Aserta.Dominio.Documental;
+using Aserta.Dominio.Mensajeria;
 using Aserta.Aplicacion.Puertos;
 using Aserta.Dominio.Obligaciones;
+using Aserta.Dominio.Catalogo;
 using Aserta.Web.Infraestructura;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,13 +18,38 @@ public class DetalleModel : PaginaBase
     private readonly IAsertaDb _db;
     private readonly IRelojSistema _reloj;
     private readonly IContextoUsuarioActual _usuario;
+    private readonly ServicioDocumentos _documentos;
+    private readonly ServicioRequisitos _requisitos;
+    private readonly ServicioMensajeria _mensajeria;
 
-    public DetalleModel(ServicioObligaciones obligaciones, IAsertaDb db, IRelojSistema reloj, IContextoUsuarioActual usuario)
+    public DetalleModel(ServicioObligaciones obligaciones, IAsertaDb db, IRelojSistema reloj, IContextoUsuarioActual usuario, ServicioDocumentos documentos, ServicioRequisitos requisitos, ServicioMensajeria mensajeria)
     {
         _obligaciones = obligaciones;
         _db = db;
         _reloj = reloj;
         _usuario = usuario;
+        _documentos = documentos;
+        _requisitos = requisitos;
+        _mensajeria = mensajeria;
+    }
+
+    public List<Documento> Documentos { get; private set; } = [];
+    public List<EstadoRequisito> Requisitos { get; private set; } = [];
+    public List<Hilo> Hilos { get; private set; } = [];
+
+    [Microsoft.AspNetCore.Mvc.RequestSizeLimit(25 * 1024 * 1024)]
+    public async Task<IActionResult> OnPostJustificanteAsync(IFormFile? justificante)
+    {
+        if (justificante is null || justificante.Length == 0) { AvisoError = "Seleccione el justificante."; return RedirectToPage(new { id = Id }); }
+        var gestoria = await _db.Gestorias.AsNoTracking().FirstAsync();
+        var ok = await IntentarAsync(async () =>
+        {
+            await using var s = justificante.OpenReadStream();
+            await _documentos.ArchivarJustificanteAsync(Id, new SubidaDocumento { NombreOriginal = justificante.FileName, TipoMime = justificante.ContentType, TamanoBytes = justificante.Length, Contenido = s }, gestoria.ExigeAprobacionCliente);
+        });
+        if (ok) AvisoOk = "Justificante archivado y obligación cerrada.";
+        else AvisoError = string.Join(" ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+        return RedirectToPage(new { id = Id });
     }
 
     [BindProperty(SupportsGet = true)] public Guid Id { get; set; }
@@ -67,5 +97,10 @@ public class DetalleModel : PaginaBase
         if (Obligacion.ReglaOrigenId is int r) ReglaOrigen = await _db.ReglasObligacion.AsNoTracking().Where(x => x.Id == r).Select(x => x.Descripcion).FirstOrDefaultAsync();
         PlazoConfirmado = await _db.PlazosModelo.AsNoTracking().AnyAsync(p => p.ModeloCodigo == Obligacion.ModeloCodigo && p.Ejercicio == Obligacion.Ejercicio && p.Periodo == Obligacion.Periodo && p.Confirmado);
         Destinos = MaquinaEstadosObligacion.DestinosDesde(Obligacion.Estado);
+        var idsDocs = await _db.DocumentosObligacion.AsNoTracking().Where(x => x.ObligacionId == Id).Select(x => x.DocumentoId).ToListAsync();
+        Documentos = await _db.Documentos.AsNoTracking().Where(d => idsDocs.Contains(d.Id)).OrderByDescending(d => d.FechaSubidaUtc).ToListAsync();
+        var (oi, of) = Periodo.Rango(Obligacion.Ejercicio, Obligacion.Periodo);
+        Requisitos = (await _requisitos.EstadoAsync(Obligacion.ClienteId, Obligacion.Ejercicio)).Where(r => Periodo.Rango(r.Requisito.Ejercicio, r.Requisito.Periodo).Inicio >= oi && Periodo.Rango(r.Requisito.Ejercicio, r.Requisito.Periodo).Fin <= of && Obligacion.Periodo != "AN").ToList();
+        Hilos = await _mensajeria.DeObligacionAsync(Id);
     }
 }

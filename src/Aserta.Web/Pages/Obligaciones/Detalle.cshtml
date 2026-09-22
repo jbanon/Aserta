@@ -54,6 +54,31 @@
         </div>
     </div>
 </div>
+<div class="rejilla rejilla-2 mt-4">
+    <div class="panel">
+        <div class="panel-cabecera"><h2>Documentos vinculados</h2><a class="boton boton-pequeno" asp-page="/Documentos/Subir" asp-route-clienteId="@o.ClienteId" asp-route-ejercicio="@o.Ejercicio" asp-route-periodo="@(o.Periodo is "1P" or "2P" or "3P" ? "AN" : o.Periodo)">Registrar</a></div>
+        <div class="panel-cuerpo">
+            @if (Model.Documentos.Count == 0) { <p class="texto-3 texto-sm">Ninguno.</p> }
+            <ul class="texto-sm">@foreach (var d in Model.Documentos) { <li><a asp-page="/Documentos/Detalle" asp-route-id="@d.Id">@d.NombreOriginal</a> · @d.Tipo.Etiqueta() <span class="insignia @(d.Estado == EstadoDocumento.Validado ? "insignia-ok" : d.Estado == EstadoDocumento.Rechazado ? "insignia-error" : "")">@d.Estado.Etiqueta()</span></li> }</ul>
+            @if (Model.Requisitos.Count > 0)
+            {
+                <h3 class="mt-3 mb-2">Requisitos del periodo</h3>
+                <ul class="texto-sm">@foreach (var r in Model.Requisitos) { <li>@(r.Completo ? "✓" : "○") @r.Requisito.Descripcion <span class="texto-3">(@r.Recibidos/@r.Esperados)</span></li> }</ul>
+            }
+            @if (o.Estado == EstadoObligacion.Presentado && o.JustificanteDocumentoId is null)
+            {
+                <form method="post" enctype="multipart/form-data" asp-page-handler="Justificante" asp-route-id="@o.Id" class="columna mt-3">
+                    <div class="campo"><label for="justificante">Archivar justificante de presentación (cierra la obligación)</label><input class="entrada" type="file" id="justificante" name="justificante" accept="image/*,application/pdf" required /></div>
+                    <div><button class="boton boton-primario boton-pequeno">Archivar y cerrar</button></div>
+                </form>
+            }
+        </div>
+    </div>
+    <div class="panel">
+        <div class="panel-cabecera"><h2>Mensajes con el cliente</h2><a class="boton boton-pequeno" asp-page="/Mensajes/Nuevo" asp-route-obligacionId="@o.Id">Nuevo hilo</a></div>
+        <div class="panel-cuerpo"><partial name="_ListaHilos" model="Model.Hilos" /></div>
+    </div>
+</div>
 <div class="panel mt-4">
     <div class="panel-cabecera"><h2>@Icono.Historial Historial completo</h2></div>
     <div class="panel-cuerpo">

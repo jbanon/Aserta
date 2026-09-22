@@ -1,5 +1,7 @@
 using Aserta.Dominio.Catalogo;
 using Aserta.Dominio.Clientes;
+using Aserta.Dominio.Documental;
+using Aserta.Dominio.Mensajeria;
 using Aserta.Dominio.Nucleo;
 using Aserta.Dominio.Obligaciones;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +31,13 @@ public interface IAsertaDb
 
     DbSet<Obligacion> Obligaciones { get; }
     DbSet<ObligacionHistorial> ObligacionHistoriales { get; }
+
+    DbSet<Documento> Documentos { get; }
+    DbSet<DocumentoObligacion> DocumentosObligacion { get; }
+    DbSet<RequisitoPeriodo> RequisitosPeriodo { get; }
+    DbSet<ReglaRequisito> ReglasRequisito { get; }
+    DbSet<Hilo> Hilos { get; }
+    DbSet<Mensaje> Mensajes { get; }
 
     Task<int> GuardarCambiosAsync(CancellationToken ct = default);
 }

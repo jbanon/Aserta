@@ -1,0 +1,21 @@
+@page
+@model Aserta.Web.Pages.Portal.ImpuestosModel
+@{
+    Layout = "_LayoutPortal";
+    ViewData["Titulo"] = "Impuestos";
+}
+<h1 class="portal-saludo">Tus impuestos</h1>
+@foreach (var grupo in Model.Grupos)
+{
+    <h2 class="portal-seccion">@grupo.Key</h2>
+    <ul class="portal-lista">
+        @foreach (var o in grupo)
+        {
+            <li>
+                <div><strong>@Model.NombreModelo(o.ModeloCodigo)</strong> <small class="texto-3">@o.EtiquetaPeriodo</small><br />
+                    <small class="texto-2">@Aserta.Web.Pages.Portal.IndexModel.EstadoLlano(o.Estado)@(o.ImporteResultado is { } imp ? $" · {imp:N2} € a {o.SignoResultado?.ToString().ToLowerInvariant()}" : "")</small></div>
+                <a class="boton boton-pequeno @(o.Estado == EstadoObligacion.PendienteAprobacionCliente ? "boton-primario" : "")" asp-page="/Portal/Impuesto" asp-route-id="@o.Id">@(o.Estado == EstadoObligacion.PendienteAprobacionCliente ? "Revisar" : "Ver")</a>
+            </li>
+        }
+    </ul>
+}

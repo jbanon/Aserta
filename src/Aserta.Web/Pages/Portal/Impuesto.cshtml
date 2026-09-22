@@ -1,0 +1,49 @@
+@page "{id:guid}"
+@model Aserta.Web.Pages.Portal.ImpuestoModel
+@{
+    Layout = "_LayoutPortal";
+    var o = Model.Obligacion;
+    ViewData["Titulo"] = o.Titulo;
+}
+<div class="migas"><a asp-page="/Portal/Impuestos">Impuestos</a> › @o.ModeloCodigo</div>
+<h1 class="portal-saludo">@o.ModeloCodigo · @o.EtiquetaPeriodo</h1>
+<p class="texto-2">@Model.Modelo?.DescripcionCliente</p>
+<partial name="_ResumenErrores" />
+<div class="panel mt-3"><div class="panel-cuerpo">
+    <dl class="datos">
+        <dt>Estado</dt><dd>@Aserta.Web.Pages.Portal.IndexModel.EstadoLlano(o.Estado)</dd>
+        <dt>Importe</dt><dd>@(o.ImporteResultado is { } imp ? $"{imp:N2} € a {o.SignoResultado?.ToString().ToLowerInvariant()}" : "Pendiente de calcular")</dd>
+        <dt>Fecha límite</dt><dd>@Semaforo.FechaDeReferencia(o).ToString("dd/MM/yyyy") @(o.FechaLimiteDomiciliacion is not null ? "(domiciliación)" : "")</dd>
+        @if (o.FechaAprobacionClienteUtc is { } ap) { <dt>Aprobado</dt><dd>@ap.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd> }
+    </dl>
+</div></div>
+
+@if (o.Estado == EstadoObligacion.PendienteAprobacionCliente && o.FechaAprobacionClienteUtc is null)
+{
+    <div class="panel mt-3 portal-aprobacion"><div class="panel-cuerpo columna">
+        <p><strong>Tu gestoría ha preparado este impuesto.</strong> Revisa el importe y da tu conformidad para que se presente.</p>
+        @if (Model.PuedeAprobar)
+        {
+            <form method="post" asp-page-handler="Aprobar"><button class="boton boton-primario boton-grande">Doy mi conformidad: @(o.ImporteResultado is { } i2 ? $"{i2:N2} €" : "")</button></form>
+            <details><summary class="texto-sm">Algo no cuadra</summary>
+                <form method="post" asp-page-handler="Rechazar" class="columna mt-2">
+                    <div class="campo"><label for="Motivo">Cuéntanos qué revisar</label><textarea id="Motivo" name="Motivo" rows="3" required></textarea></div>
+                    <button class="boton boton-peligro">Pedir revisión</button>
+                </form>
+            </details>
+        }
+        else { <p class="texto-sm texto-3">Solo el administrador de tu empresa puede aprobar.</p> }
+    </div></div>
+}
+
+<h2 class="portal-seccion">Mensajes</h2>
+<partial name="_ListaHilos" model="Model.Hilos" />
+<p class="mt-2"><a class="boton boton-pequeno" asp-page="/Mensajes/Nuevo" asp-route-obligacionId="@o.Id">Preguntar a mi gestoría</a></p>
+
+<h2 class="portal-seccion">Qué ha pasado</h2>
+<ol class="linea-tiempo">
+    @foreach (var h in o.Historial.OrderByDescending(x => x.FechaUtc).Take(8))
+    {
+        <li><time>@h.FechaUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</time>@Model.EventoLlano(h)</li>
+    }
+</ol>

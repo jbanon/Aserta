@@ -74,6 +74,10 @@ builder.Services.AddRazorPages(o =>
     o.Conventions.AuthorizeFolder("/Catalogo", Politicas.Gestoria);
     o.Conventions.AuthorizeFolder("/Auditoria", Politicas.Gestoria);
     o.Conventions.AuthorizeFolder("/Avisos", Politicas.Gestoria);
+    o.Conventions.AuthorizeFolder("/Documentos", Politicas.Gestoria);
+    o.Conventions.AllowAnonymousToPage("/Documentos/Contenido"); // se vuelve a autorizar abajo: el servicio exige sesion y comprueba cliente/tenant
+    o.Conventions.AuthorizePage("/Documentos/Contenido");
+    o.Conventions.AuthorizeFolder("/Portal", Politicas.Cliente);
     o.Conventions.AuthorizeFolder("/Usuarios", Politicas.SocioDirector);
     o.Conventions.AuthorizeFolder("/Gestoria", Politicas.SocioDirector);
 }).AddMvcOptions(o =>
@@ -99,6 +103,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(o =>
     o.KnownIPNetworks.Add(new System.Net.IPNetwork(System.Net.IPAddress.IPv6Loopback, 128));
 });
 
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(o => o.MultipartBodyLengthLimit = 25 * 1024 * 1024);
 builder.Services.AddHealthChecks();
 
 var app = builder.Build();

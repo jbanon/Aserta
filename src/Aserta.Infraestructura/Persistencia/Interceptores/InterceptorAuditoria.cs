@@ -17,7 +17,8 @@ public sealed class InterceptorAuditoria : SaveChangesInterceptor
 {
     private static readonly HashSet<Type> TiposAuditados =
     [
-        typeof(Gestoria), typeof(Usuario), typeof(Cliente), typeof(PerfilFiscal), typeof(Obligacion)
+        typeof(Gestoria), typeof(Usuario), typeof(Cliente), typeof(PerfilFiscal), typeof(Obligacion),
+        typeof(Dominio.Documental.Documento), typeof(Dominio.Documental.RequisitoPeriodo)
     ];
 
     private static readonly JsonSerializerOptions Json = new() { WriteIndented = false, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping };

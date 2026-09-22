@@ -1,0 +1,14 @@
+@page
+@model Aserta.Web.Pages.Mensajes.NuevoModel
+@{
+    ViewData["Titulo"] = "Nuevo hilo";
+    if (Model.EsCliente) { Layout = "_LayoutPortal"; }
+}
+<div class="pagina-cabecera"><div><h1>Nuevo hilo</h1><p class="subtitulo">@Model.Contexto</p></div></div>
+<form method="post" class="ancho-max-sm">
+    <partial name="_ResumenErrores" />
+    <input type="hidden" asp-for="ObligacionId" /><input type="hidden" asp-for="DocumentoId" />
+    <div class="campo"><label asp-for="Asunto">Asunto</label><input class="entrada" asp-for="Asunto" required maxlength="200" /></div>
+    <div class="campo mt-3"><label asp-for="Cuerpo">Mensaje</label><textarea asp-for="Cuerpo" rows="4" required maxlength="4000"></textarea></div>
+    <div class="form-pie"><a class="boton" href="@Model.Volver">Cancelar</a><button class="boton boton-primario">Enviar</button></div>
+</form>

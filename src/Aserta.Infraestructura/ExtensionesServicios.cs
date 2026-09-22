@@ -3,6 +3,11 @@ using Aserta.Aplicacion.Nucleo;
 using Aserta.Aplicacion.Obligaciones;
 using Aserta.Aplicacion.Puertos;
 using Aserta.Infraestructura.Identidad;
+using Aserta.Aplicacion.Documental;
+using Aserta.Aplicacion.Mensajeria;
+using Aserta.Aplicacion.PortalCliente;
+using Aserta.Infraestructura.Documental;
+using Aserta.Infraestructura.Eventos;
 using Aserta.Infraestructura.Migraciones;
 using Aserta.Infraestructura.Notificaciones;
 using Aserta.Infraestructura.Trabajos;
@@ -63,6 +68,20 @@ public static class ExtensionesServicios
         servicios.AddScoped<ITareaDiaria>(sp => sp.GetRequiredService<ServicioAvisosVencimiento>());
         servicios.AddScoped<INotificador, NotificadorEnPantalla>();
         servicios.AddHostedService<PlanificadorDiario>();
+
+        // Documental (M3), portal (M2) y mensajeria
+        var rutaAlmacen = config["Almacen:Ruta"] ?? Path.Combine(AppContext.BaseDirectory, "..", "almacen-documental");
+        servicios.AddSingleton<IAlmacenDocumental>(sp => new AlmacenDocumentalFicheros(Path.GetFullPath(rutaAlmacen), sp.GetRequiredService<Microsoft.AspNetCore.DataProtection.IDataProtectionProvider>()));
+        servicios.AddSingleton<IExtractorDocumental, ExtractorSimulado>();
+        servicios.AddScoped<IPublicadorEventos, PublicadorEventosInProcess>();
+        servicios.AddScoped<ServicioDocumentos>();
+        servicios.AddScoped<ServicioRequisitos>();
+        servicios.AddScoped<IManejadorEvento<DocumentoValidado>>(sp => sp.GetRequiredService<ServicioRequisitos>());
+        servicios.AddScoped<ServicioReclamacionDocumental>();
+        servicios.AddScoped<ITareaDiaria>(sp => sp.GetRequiredService<ServicioReclamacionDocumental>());
+        servicios.AddScoped<ServicioMensajeria>();
+        servicios.AddScoped<IManejadorEvento<MensajeNuevo>>(sp => sp.GetRequiredService<ServicioMensajeria>());
+        servicios.AddScoped<ServicioPortal>();
         servicios.AddScoped<ServicioUsuarios>();
         servicios.AddScoped<ServicioGestoria>();
         servicios.AddScoped<SembradorDemo>();

@@ -1,0 +1,34 @@
+@model Aserta.Web.Pages.Documentos.FilaDocumento
+@{
+    var d = Model.Documento;
+}
+<tr id="doc-@d.Id" class="@(d.Estado == EstadoDocumento.Recibido ? "aviso-no-leido" : "")">
+    <td class="tabular nowrap">@d.FechaSubidaUtc.ToLocalTime().ToString("dd/MM HH:mm")<br /><small>@Model.SubidoPor</small></td>
+    <td><a asp-page="/Clientes/Ficha" asp-route-id="@d.ClienteId" asp-route-pestana="documentacion">@Model.Cliente</a></td>
+    <td>
+        <a asp-page="/Documentos/Detalle" asp-route-id="@d.Id" class="flex nowrap">
+            @if (d.EsImagen) { <img class="miniatura" src="@Url.Page("/Documentos/Contenido", new { id = d.Id })" alt="" width="40" height="40" loading="lazy" /> }
+            else { <span class="miniatura miniatura-pdf" aria-hidden="true">PDF</span> }
+            <span class="truncar" title="@d.NombreOriginal">@d.NombreOriginal</span>
+        </a>
+        <small>@(d.TamanoBytes / 1024) KB</small>
+    </td>
+    <td>@d.Tipo.Etiqueta()<br /><small>@Periodo.Etiqueta(d.Ejercicio, d.Periodo)</small></td>
+    <td><span class="insignia @(d.Estado switch { EstadoDocumento.Validado => "insignia-ok", EstadoDocumento.Rechazado => "insignia-error", EstadoDocumento.EnRevision => "insignia-info", _ => "" })">@d.Estado.Etiqueta()</span>
+        @if (d.MotivoRechazo is not null) { <br /><small class="texto-3">@d.MotivoRechazo</small> }</td>
+    <td class="texto-xs texto-2">@Model.ResumenExtraccion</td>
+    <td class="texto-derecha nowrap">
+        @if (d.Estado is EstadoDocumento.Recibido or EstadoDocumento.EnRevision)
+        {
+            <form method="post" asp-page="/Documentos/Index" asp-page-handler="Validar" asp-route-id="@d.Id" class="menu" hx-post="@Url.Page("/Documentos/Index", "Validar", new { id = d.Id })" hx-target="#doc-@d.Id" hx-swap="outerHTML"><button class="boton boton-pequeno boton-primario">Validar</button></form>
+            <details class="menu"><summary class="boton boton-pequeno boton-peligro">Rechazar</summary>
+                <form method="post" asp-page="/Documentos/Index" asp-page-handler="Rechazar" asp-route-id="@d.Id" class="menu-lista columna" hx-post="@Url.Page("/Documentos/Index", "Rechazar", new { id = d.Id })" hx-target="#doc-@d.Id" hx-swap="outerHTML">
+                    <label class="texto-xs" for="motivo-@d.Id">Motivo (lo verá el cliente)</label>
+                    <input class="entrada" id="motivo-@d.Id" name="motivo" required placeholder="Ilegible / falta la fecha / no es de este mes…" />
+                    <button class="boton boton-pequeno boton-peligro">Rechazar</button>
+                </form>
+            </details>
+        }
+        else { <a class="boton boton-pequeno boton-sutil" asp-page="/Documentos/Detalle" asp-route-id="@d.Id">Ver</a> }
+    </td>
+</tr>

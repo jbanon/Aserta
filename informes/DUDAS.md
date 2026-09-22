@@ -34,3 +34,13 @@
 | D-20 | El seed simula el histórico de las obligaciones pasadas (cerradas con historial completo y borrador). ¿Aceptable como dato de demo o prefiere el arquitecto que todo nazca pendiente? | Simulado, con 1 de cada 23 vencida a propósito. Marcador `SeedHistoricoDemo` en `EjecucionProgramada`. | Demo | Abierta |
 | D-21 | Tabla `dbo.Aviso` (script `0005`) no está en `04-modelo-datos.md`. | Añadida con RLS; columnas en el informe 05. | Modelo de datos | Abierta |
 | D-22 | Umbrales del semáforo: verde > 7 días, ámbar ≤ 7, rojo ≤ 3, vencido < 0 (sobre la fecha de domiciliación). No estaban especificados. | Constantes en `Semaforo` (`DiasAmbar`, `DiasRojo`). | Kanban, calendario, avisos | Abierta |
+
+## Fase 3
+
+| # | Duda | Supuesto aplicado | Afecta a | Estado |
+|---|---|---|---|---|
+| D-23 | ¿Se revierte `DocumentacionCompleta` a `PendienteDocumentacion` si después se rechaza un documento? | No se revierte (el gestor puede hacerlo a mano; la máquina de estados lo permite). | Documental | Abierta |
+| D-24 | Reclamación documental: ¿a quién (todos los usuarios del cliente) y con qué antelación (15 días antes del vencimiento)? | Todos los usuarios activos del cliente, 15 días, un aviso por obligación y día. | Tarea diaria | Abierta |
+| D-25 | Reglas de requisito documental como datos (`cat.ReglaRequisito`): ¿de acuerdo con el catálogo inicial (facturas, extracto, nóminas, alquiler, tickets opcionales, todo mensual)? | Aplicado; ajustable cliente a cliente desde la ficha. | Portal, ficha | Abierta |
+| D-26 | Cifrado en reposo con Data Protection (claves en disco junto al resto). Suficiente para la demo; no es un KMS. | Aplicado; anotado como riesgo residual igual que ADR-002 §4. | Almacén | Abierta |
+| D-27 | La base de desarrollo acumula histórico inborrable de mis pruebas (auditoría, historial). Antes de la demo real conviene recrear la base `Aserta` vacía (requiere DBA) y dejar que el runner y el seed la construyan. | Anotado; el seed es idempotente y reproducible. | Demo | **Necesita acción del usuario** |

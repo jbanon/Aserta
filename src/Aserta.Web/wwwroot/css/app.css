@@ -319,3 +319,51 @@
   .campana-contador { position: absolute; top: -2px; right: -2px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: var(--color-error); color: #fff; font-size: 10px; font-weight: var(--peso-negrita); display: grid; place-items: center; }
   .aviso-no-leido { font-weight: var(--peso-medio); }
 }
+
+/* ---- Documental, mensajeria y portal (M2 / M3) --------------------------------- */
+@layer componentes {
+  .miniatura { width: 40px; height: 40px; object-fit: cover; border-radius: var(--radio-sm); border: 1px solid var(--color-borde); flex: none; background: var(--color-superficie-2); }
+  .miniatura-pdf { display: inline-grid; place-items: center; font-size: 10px; font-weight: var(--peso-negrita); color: var(--color-error); }
+  .vista-previa { max-width: 100%; max-height: 70vh; border-radius: var(--radio); border: 1px solid var(--color-borde); }
+  .vista-previa-pdf { width: 100%; height: 70vh; border: 1px solid var(--color-borde); border-radius: var(--radio); background: var(--color-superficie-2); }
+  details.menu > summary { list-style: none; display: inline-flex; cursor: pointer; }
+  details.menu > summary::-webkit-details-marker { display: none; }
+  details.menu[open] > .menu-lista { display: flex; min-width: 260px; padding: var(--esp-3); gap: var(--esp-2); }
+  .lista-hilos { list-style: none; padding: 0; display: flex; flex-direction: column; gap: var(--esp-2); }
+  .lista-hilos li { padding: var(--esp-2) 0; border-bottom: 1px solid var(--color-borde); font-size: var(--tamano-sm); }
+  .lista-hilos li:last-child { border-bottom: 0; }
+  .lista-hilos a { text-decoration: none; font-weight: var(--peso-medio); }
+  .chat { list-style: none; padding: 0; display: flex; flex-direction: column; gap: var(--esp-3); }
+  .burbuja { max-width: min(640px, 88%); background: var(--color-superficie-2); border-radius: var(--radio-lg); padding: var(--esp-2) var(--esp-3); align-self: flex-start; }
+  .burbuja-propia { align-self: flex-end; background: var(--color-marca-suave); }
+  .burbuja-autor { font-size: var(--tamano-xs); color: var(--color-texto-3); margin-bottom: 2px; }
+  .burbuja-autor time { margin-left: 6px; }
+  .burbuja-cuerpo { white-space: pre-wrap; overflow-wrap: anywhere; font-size: var(--tamano-sm); }
+
+  /* Portal movil primero */
+  body.portal { background: var(--color-fondo); padding-bottom: 72px; }
+  .portal-cabecera { display: flex; align-items: center; justify-content: space-between; padding: var(--esp-2) var(--esp-3); background: var(--color-superficie); border-bottom: 1px solid var(--color-borde); position: sticky; top: 0; z-index: 20; padding-top: max(var(--esp-2), env(safe-area-inset-top)); }
+  .portal-contenido { padding: var(--esp-3) var(--esp-3) var(--esp-5); max-width: 720px; margin: 0 auto; }
+  .portal-nav { position: fixed; bottom: 0; left: 0; right: 0; display: grid; grid-template-columns: repeat(4, 1fr); background: var(--color-superficie); border-top: 1px solid var(--color-borde); padding-bottom: env(safe-area-inset-bottom); z-index: 20; }
+  .portal-nav a { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px 6px; font-size: 11px; color: var(--color-texto-3); text-decoration: none; font-weight: var(--peso-medio); position: relative; min-height: 56px; }
+  .portal-nav a svg { width: 22px; height: 22px; }
+  .portal-nav a[aria-current="page"] { color: var(--color-marca-texto); }
+  .portal-nav .campana-contador { top: 4px; right: calc(50% - 22px); }
+  .portal-saludo { font-size: var(--tamano-xl); margin: var(--esp-2) 0 var(--esp-3); }
+  .portal-seccion { font-size: var(--tamano-md); margin: var(--esp-5) 0 var(--esp-2); color: var(--color-texto-2); }
+  .portal-hero { display: flex; gap: var(--esp-3); align-items: flex-start; padding: var(--esp-4); border-radius: var(--radio-lg); background: var(--color-aviso-suave); color: var(--color-aviso-texto); border: 1px solid var(--color-aviso); font-size: var(--tamano-md); }
+  .portal-hero svg { width: 28px; height: 28px; flex: none; }
+  .portal-hero-ok { background: var(--color-ok-suave); color: var(--color-ok-texto); border-color: var(--color-ok); }
+  .portal-lista { list-style: none; padding: 0; display: flex; flex-direction: column; gap: var(--esp-2); }
+  .portal-lista li { display: flex; align-items: center; justify-content: space-between; gap: var(--esp-3); background: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: var(--radio-lg); padding: var(--esp-3); }
+  .portal-lista li > div { min-width: 0; }
+  .portal-lista-compacta li { padding: var(--esp-2) var(--esp-3); }
+  .portal-subida .panel-cuerpo { gap: var(--esp-3); }
+  .portal-boton-foto { display: flex; align-items: center; justify-content: center; gap: var(--esp-2); padding: var(--esp-5); border: 2px dashed var(--color-marca); border-radius: var(--radio-lg); background: var(--color-marca-suave); color: var(--color-marca-texto); font-weight: var(--peso-medio); cursor: pointer; text-align: center; }
+  .portal-boton-foto input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+  .portal-boton-foto:focus-within { box-shadow: var(--anillo-foco); }
+  .portal-boton-foto svg { width: 24px; height: 24px; }
+  .boton-grande { padding: 14px 18px; font-size: var(--tamano-md); width: 100%; }
+  .portal-aprobacion { border-color: var(--color-marca); }
+  @media (min-width: 720px) { .portal-nav { position: sticky; } body.portal { padding-bottom: 0; } }
+}

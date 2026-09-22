@@ -1,0 +1,51 @@
+@page
+@model Aserta.Web.Pages.Portal.DocumentosModel
+@{
+    Layout = "_LayoutPortal";
+    ViewData["Titulo"] = "Documentos";
+}
+<h1 class="portal-saludo">Documentos</h1>
+<partial name="_ResumenErrores" />
+<form method="post" enctype="multipart/form-data" class="panel portal-subida">
+    <div class="panel-cuerpo columna">
+        <label class="portal-boton-foto" for="Fichero">
+            @Icono.Mas <span>Hacer foto o elegir fichero</span>
+            <input type="file" id="Fichero" name="Fichero" accept="image/*,application/pdf" capture="environment" required />
+        </label>
+        <span class="error">@Html.ValidationMessage("Fichero")</span>
+        <div class="campo-fila">
+            <div class="campo"><label for="Tipo">¿Qué es?</label><select id="Tipo" name="Tipo">@foreach (var t in Aserta.Web.Pages.Portal.DocumentosModel.Tipos) { <option value="@t" selected="@(Model.Tipo == t)">@t.Etiqueta()</option> }</select></div>
+            <div class="campo"><label for="Periodo">¿De qué mes?</label><select id="Periodo" name="Periodo">@foreach (var p in Model.Periodos) { <option value="@p.Key" selected="@(Model.Periodo == p.Key)">@p.Value</option> }</select></div>
+        </div>
+        <input type="hidden" name="Ejercicio" value="@Model.Ejercicio" />
+        <button class="boton boton-primario">Subir</button>
+    </div>
+</form>
+
+@if (Model.Pendientes.Count > 0)
+{
+    <h2 class="portal-seccion">Qué te falta</h2>
+    <ul class="portal-lista">
+        @foreach (var p in Model.Pendientes)
+        {
+            <li><div><strong>@p.Frase</strong><br /><small class="texto-3">recibidos @p.Recibidos de @p.Esperados</small></div>
+                <a class="boton boton-pequeno" asp-page="/Portal/Documentos" asp-route-tipo="@p.Requisito.TipoDocumento" asp-route-ejercicio="@p.Requisito.Ejercicio" asp-route-periodo="@p.Requisito.Periodo">Subir</a></li>
+        }
+    </ul>
+}
+
+<h2 class="portal-seccion">Subidos</h2>
+<ul class="portal-lista portal-lista-compacta">
+    @if (Model.Documentos.Count == 0) { <li class="texto-3">Todavía no has subido nada.</li> }
+    @foreach (var d in Model.Documentos)
+    {
+        <li>
+            <div class="flex nowrap">
+                @if (d.EsImagen) { <img class="miniatura" src="@Url.Page("/Documentos/Contenido", new { id = d.Id })" alt="" width="40" height="40" loading="lazy" /> } else { <span class="miniatura miniatura-pdf" aria-hidden="true">PDF</span> }
+                <div><strong class="truncar">@d.Tipo.Etiqueta()</strong><br /><small class="texto-3">@Periodo.Etiqueta(d.Ejercicio, d.Periodo) · @d.FechaSubidaUtc.ToLocalTime().ToString("dd/MM")</small>
+                    @if (d.MotivoRechazo is not null) { <br /><small class="texto-2"><strong>Motivo:</strong> @d.MotivoRechazo</small> }</div>
+            </div>
+            <span class="insignia @(d.Estado switch { EstadoDocumento.Validado => "insignia-ok", EstadoDocumento.Rechazado => "insignia-error", _ => "insignia-info" })">@(d.Estado switch { EstadoDocumento.Validado => "Validado", EstadoDocumento.Rechazado => "Rechazado", EstadoDocumento.EnRevision => "Revisando", _ => "Recibido" })</span>
+        </li>
+    }
+</ul>

@@ -18,13 +18,15 @@ public sealed class ServicioGeneracionObligaciones
     private readonly IAsertaDb _db;
     private readonly IRelojSistema _reloj;
     private readonly IRegistroAuditoria _auditoria;
+    private readonly Documental.ServicioRequisitos _requisitos;
     private readonly ILogger<ServicioGeneracionObligaciones> _log;
 
-    public ServicioGeneracionObligaciones(IAsertaDb db, IRelojSistema reloj, IRegistroAuditoria auditoria, ILogger<ServicioGeneracionObligaciones> log)
+    public ServicioGeneracionObligaciones(IAsertaDb db, IRelojSistema reloj, IRegistroAuditoria auditoria, Documental.ServicioRequisitos requisitos, ILogger<ServicioGeneracionObligaciones> log)
     {
         _db = db;
         _reloj = reloj;
         _auditoria = auditoria;
+        _requisitos = requisitos;
         _log = log;
     }
 
@@ -71,6 +73,9 @@ public sealed class ServicioGeneracionObligaciones
         var existentes = await _db.Obligaciones
             .Where(o => o.ClienteId == cliente.Id && ejercicios.Contains(o.Ejercicio))
             .ToListAsync(ct);
+
+        // Los requisitos documentales se derivan junto con las obligaciones (04-modelo-datos.md §5.4)
+        await _requisitos.GenerarParaClienteAsync(cliente, ejercicios, ct);
 
         var resultados = new List<ResultadoMotor>();
         foreach (var ejercicio in ejercicios.OrderBy(e => e))

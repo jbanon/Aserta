@@ -1,0 +1,21 @@
+@page
+@model Aserta.Web.Pages.Mensajes.IndexModel
+@{
+    ViewData["Titulo"] = "Mensajes";
+}
+<div class="pagina-cabecera"><div><h1>Mensajes <span class="insignia">@Model.SinLeer sin leer</span></h1><p class="subtitulo">Todos los hilos están anclados a una obligación o a un documento. No hay chat suelto: el hilo contextual cierra trabajo, el chat lo genera.</p></div></div>
+<div class="panel"><div class="tabla-envoltorio"><table class="tabla">
+    <thead><tr><th>Último mensaje</th><th>Cliente</th><th>Hilo</th><th>Sobre</th><th></th></tr></thead>
+    <tbody>
+    @if (Model.Filas.Count == 0) { <tr><td colspan="5" class="vacio">Sin hilos.</td></tr> }
+    @foreach (var f in Model.Filas)
+    {
+        <tr class="@(f.SinLeer > 0 ? "aviso-no-leido" : "")">
+            <td class="tabular nowrap">@f.Hilo.FechaUltimoMensajeUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+            <td>@f.Cliente</td>
+            <td><a asp-page="/Mensajes/Hilo" asp-route-id="@f.Hilo.Id">@f.Hilo.Asunto</a> @if (f.SinLeer > 0) { <span class="insignia insignia-marca">@f.SinLeer</span> }</td>
+            <td class="texto-sm texto-2">@f.Sobre</td>
+            <td><a class="boton boton-pequeno" asp-page="/Mensajes/Hilo" asp-route-id="@f.Hilo.Id">Abrir</a></td>
+        </tr>
+    }
+    </tbody></table></div></div>

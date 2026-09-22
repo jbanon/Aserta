@@ -1,0 +1,23 @@
+@page
+@model Aserta.Web.Pages.Documentos.SubirModel
+@{
+    ViewData["Titulo"] = "Registrar documento";
+}
+<div class="migas"><a asp-page="/Documentos/Index">Bandeja documental</a> › Registrar documento</div>
+<div class="pagina-cabecera"><div><h1>Registrar documento</h1><p class="subtitulo">Para lo que llega por correo o en papel. El cliente lo sube él mismo desde el portal.</p></div></div>
+<form method="post" enctype="multipart/form-data" class="ancho-max-sm">
+    <partial name="_ResumenErrores" />
+    <fieldset><legend>Documento</legend>
+        <div class="campo-fila">
+            <div class="campo"><label for="ClienteId">Cliente</label><select id="ClienteId" name="ClienteId" required><option value="">— Seleccione —</option>@foreach (var c in Model.Clientes) { <option value="@c.Key" selected="@(Model.ClienteId == c.Key)">@c.Value</option> }</select><span class="error">@Html.ValidationMessage("ClienteId")</span></div>
+            <div class="campo"><label for="Tipo">Tipo</label><select id="Tipo" name="Tipo">@foreach (var t in Enum.GetValues<TipoDocumento>()) { <option value="@t" selected="@(Model.Tipo == t)">@t.Etiqueta()</option> }</select></div>
+        </div>
+        <div class="campo-fila">
+            <div class="campo"><label for="Ejercicio">Ejercicio</label><input class="entrada" type="number" id="Ejercicio" name="Ejercicio" value="@Model.Ejercicio" min="2020" max="2100" /></div>
+            <div class="campo"><label for="Periodo">Periodo</label><select id="Periodo" name="Periodo">@foreach (var p in Aserta.Web.Pages.Documentos.SubirModel.Periodos) { <option value="@p.Key" selected="@(Model.Periodo == p.Key)">@p.Value</option> }</select><span class="error">@Html.ValidationMessage("Periodo")</span></div>
+        </div>
+        <div class="campo mt-3"><label for="Fichero">Fichero (imagen o PDF, máx. 20 MB)</label><input class="entrada" type="file" id="Fichero" name="Fichero" accept="image/*,application/pdf" required /><span class="error">@Html.ValidationMessage("Fichero")</span></div>
+        <div class="campo mt-3"><label for="Notas">Notas</label><input class="entrada" id="Notas" name="Notas" value="@Model.Notas" /></div>
+    </fieldset>
+    <div class="form-pie"><a class="boton" asp-page="/Documentos/Index">Cancelar</a><button class="boton boton-primario">Registrar</button></div>
+</form>

@@ -1,0 +1,46 @@
+@using Aserta.Aplicacion.Puertos
+@inject IContextoUsuarioActual Usuario
+@inject IAsertaDb Db
+@{
+    var titulo = ViewData["Titulo"] as string;
+    var ruta = ViewContext.HttpContext.Request.Path.Value ?? "/";
+    string Actual(string prefijo) => ruta.StartsWith(prefijo, StringComparison.OrdinalIgnoreCase) ? "page" : null!;
+    var empresa = Usuario.ClienteId is Guid cid ? await Db.Clientes.AsNoTracking().Where(c => c.Id == cid).Select(c => c.NombreComercial ?? c.RazonSocial).FirstOrDefaultAsync() : null;
+    int sinLeer = Usuario.ClienteId is Guid cid2 ? await Db.Mensajes.CountAsync(m => m.LeidoPorClienteUtc == null && Db.Hilos.Any(h => h.Id == m.HiloId && h.ClienteId == cid2)) : 0;
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#1f4e79" />
+    <title>@(titulo is null ? "Aserta" : $"{titulo} · Aserta")</title>
+    <link rel="stylesheet" href="~/css/tokens.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/app.css" asp-append-version="true" />
+    <link rel="icon" href="~/favicon.svg" type="image/svg+xml" />
+</head>
+<body class="portal">
+<header class="portal-cabecera">
+    <a class="marca" href="/Portal"><span class="marca-logo" aria-hidden="true">A</span><span>@(empresa ?? "Aserta")</span></a>
+    <div class="flex">
+        <button type="button" class="boton boton-sutil tema-boton" data-accion="alternar-tema" aria-label="Cambiar tema"><span class="icono-sol">@Icono.Sol</span><span class="icono-luna">@Icono.Luna</span></button>
+        <form method="post" asp-page="/Cuenta/Salir"><button type="submit" class="boton boton-sutil" aria-label="Cerrar sesión" title="Cerrar sesión">@Icono.Salir</button></form>
+    </div>
+</header>
+<main class="portal-contenido" id="contenido">
+    <partial name="_Alertas" />
+    @RenderBody()
+</main>
+<nav class="portal-nav" aria-label="Principal">
+    <a href="/Portal" aria-current="@(ruta.Equals("/Portal", StringComparison.OrdinalIgnoreCase) || ruta.StartsWith("/Portal/Index", StringComparison.OrdinalIgnoreCase) ? "page" : null)">@Icono.Tablero<span>Inicio</span></a>
+    <a href="/Portal/Documentos" aria-current="@Actual("/Portal/Documentos")">@Icono.Catalogo<span>Documentos</span></a>
+    <a href="/Portal/Impuestos" aria-current="@Actual("/Portal/Impuesto")">@Icono.Calendario<span>Impuestos</span></a>
+    <a href="/Portal/Mensajes" aria-current="@(Actual("/Portal/Mensajes") ?? Actual("/Mensajes"))" class="campana">@Icono.Historial<span>Mensajes</span>@if (sinLeer > 0) { <span class="campana-contador">@sinLeer</span> }</a>
+</nav>
+<div id="anuncios" class="oculto-visualmente" aria-live="polite" aria-atomic="true"></div>
+<form id="antiforgery" class="oculto-visualmente" aria-hidden="true">@Html.AntiForgeryToken()</form>
+<script src="~/lib/htmx-2.0.8.min.js" asp-append-version="true"></script>
+<script src="~/js/app.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

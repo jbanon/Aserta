@@ -1,0 +1,32 @@
+@page "{id:guid}"
+@model Aserta.Web.Pages.Mensajes.HiloModel
+@{
+    var h = Model.Hilo;
+    ViewData["Titulo"] = h.Asunto;
+    if (Model.EsCliente) { Layout = "_LayoutPortal"; }
+}
+<div class="migas">
+    @if (Model.EsCliente) { <a asp-page="/Portal/Mensajes">Mensajes</a> } else { <a asp-page="/Mensajes/Index">Mensajes</a> }
+    › @h.Asunto
+</div>
+<div class="pagina-cabecera"><div><h1>@h.Asunto</h1><p class="subtitulo">@Model.Contexto</p></div>
+    <div class="acciones">@if (Model.AnclaUrl is not null) { <a class="boton" href="@Model.AnclaUrl">@Model.AnclaTexto</a> }</div></div>
+<partial name="_ResumenErrores" />
+<div class="panel">
+    <div class="panel-cuerpo">
+        <ol class="chat">
+            @foreach (var m in h.Mensajes)
+            {
+                bool propio = m.AutorId == Model.UsuarioActualId;
+                <li class="burbuja @(propio ? "burbuja-propia" : "")">
+                    <div class="burbuja-autor">@(Model.Nombres.GetValueOrDefault(m.AutorId, "—")) <time>@m.FechaUtc.ToLocalTime().ToString("dd/MM HH:mm")</time></div>
+                    <div class="burbuja-cuerpo">@m.Cuerpo</div>
+                </li>
+            }
+        </ol>
+        <form method="post" class="mt-4 columna">
+            <div class="campo"><label for="Cuerpo">Responder</label><textarea id="Cuerpo" name="Cuerpo" rows="3" required maxlength="4000" placeholder="Escribe tu mensaje…"></textarea></div>
+            <div><button class="boton boton-primario">Enviar</button></div>
+        </form>
+    </div>
+</div>

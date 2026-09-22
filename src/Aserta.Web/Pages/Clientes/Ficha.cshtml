@@ -32,6 +32,7 @@
 <nav class="pestanas" aria-label="Secciones de la ficha">
     <a asp-page="/Clientes/Ficha" asp-route-id="@c.Id" asp-route-pestana="resumen" aria-current="@Pest("resumen")">Resumen</a>
     <a asp-page="/Clientes/Ficha" asp-route-id="@c.Id" asp-route-pestana="obligaciones" aria-current="@Pest("obligaciones")">Obligaciones <span class="insignia">@Model.Obligaciones.Count</span></a>
+    <a asp-page="/Clientes/Ficha" asp-route-id="@c.Id" asp-route-pestana="documentacion" aria-current="@Pest("documentacion")">Documentación @if (Model.Faltantes > 0) { <span class="insignia insignia-aviso">faltan @Model.Faltantes</span> }</a>
     <a asp-page="/Clientes/Ficha" asp-route-id="@c.Id" asp-route-pestana="perfil" aria-current="@Pest("perfil")">Perfil fiscal <span class="insignia">@c.Perfiles.Count</span></a>
     <a asp-page="/Clientes/Ficha" asp-route-id="@c.Id" asp-route-pestana="historial" aria-current="@Pest("historial")">Historial</a>
 </nav>
@@ -82,6 +83,63 @@ else if (Model.Pestana == "obligaciones")
         </div>
     }
     @if (Model.Obligaciones.Count == 0) { <div class="panel"><p class="vacio">Este cliente no tiene obligaciones generadas. Compruebe el perfil fiscal o pulse «Recalcular obligaciones».</p></div> }
+}
+else if (Model.Pestana == "documentacion")
+{
+    <partial name="_ResumenErrores" />
+    <div class="panel mb-4">
+        <div class="panel-cabecera"><h2>Qué esperamos recibir</h2><span class="texto-3 texto-sm">Derivado del perfil fiscal; ajustable cliente a cliente. Es lo que el portal traduce a «te faltan 2 facturas de julio».</span></div>
+        <div class="tabla-envoltorio"><table class="tabla tabla-compacta">
+            <thead><tr><th>Periodo</th><th>Documento</th><th>Recibidos / esperados</th><th>Estado</th><th>Obligatorio</th><th><span class="oculto-visualmente">Ajustar</span></th></tr></thead>
+            <tbody>
+            @foreach (var e in Model.Requisitos.Where(r => Periodo.Rango(r.Requisito.Ejercicio, r.Requisito.Periodo).Inicio >= Model.Hoy.AddMonths(-6)).OrderByDescending(r => r.Requisito.Ejercicio).ThenByDescending(r => Periodo.Orden(r.Requisito.Periodo)).ThenBy(r => r.Requisito.TipoDocumento))
+            {
+                <tr class="@(e.Requisito.NoAplica ? "texto-3" : "")">
+                    <td class="nowrap">@Periodo.Etiqueta(e.Requisito.Ejercicio, e.Requisito.Periodo)</td>
+                    <td>@e.Requisito.Descripcion<br /><small class="texto-3">@e.Requisito.TipoDocumento.Etiqueta()</small></td>
+                    <td class="tabular">@e.Recibidos / @(e.Requisito.CantidadEsperada?.ToString() ?? "≥1") @if (e.Rechazados > 0) { <small class="texto-3">(@e.Rechazados rechazados)</small> }</td>
+                    <td>@if (e.Requisito.NoAplica) { <span class="insignia">No aplica</span> } else if (e.Completo) { <span class="insignia insignia-ok">Completo</span> } else { <span class="insignia insignia-aviso">@e.Frase</span> }</td>
+                    <td>@(e.Requisito.Obligatorio ? "Sí" : "No")</td>
+                    <td class="texto-derecha">
+                        <form method="post" asp-page-handler="AjustarRequisito" asp-route-id="@c.Id" asp-route-requisitoId="@e.Requisito.Id" class="flex nowrap">
+                            <input class="entrada" type="number" name="cantidad" value="@e.Requisito.CantidadEsperada" min="0" max="999" placeholder="≥1" aria-label="Cantidad esperada" size="3" />
+                            <label class="texto-xs nowrap"><input type="checkbox" name="obligatorio" value="true" checked="@e.Requisito.Obligatorio" /> oblig.</label>
+                            <label class="texto-xs nowrap"><input type="checkbox" name="noAplica" value="true" checked="@e.Requisito.NoAplica" /> no aplica</label>
+                            <button class="boton boton-pequeno">Guardar</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody></table></div>
+        <div class="panel-cuerpo">
+            <form method="post" asp-page-handler="AnadirRequisito" asp-route-id="@c.Id" class="flex">
+                <span class="texto-sm medio">Añadir requisito:</span>
+                <input class="entrada" type="number" name="ejercicio" value="@Model.Hoy.Year" min="2020" max="2100" aria-label="Ejercicio" size="5" />
+                <select name="periodo" aria-label="Periodo">@foreach (var m in Periodo.Meses) { <option value="@m" selected="@(m == Model.Hoy.AddMonths(-1).Month.ToString("00"))">@System.Globalization.CultureInfo.GetCultureInfo("es-ES").DateTimeFormat.GetMonthName(int.Parse(m))</option> }@foreach (var t in Periodo.Trimestres) { <option value="@t">@t</option> }</select>
+                <select name="tipo" aria-label="Tipo de documento">@foreach (var t in Enum.GetValues<TipoDocumento>()) { <option value="@t">@t.Etiqueta()</option> }</select>
+                <input class="entrada" type="number" name="cantidad" min="1" max="999" placeholder="cantidad" aria-label="Cantidad" size="4" />
+                <input class="entrada" name="descripcion" placeholder="Descripción para el cliente" aria-label="Descripción" />
+                <button class="boton boton-pequeno">Añadir</button>
+            </form>
+        </div>
+    </div>
+    <div class="panel">
+        <div class="panel-cabecera"><h2>Documentos recibidos</h2><a class="boton boton-pequeno" asp-page="/Documentos/Subir" asp-route-clienteId="@c.Id">Registrar documento</a></div>
+        <div class="tabla-envoltorio"><table class="tabla tabla-compacta">
+            <thead><tr><th>Recibido</th><th>Documento</th><th>Tipo · periodo</th><th>Estado</th></tr></thead>
+            <tbody>
+            @if (Model.Documentos.Count == 0) { <tr><td colspan="4" class="vacio">Sin documentos.</td></tr> }
+            @foreach (var d in Model.Documentos)
+            {
+                <tr data-href="/Documentos/Detalle/@d.Id">
+                    <td class="tabular nowrap">@d.FechaSubidaUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                    <td><a asp-page="/Documentos/Detalle" asp-route-id="@d.Id">@d.NombreOriginal</a></td>
+                    <td>@d.Tipo.Etiqueta() · @Periodo.Etiqueta(d.Ejercicio, d.Periodo)</td>
+                    <td><span class="insignia @(d.Estado switch { EstadoDocumento.Validado => "insignia-ok", EstadoDocumento.Rechazado => "insignia-error", EstadoDocumento.EnRevision => "insignia-info", _ => "" })">@d.Estado.Etiqueta()</span></td>
+                </tr>
+            }
+            </tbody></table></div>
+    </div>
 }
 else if (Model.Pestana == "perfil")
 {
