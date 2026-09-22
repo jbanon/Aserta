@@ -11,13 +11,13 @@
 | [adr/ADR-001-…](adr/ADR-001-arquitectura-general-y-estructura-de-solucion.md) | Arquitectura general y estructura de solución | ✅ Aceptada |
 | [adr/ADR-002-…](adr/ADR-002-certificado-y-representacion-verifactu.md) | Certificado y representación para el envío Veri\*Factu | ✅ Aceptada (validación legal pendiente) |
 | [adr/ADR-003-…](adr/ADR-003-interactividad-razor-pages-y-css.md) | htmx + SortableJS y estrategia de CSS | ✅ Aceptada |
-| 04-modelo-datos.md | Entidades, ERD, invariantes, índices | ⏳ **siguiente** |
-| 06-verifactu/especificacion.md | Registros de alta y anulación, tipos de factura, inalterabilidad | ⏳ **siguiente** |
-| 06-verifactu/huella-y-vectores-prueba.md | Cadena de huella SHA-256 y vectores de prueba | ⏳ siguiente |
-| 06-verifactu/envio-y-cola-reintentos.md | Envío SOAP/mTLS, outbox, estados, simulador | ⏳ siguiente |
-| 06-verifactu/qr-y-pdf.md | QR normalizado, plantilla PDF, cola de Playwright | ⏳ pendiente |
-| 06-verifactu/declaracion-responsable.md | Contenido y versionado de la declaración | ⏳ pendiente (bloqueada por DA-02) |
-| 02-calendario-fiscal.md | Modelo de plazos + datos semilla por ejercicio | ⏳ pendiente |
+| [04-modelo-datos.md](04-modelo-datos.md) | Entidades, ERD, invariantes, índices | ✅ v1.0 |
+| [06-verifactu/especificacion.md](06-verifactu/especificacion.md) | Registros de alta y anulación, tipos de factura, inalterabilidad | ✅ v1.0 |
+| [06-verifactu/huella-y-vectores-prueba.md](06-verifactu/huella-y-vectores-prueba.md) | Cadena de huella SHA-256 y **vectores de prueba verificados** | ✅ v1.0 |
+| [06-verifactu/envio-y-cola-reintentos.md](06-verifactu/envio-y-cola-reintentos.md) | Envío SOAP/mTLS, outbox, estados, simulador | ✅ v1.0 |
+| [06-verifactu/qr-y-pdf.md](06-verifactu/qr-y-pdf.md) | QR normalizado, plantilla PDF, cola de Playwright | ✅ v1.0 |
+| [06-verifactu/declaracion-responsable.md](06-verifactu/declaracion-responsable.md) | Contenido y versionado de la declaración | ✅ v1.0 |
+| 02-calendario-fiscal.md | Modelo de plazos + datos semilla por ejercicio | ⏳ **siguiente** |
 | 03-arquitectura.md | Diagramas C4 en Mermaid | ⏳ pendiente |
 | 05-paginas-y-endpoints.md | Inventario de Razor Pages y endpoints | ⏳ pendiente |
 | 07-integraciones-contables.md | `IExportadorContable` y formato elegido | ⏳ pendiente |
@@ -28,7 +28,7 @@
 | 10-argumentario-comercial.md | Valor por módulo para el socio | ⏳ pendiente |
 | 11-guion-demo.md | Historia de 15 minutos | ⏳ pendiente |
 | 12-infraestructura-despliegue.md | systemd, nginx, puertos, secretos, despliegue | ⏳ pendiente |
-| 13-migraciones-y-datos.md | Convenciones SQL, runner, alineación con EF, seeds | ⏳ pendiente |
+| 13-migraciones-y-datos.md | Convenciones SQL, runner, alineación con EF, seeds | ⏳ **siguiente** |
 
 ## Convenciones de esta documentación
 

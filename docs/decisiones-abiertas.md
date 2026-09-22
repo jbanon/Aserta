@@ -1,6 +1,6 @@
 # Decisiones abiertas
 
-> **Estado:** vivo · **Última actualización:** 2026-09-22
+> **Estado:** vivo · **Última actualización:** 2026-09-22 (cierre de DA-01, DA-02 y DA-13 por el usuario)
 > Registro de lo que **todavía no está decidido** y de lo que el arquitecto ha decidido *por defecto* para no bloquear el trabajo. Cuando una decisión se cierra, se marca aquí y se refleja en el ADR correspondiente.
 >
 > **Convención:** mientras una decisión esté abierta, el Agente Programador implementa **la recomendación por defecto**. Ninguna decisión abierta puede detener la construcción.
@@ -9,8 +9,8 @@
 
 | Id | Decisión | Recomendación por defecto | Quién decide | Bloquea a | Estado |
 |---|---|---|---|---|---|
-| DA-01 | Nombre del producto y del repositorio | `Aserta` (es el nombre del directorio y del proyecto ya creado en git) | Usuario | Namespaces, systemd, subdominio, BD, declaración responsable | **ABIERTA — bloqueante** |
-| DA-02 | Identidad del *productor del software* para la declaración responsable | Razón social y NIF del usuario o de su empresa | Usuario | M6 · declaración responsable | **ABIERTA — bloqueante** |
+| DA-01 | Nombre del producto y del repositorio | **`Aserta`** | Usuario | Namespaces, systemd, subdominio, BD, declaración responsable | ✅ **CERRADA 2026-09-22** |
+| DA-02 | Identidad del *productor del software* para la declaración responsable | **Datos ficticios en configuración**, sustituibles sin desplegar | Usuario | M6 · declaración responsable | ✅ **CERRADA 2026-09-22** (revisar antes de producción) |
 | DA-03 | Servidor de producción: propio o compartido | **Propio.** 4 GB compartidos con Chromium + SQL Server es un riesgo real | Usuario | Despliegue a producción (no la demo) | ABIERTA |
 | DA-04 | Ubicación de SQL Server: misma máquina o separada | Misma máquina en desarrollo con `max server memory` limitado; separada en producción si hay presupuesto | Arquitecto + usuario | `12-infraestructura-despliegue.md` | ABIERTA |
 | DA-05 | Integración AEAT en la demo | **Simulador**, con opción de apuntar a preproducción real si aparece un certificado | Usuario | M6 | ABIERTA (no bloquea) |
@@ -21,7 +21,7 @@
 | DA-10 | Arquitectura de solución y multi-tenant | Monolito modular en 6 proyectos, doble barrera de aislamiento | Arquitecto | Todo | CERRADA → [ADR-001](adr/ADR-001-arquitectura-general-y-estructura-de-solucion.md) |
 | DA-11 | Modo NO VERI\*FACTU | **No se implementa.** Solo modo VERI\*FACTU | Arquitecto | M6 | CERRADA por defecto, pendiente de ADR |
 | DA-12 | Servicio, puerto, subdominio y base de datos en el servidor de desarrollo | Servicio `aserta-dev`, puerto **5110**, BD `Aserta_Dev`, subdominio por confirmar | Usuario (DNS) | Despliegue en desarrollo | ABIERTA |
-| DA-13 | Fecha objetivo de la demo y prioridad si hay que recortar | Ver preguntas al usuario | Usuario | Orden del backlog | **ABIERTA — bloqueante** |
+| DA-13 | Prioridad de la demo si hay que recortar | **Equilibrada**: núcleo → Kanban → portal/documental → Veri\*Factu → exportación y cuadro de mando | Usuario | Orden del backlog | ✅ **CERRADA 2026-09-22** |
 | DA-14 | Territorio foral (País Vasco, Navarra) | **Fuera de alcance**, con bloqueo explícito y mensaje claro en el alta de cliente | Arquitecto | M1 | CERRADA por defecto |
 | DA-15 | Repositorio GitHub | Repositorio nuevo en `github.com/jbanon`, nombre = DA-01 | Usuario | CI/CD | ABIERTA |
 
@@ -29,7 +29,7 @@
 
 ## Detalle de las decisiones abiertas
 
-### DA-01 · Nombre del producto y del repositorio  *(bloqueante)*
+### DA-01 · Nombre del producto y del repositorio  ✅ CERRADA
 
 **Contexto.** El prompt propone `GestorFlow` como nombre provisional. Sin embargo, el directorio de trabajo, el repositorio git ya inicializado y el script `~/scripts/rc-aserta.sh` del servidor usan **`Aserta`**. Son dos nombres distintos para lo mismo y hay que elegir **antes de escribir la primera línea de C#**, porque el nombre entra en:
 
@@ -45,13 +45,11 @@
 | B · `GestorFlow` | Es el nombre del encargo | Anglicismo mixto; obliga a renombrar directorio, repo y scripts; menos diferenciado (hay muchos "*Flow*") |
 | C · Otro nombre | — | Retrasa el arranque |
 
-**Recomendación:** **A · `Aserta`**, con `GestorFlow` citado en la documentación como nombre de trabajo original. Toda la documentación creada usa por ahora nombres de proyecto genéricos y **`GestorFlow.*` solo donde el prompt lo fijaba**; el renombrado se hará en un único commit en cuanto se confirme.
-
-**Si no se decide:** el programador arranca con `Aserta.*`.
+**DECISIÓN (usuario, 2026-09-22): opción A · `Aserta`.** Los proyectos son `Aserta.Web`, `Aserta.Dominio`, `Aserta.Aplicacion`, `Aserta.Infraestructura`, `Aserta.Verifactu`, `Aserta.Exportacion`. `GestorFlow` queda solo como nombre de trabajo del encargo original. Pendiente menor: comprobar colisión con marcas registradas del sector antes de usar el nombre comercialmente `[VERIFICAR]`.
 
 ---
 
-### DA-02 · Productor del software (declaración responsable)  *(bloqueante para M6)*
+### DA-02 · Productor del software (declaración responsable)  ✅ CERRADA
 
 **Contexto.** El RSIF exige que el sistema informático de facturación lleve una **declaración responsable** del *productor* con su identificación (razón social y NIF), el nombre, identificador y versión del sistema, sus componentes, y la fecha y lugar de suscripción `[VERIFICAR]` contra el texto del RD 1007/2023 y la Orden HAC/1177/2024. Ese mismo bloque de identificación viaja además **dentro de cada registro de facturación** que se remite a la AEAT, y ambos deben ser coherentes.
 
@@ -59,7 +57,9 @@ Esto no es una pantalla decorativa: es una declaración jurídica. No puedo inve
 
 **Qué necesito:** razón social, NIF y domicilio del productor, y si el sistema se comercializa como producto propio o como desarrollo a medida (el contenido exigido difiere `[VERIFICAR]`).
 
-**Mientras tanto:** se implementa la pantalla con un **fichero de configuración** (`DeclaracionResponsable` en `appsettings`) y datos ficticios claramente marcados como tales. No es deuda técnica: es el diseño correcto, porque la declaración cambia con cada versión del software.
+**DECISIÓN (usuario, 2026-09-22):** datos **ficticios** por ahora, leídos de una sección `DeclaracionResponsable` de la configuración y marcados visiblemente como datos de demostración. No es deuda técnica: la declaración cambia con cada versión del software, así que leerla de configuración es el diseño correcto.
+
+**Condición de salida obligatoria:** antes de cualquier uso real —no solo antes de producción, también antes de enseñar la demo a un cliente que pudiera tomarla por un producto homologado— hay que sustituir razón social, NIF y domicilio reales del productor, y hacerlos coherentes con el bloque de identificación del sistema informático que viaja en cada registro. Queda como punto de control en el checklist de `12-infraestructura-despliegue.md`.
 
 ---
 
@@ -122,14 +122,17 @@ Analizada en profundidad en [ADR-002](adr/ADR-002-certificado-y-representacion-v
 
 ---
 
-### DA-13 · Fecha objetivo y prioridad de recorte  *(bloqueante para planificar)*
+### DA-13 · Prioridad de la demo  ✅ CERRADA
 
-**Contexto.** M0–M7 es mucho para una demo. El orden de construcción cambia según a qué se juegue:
+**DECISIÓN (usuario, 2026-09-22): orden equilibrado.**
 
-- si la demo es **comercial y pronto**, primero lo vistoso (Kanban + portal del cliente) y Veri\*Factu reducido a emitir factura + QR + cola;
-- si la demo es para **validar viabilidad técnica**, primero Veri\*Factu completo con vectores de prueba y el resto en modo esbozo.
+1. Núcleo (M0) + datos semilla + ficha de cliente y motor de obligaciones (M1)
+2. Kanban y calendario fiscal (M4) — lo más vistoso
+3. Portal del cliente (M2) y gestión documental (M3)
+4. Facturación Veri\*Factu con simulador de AEAT (M6)
+5. Exportación contable (M5) y cuadro de mando del socio (M7)
 
-Sin esta respuesta, el backlog se ordena según el orden recomendado en el prompt (núcleo → Kanban → portal → Veri\*Factu → exportación/cuadro de mando), que es el equilibrado.
+**Criterio de recorte asociado:** cada fase debe dejar la demo *enseñable por sí sola*. Si hay que recortar, se recorta **profundidad dentro de la última fase alcanzada**, nunca se dejan dos fases a medias. La fecha objetivo sigue sin fijarse; el backlog se ordena por fases, no por fechas.
 
 ---
 
