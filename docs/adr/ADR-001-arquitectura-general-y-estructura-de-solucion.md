@@ -134,6 +134,8 @@ Las tablas de facturas emitidas y registros de facturación son **append-only**,
 2. `DENY UPDATE, DELETE` al usuario de la aplicación sobre esas tablas;
 3. ausencia de cualquier `Update`/`Remove` en el código, verificada por revisión.
 
+> **Actualización 2026-09-22 — verificado contra la base de datos real.** Los triggers **funcionan incluso para `db_owner`** (probado). En cambio, la barrera 2 **no está disponible** en el entorno de desarrollo actual: el único usuario facilitado (`agente_ro`) es `db_owner`, y SQL Server no permite denegarse permisos a uno mismo ni `db_owner` los respetaría. La inalterabilidad queda por tanto sostenida por **una sola barrera** —fuerte frente a errores de programación, no frente a un uso deliberado desde la propia aplicación, que podría deshabilitar el trigger—. Suficiente para la demo, **insuficiente para producción**: ver la petición de un login `aserta_app` restringido en [12-infraestructura-despliegue.md](../12-infraestructura-despliegue.md) §3.2.
+
 El estado mutable (situación del envío, respuesta de la AEAT, número de reintentos) vive en **tablas separadas** que sí admiten `UPDATE`.
 
 ### 2.8 Estilo de código

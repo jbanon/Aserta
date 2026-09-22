@@ -1,0 +1,21 @@
+# === Secretos: NUNCA se suben al repositorio ===
+usuarioBD.md
+*.secrets.json
+appsettings.*.Local.json
+*.pfx
+*.p12
+certificados/
+
+# === .NET ===
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.suo
+.vs/
+
+# === Artefactos locales ===
+/publicado/
+/logs/
+*.log

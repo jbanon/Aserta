@@ -12,7 +12,7 @@
 | DA-01 | Nombre del producto y del repositorio | **`Aserta`** | Usuario | Namespaces, systemd, subdominio, BD, declaración responsable | ✅ **CERRADA 2026-09-22** |
 | DA-02 | Identidad del *productor del software* para la declaración responsable | **Datos ficticios en configuración**, sustituibles sin desplegar | Usuario | M6 · declaración responsable | ✅ **CERRADA 2026-09-22** (revisar antes de producción) |
 | DA-03 | Servidor de producción: propio o compartido | **Propio.** 4 GB compartidos con Chromium + SQL Server es un riesgo real | Usuario | Despliegue a producción (no la demo) | ABIERTA |
-| DA-04 | Ubicación de SQL Server: misma máquina o separada | Misma máquina en desarrollo con `max server memory` limitado; separada en producción si hay presupuesto | Arquitecto + usuario | `12-infraestructura-despliegue.md` | ABIERTA |
+| DA-04 | Ubicación de SQL Server: misma máquina o separada | Misma máquina (contenedor Docker) en desarrollo ✅. **`max server memory` está ILIMITADO y hay que fijarlo** | Arquitecto + usuario | `12-infraestructura-despliegue.md` | ABIERTA — acción pendiente |
 | DA-05 | Integración AEAT en la demo | **Simulador**, con opción de apuntar a preproducción real si aparece un certificado | Usuario | M6 | ABIERTA (no bloquea) |
 | DA-06 | Certificado con el que se envía a la AEAT | Certificado de la **gestoría** como representante/colaborador social; soporte también para certificado del propio cliente | Usuario (implicación legal) | M6 · producción | ABIERTA → propuesta en [ADR-002](adr/ADR-002-certificado-y-representacion-verifactu.md) |
 | DA-07 | Exportador contable de la demo | **A3 + CSV genérico**; formato A3 pendiente de documentación del fabricante `[VERIFICAR]` | Usuario | M5 | ABIERTA (no bloquea) |
@@ -20,7 +20,7 @@
 | DA-09 | Interactividad JS y estrategia de CSS | **htmx + SortableJS servidos localmente + CSS propio con design tokens** | Arquitecto | Todo el front | CERRADA → [ADR-003](adr/ADR-003-interactividad-razor-pages-y-css.md) |
 | DA-10 | Arquitectura de solución y multi-tenant | Monolito modular en 6 proyectos, doble barrera de aislamiento | Arquitecto | Todo | CERRADA → [ADR-001](adr/ADR-001-arquitectura-general-y-estructura-de-solucion.md) |
 | DA-11 | Modo NO VERI\*FACTU | **No se implementa.** Solo modo VERI\*FACTU | Arquitecto | M6 | CERRADA por defecto, pendiente de ADR |
-| DA-12 | Servicio, puerto, subdominio y base de datos en el servidor de desarrollo | Servicio `aserta-dev`, puerto **5110**, BD `Aserta_Dev`, subdominio por confirmar | Usuario (DNS) | Despliegue en desarrollo | ABIERTA |
+| DA-12 | Servicio, puerto, subdominio y base de datos en el servidor de desarrollo | BD **`Aserta`** y usuario **`agente_ro`** ✅ facilitados; servicio `aserta-dev`, puerto **5110**; subdominio por confirmar | Usuario (DNS) | Despliegue en desarrollo | PARCIALMENTE CERRADA 2026-09-22 |
 | DA-13 | Prioridad de la demo si hay que recortar | **Equilibrada**: núcleo → Kanban → portal/documental → Veri\*Factu → exportación y cuadro de mando | Usuario | Orden del backlog | ✅ **CERRADA 2026-09-22** |
 | DA-14 | Territorio foral (País Vasco, Navarra) | **Fuera de alcance**, con bloqueo explícito y mensaje claro en el alta de cliente | Arquitecto | M1 | CERRADA por defecto |
 | DA-15 | Repositorio GitHub | Repositorio nuevo en `github.com/jbanon`, nombre = DA-01 | Usuario | CI/CD | ABIERTA |
@@ -77,7 +77,7 @@ Esto no es una pantalla decorativa: es una declaración jurídica. No puedo inve
 
 **Contexto.** Hay un SQL Server escuchando en el 1433 de la máquina de desarrollo, compartido con otros proyectos. La demo puede usarlo con **base de datos propia** (`Aserta_Dev`), que es lo que recomiendo — no una instancia nueva, que duplicaría el consumo de memoria.
 
-**Pendiente:** confirmar que `max server memory` está limitado; si no lo está, SQL Server se comerá toda la RAM disponible y el resto del servidor sufrirá.
+**Comprobado el 2026-09-22: `max server memory` está en el valor por defecto, es decir ILIMITADO** (consumo actual 437 MB). En una máquina de 3,8 GB con el swap al 84 % esto es el riesgo operativo más inmediato del proyecto. Requiere `sysadmin`, que `agente_ro` no tiene. Propuesta: 1.024–1.536 MB. Ver `12-infraestructura-despliegue.md` §3.2.
 
 ---
 
@@ -115,8 +115,8 @@ Analizada en profundidad en [ADR-002](adr/ADR-002-certificado-y-representacion-v
 | Puerto Kestrel (loopback) | **5110** |
 | Sitio nginx | `/etc/nginx/sites-available/aserta-dev` |
 | Subdominio | *pendiente de confirmar con el usuario* (siguiendo el patrón de los sitios existentes) |
-| Base de datos | `Aserta_Dev` en la instancia SQL Server existente |
-| Usuario de BD | `aserta_app`, con `DENY UPDATE, DELETE` sobre las tablas de facturación |
+| Base de datos | **`Aserta`** ✅ ya creada, vacía |
+| Usuario de BD | **`agente_ro`** ✅ (es `db_owner`, pese al nombre). Pendiente: login `aserta_app` restringido para la aplicación — ver `12-infraestructura-despliegue.md` §3.2 |
 | Ruta de documentos | `/var/lib/aserta/documentos` (fuera del directorio de despliegue) |
 | Script de despliegue | `~/scripts/aserta.sh` |
 

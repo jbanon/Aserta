@@ -35,7 +35,9 @@ WHERE @GestoriaId = CAST(SESSION_CONTEXT(N'GestoriaId') AS uniqueidentifier)
    OR CAST(SESSION_CONTEXT(N'EsMantenimiento') AS bit) = 1;
 ```
 
-aplicada con una `SECURITY POLICY` con `FILTER PREDICATE` **y** `BLOCK PREDICATE` (este último impide insertar filas de otro tenant, que es el ataque que un filtro de lectura no cubre). El `SESSION_CONTEXT` lo fija un interceptor de conexión de EF Core; los trabajos de fondo abren un ámbito por tenant, y sólo el runner de migraciones y el seed usan `EsMantenimiento`.
+aplicada con una `SECURITY POLICY` con `FILTER PREDICATE` **y** `BLOCK PREDICATE` (este último impide insertar filas de otro tenant, que es el ataque que un filtro de lectura no cubre).
+
+> ✅ **Verificado el 2026-09-22 contra la base `Aserta` real:** con dos filas de dos tenants, cada uno ve exactamente la suya y el `BLOCK PREDICATE` rechaza insertar en nombre de otro. Funciona **también para `db_owner`**: RLS no se salta por ser propietario de la base. El `SESSION_CONTEXT` lo fija un interceptor de conexión de EF Core; los trabajos de fondo abren un ámbito por tenant, y sólo el runner de migraciones y el seed usan `EsMantenimiento`.
 
 > El catálogo normativo (`cat.*`) **no lleva `GestoriaId`** y queda fuera de la política: es el mismo para todas las gestorías.
 
@@ -201,6 +203,8 @@ INSTEAD OF UPDATE, DELETE AS
 ```
 
 más `DENY UPDATE, DELETE ON SCHEMA::vf TO aserta_app` con `GRANT` selectivo de `UPDATE` sólo a `vf.EstadoEnvioRegistro`, `vf.EnvioPendiente` y `vf.CadenaEmisor`.
+
+> ⚠️ **Estado real (verificado el 2026-09-22).** El trigger está comprobado y **detiene `UPDATE` y `DELETE` incluso ejecutados por `db_owner`**. El `DENY`, en cambio, **no se puede aplicar hoy**: el usuario disponible (`agente_ro`) es `db_owner`. El login `aserta_app` aún no existe y hay que pedirlo — ver [12-infraestructura-despliegue.md](12-infraestructura-despliegue.md) §3.2. Escribir igualmente el `DENY` en el script de migración, condicionado a que el login exista, para que la segunda barrera entre en vigor automáticamente el día que se cree.
 
 **Ésta es la razón de que el estado del envío viva en otra tabla.** El estado cambia muchas veces (en cola → enviado → aceptado); el registro no cambia nunca. Meterlos juntos obligaría a permitir `UPDATE` sobre el registro, y entonces la inalterabilidad sería una promesa en vez de una garantía.
 
