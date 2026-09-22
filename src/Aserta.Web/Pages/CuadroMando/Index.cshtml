@@ -1,0 +1,68 @@
+@page
+@using Aserta.Dominio.Obligaciones
+@model Aserta.Web.Pages.CuadroMando.IndexModel
+@{
+    ViewData["Titulo"] = "Cuadro de mando";
+    var c = Model.Cuadro;
+    int maxEstado = Math.Max(1, c.PorEstado.Values.DefaultIfEmpty(1).Max());
+}
+<div class="pagina-cabecera">
+    <div><h1>Cuadro de mando</h1><p class="subtitulo">Estado del despacho a @c.Hoy.ToString("dddd d 'de' MMMM 'de' yyyy"). Cada cifra sale de los mismos datos que el tablero, la bandeja documental y la facturación.</p></div>
+    <div class="acciones"><a class="boton" asp-page="/Obligaciones/Tablero">Tablero</a><a class="boton" asp-page="/Obligaciones/Carga">Carga por asesor</a><a class="boton" asp-page="/Exportacion/Index">Exportación</a></div>
+</div>
+@foreach (var a in c.Alertas)
+{
+    <div class="alerta @(a.Nivel == "error" ? "alerta-error" : "alerta-aviso")">@Icono.Aviso <div>@a.Texto <a href="@a.Enlace">Ver</a></div></div>
+}
+<div class="rejilla rejilla-4 mb-4">
+    <div class="panel kpi"><div class="kpi-valor">@c.Abiertas</div><div class="kpi-etiqueta">Obligaciones abiertas</div></div>
+    <div class="panel kpi @(c.Vencidas > 0 ? "kpi-error" : "")"><div class="kpi-valor">@c.Vencidas</div><div class="kpi-etiqueta">Vencidas sin presentar</div></div>
+    <div class="panel kpi @(c.VencenSemana > 0 ? "kpi-aviso" : "")"><div class="kpi-valor">@c.VencenSemana</div><div class="kpi-etiqueta">Vencen en 7 días</div></div>
+    <div class="panel kpi"><div class="kpi-valor">@c.PresentadasMes</div><div class="kpi-etiqueta">Presentadas este mes</div></div>
+</div>
+<div class="rejilla rejilla-2 mb-4">
+    <div class="panel">
+        <div class="panel-cabecera"><h2>Obligaciones por estado</h2></div>
+        <div class="barras">
+        @foreach (var (estado, n) in c.PorEstado)
+        {
+            <div class="barra-fila"><span class="barra-etiqueta">@estado.Etiqueta()</span><div class="barra-pista"><div class="barra-relleno" style="width:@(Math.Round(100.0 * n / maxEstado))%"></div></div><span class="barra-valor tabular">@n</span></div>
+        }
+        </div>
+    </div>
+    <div class="panel">
+        <div class="panel-cabecera"><h2>Vencimientos de la semana</h2></div>
+        <div class="tabla-envoltorio"><table class="tabla tabla-compacta"><thead><tr><th>Fecha</th><th>Modelo</th><th>Cliente</th><th>Estado</th></tr></thead><tbody>
+        @if (c.VencimientosSemana.Count == 0) { <tr><td colspan="4" class="vacio">Nada vence esta semana.</td></tr> }
+        @foreach (var o in c.VencimientosSemana)
+        {
+            <tr><td class="tabular"><partial name="_Semaforo" model="(o, c.Hoy)" /> @Semaforo.FechaDeReferencia(o).ToString("dd/MM")</td><td class="mono">@o.ModeloCodigo @o.Periodo</td><td><a asp-page="/Obligaciones/Detalle" asp-route-id="@o.Id">@c.NombresClientes.GetValueOrDefault(o.ClienteId, "—")</a></td><td><span class="insignia">@o.Estado.Etiqueta()</span></td></tr>
+        }
+        </tbody></table></div>
+    </div>
+</div>
+<div class="rejilla rejilla-2 mb-4">
+    <div class="panel">
+        <div class="panel-cabecera"><h2>Clientes con documentación incompleta</h2><span class="texto-sm texto-2">@c.ClientesIncompletos.Count de @c.ClientesActivos activos</span></div>
+        <div class="tabla-envoltorio"><table class="tabla tabla-compacta"><thead><tr><th>Cliente</th><th class="num">Faltan</th><th>Lo más urgente</th></tr></thead><tbody>
+        @if (c.ClientesIncompletos.Count == 0) { <tr><td colspan="3" class="vacio">Toda la cartera al día.</td></tr> }
+        @foreach (var i in c.ClientesIncompletos) { <tr><td><a asp-page="/Clientes/Ficha" asp-route-id="@i.ClienteId" asp-route-pestana="documentacion">@i.Nombre</a></td><td class="num">@i.Faltantes</td><td class="texto-sm">@i.Ejemplo</td></tr> }
+        </tbody></table></div>
+        <p class="texto-sm texto-2 mt-2">Bandeja: @c.DocumentosPendientesRevisar documentos por revisar · @c.MensajesSinLeer mensajes de clientes sin leer.</p>
+    </div>
+    <div class="panel">
+        <div class="panel-cabecera"><h2>Productividad por asesor (30 días)</h2></div>
+        <div class="tabla-envoltorio"><table class="tabla tabla-compacta"><thead><tr><th>Asesor</th><th class="num">Presentadas</th><th class="num">Cerradas</th><th class="num">Abiertas</th><th class="num">Vencidas</th></tr></thead><tbody>
+        @foreach (var p in c.Productividad) { <tr><td>@p.Nombre</td><td class="num">@p.Presentadas30d</td><td class="num">@p.Cerradas30d</td><td class="num">@p.Abiertas</td><td class="num @(p.Vencidas > 0 ? "texto-error" : "")">@p.Vencidas</td></tr> }
+        </tbody></table></div>
+    </div>
+</div>
+<div class="panel">
+    <div class="panel-cabecera"><h2>Facturación Veri*Factu</h2><a class="boton boton-pequeno" asp-page="/Facturacion/Envios">Bandeja de envíos</a></div>
+    <div class="rejilla rejilla-4">
+        <div class="kpi"><div class="kpi-valor">@c.VfFacturasMes</div><div class="kpi-etiqueta">Facturas este mes · @c.VfImporteMes.ToString("N2") €</div></div>
+        <div class="kpi"><div class="kpi-valor">@c.VfAceptados</div><div class="kpi-etiqueta">Registros aceptados por la AEAT</div></div>
+        <div class="kpi @(c.VfPendientes > 0 ? "kpi-aviso" : "")"><div class="kpi-valor">@c.VfPendientes</div><div class="kpi-etiqueta">En cola / reintentando</div></div>
+        <div class="kpi @(c.VfErrores > 0 ? "kpi-error" : "")"><div class="kpi-valor">@c.VfErrores</div><div class="kpi-etiqueta">Con errores, rechazados o bloqueados</div></div>
+    </div>
+</div>

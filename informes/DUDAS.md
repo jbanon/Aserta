@@ -59,3 +59,13 @@
 | D-35 | Chromium en el servidor de desarrollo: funciona (Playwright 1.61 usa `~/.cache/ms-playwright/chromium-1228`), ~200 MB de RSS; con la web quedan ~170 MB libres. ¿Aceptable para la demo o prefiere `Pdf:Motor = Basico` por defecto? | Playwright por defecto; respaldo básico automático si Chromium no arranca. | RAM, PDF | Abierta |
 | D-36 | He quitado `EnableRetryOnFailure` de EF Core (incompatible con la transacción explícita de emisión). | Aplicado; base local e instancia única. | Persistencia | Abierta |
 | D-37 | Datos ficticios del productor en `appsettings` (`Productor Ficticio de Software SL`, NIF ficticio válido, versión 0.4.0). | Marcados `DatosDeDemostracion = true`; vetados en Production. | Declaración responsable | **Sustituir antes de uso real** (DA-02) |
+
+## Fase 5
+
+| # | Duda | Supuesto aplicado | Afecta a | Estado |
+|---|---|---|---|---|
+| D-38 | Formato de importación de A3 (y de otros programas contables): sin especificación oficial no lo invento (DA-07). ¿El cliente puede facilitar la plantilla de importación de su versión de A3? | `ExportadorA3` modelado y deshabilitado con motivo visible; el CSV genérico documentado (v1) es el único formato disponible. | Exportación | **Necesita acción del usuario** `[VERIFICAR]` |
+| D-39 | `IExportadorContable` vive en `Aserta.Dominio` (no en `Aplicacion`) para que `Aserta.Exportacion` (→ Dominio) lo implemente sin romper ADR-001. ¿Vale así? | Aplicado; `ArquitecturaTests` en verde. | Arquitectura | Abierta |
+| D-40 | Las facturas recibidas se exportan con los datos del extractor **sin confirmar línea a línea** (RD-06), marcadas `DatosConfirmados = N` en el CSV. ¿Debería exigirse la confirmación antes de exportar? | Se exportan como sugeridas; el programa contable ve la marca. | Exportación | Abierta |
+| D-41 | Tabla `dbo.ExportacionFactura` (RD-11 para facturas emitidas) no está en `04-modelo-datos.md`. | Añadida con RLS (script `0009`). | Modelo de datos | Abierta |
+| D-42 | Cuadro de mando visible también para el asesor (`AsesorOSocio`), no solo el socio. | Aplicado; cambiar la política en `Program.cs` si se prefiere. | Cuadro de mando | Abierta |

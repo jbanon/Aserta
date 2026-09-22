@@ -3,7 +3,9 @@ using Aserta.Aplicacion.Nucleo;
 using Aserta.Aplicacion.Obligaciones;
 using Aserta.Aplicacion.Puertos;
 using Aserta.Infraestructura.Identidad;
+using Aserta.Aplicacion.CuadroMando;
 using Aserta.Aplicacion.Documental;
+using Aserta.Aplicacion.Exportacion;
 using Aserta.Aplicacion.Mensajeria;
 using Aserta.Aplicacion.PortalCliente;
 using Aserta.Infraestructura.Documental;
@@ -84,6 +86,12 @@ public static class ExtensionesServicios
         servicios.AddScoped<ServicioMensajeria>();
         servicios.AddScoped<IManejadorEvento<MensajeNuevo>>(sp => sp.GetRequiredService<ServicioMensajeria>());
         servicios.AddScoped<ServicioPortal>();
+
+        // Exportacion contable (M5) y cuadro de mando (M7). Los exportadores (Aserta.Exportacion) los registra Aserta.Web.
+        servicios.AddScoped<ServicioExportacion>();
+        servicios.AddScoped<ServicioCuadroMando>();
+        servicios.AddScoped<ServicioAlertaCertificados>();
+        servicios.AddScoped<ITareaDiaria>(sp => sp.GetRequiredService<ServicioAlertaCertificados>());
 
         // Facturacion Veri*Factu (M6). Aserta.Verifactu no conoce EF: Infraestructura implementa sus puertos.
         var opcionesVf = new OpcionesVerifactu();

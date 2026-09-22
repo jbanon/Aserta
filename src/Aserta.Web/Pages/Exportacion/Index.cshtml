@@ -1,0 +1,64 @@
+@page
+@using Aserta.Dominio.Catalogo
+@using Aserta.Dominio.Exportacion
+@model Aserta.Web.Pages.Exportacion.IndexModel
+@{
+    ViewData["Titulo"] = "Exportación contable";
+}
+<div class="pagina-cabecera">
+    <div><h1>Exportación contable</h1><p class="subtitulo">Genera el fichero de un cliente y periodo con sus facturas emitidas (Veri*Factu) y las facturas recibidas y tickets validados. Lo ya exportado se marca y no se repite salvo petición explícita (RD-11).</p></div>
+</div>
+<partial name="_ResumenErrores" />
+<div class="rejilla rejilla-2">
+    <div class="panel">
+        <div class="panel-cabecera"><h2>Nueva exportación</h2></div>
+        <form method="get" id="form-exportacion">
+            <input type="hidden" name="previa" value="true" />
+            <div class="campo"><label asp-for="Datos.ClienteId">Cliente</label>
+                <select asp-for="Datos.ClienteId"><option value="">— Elija un cliente —</option>@foreach (var c in Model.Clientes) { <option value="@c.Id">@(c.NombreComercial ?? c.RazonSocial) · @c.Nif</option> }</select></div>
+            <div class="rejilla rejilla-2">
+                <div class="campo"><label asp-for="Datos.Ejercicio">Ejercicio</label><input asp-for="Datos.Ejercicio" type="number" min="2000" max="2100" /></div>
+                <div class="campo"><label asp-for="Datos.Periodo">Periodo</label><select asp-for="Datos.Periodo">@foreach (var p in Model.Periodos) { <option value="@p">@Periodo.Etiqueta(Model.Datos.Ejercicio, p)</option> }</select></div>
+            </div>
+            <div class="campo"><label asp-for="Datos.Formato">Formato</label>
+                <select asp-for="Datos.Formato">@foreach (var e in Model.Exportadores) { <option value="@e.Formato" disabled="@(!e.Disponible)">@e.Nombre@(e.Disponible ? "" : " (no disponible)")</option> }</select>
+                @foreach (var e in Model.Exportadores) { <small class="texto-2 bloque">@e.Nombre: @e.Descripcion</small> }</div>
+            <div class="campo campo-check"><input asp-for="Datos.IncluirExportados" type="checkbox" /><label asp-for="Datos.IncluirExportados">Incluir también los registros ya exportados (petición explícita)</label></div>
+            <div class="acciones"><button class="boton">Ver qué se exportaría</button></div>
+        </form>
+        @if (Model.Previa is not null)
+        {
+            <hr />
+            <h3>Vista previa · @Periodo.Etiqueta(Model.Datos.Ejercicio, Model.Datos.Periodo)</h3>
+            <p><strong>@Model.Previa.Nuevos.Count registros</strong> nuevos para exportar.
+                @if (Model.Previa.YaExportados > 0) { <span class="insignia insignia-neutra">@Model.Previa.YaExportados ya exportados y omitidos</span> }
+                @if (Model.Previa.DocumentosSinDatos.Count > 0) { <span class="insignia insignia-aviso">@Model.Previa.DocumentosSinDatos.Count documentos validados sin datos extraídos</span> }</p>
+            @if (Model.Previa.Nuevos.Count > 0)
+            {
+                <div class="tabla-envoltorio"><table class="tabla tabla-compacta"><thead><tr><th>Tipo</th><th>Fecha</th><th>Número</th><th>Contraparte</th><th class="num">Base</th><th class="num">IVA</th><th class="num">Total</th><th>Origen</th></tr></thead><tbody>
+                @foreach (var a in Model.Previa.Nuevos.OrderBy(a => a.Fecha))
+                {
+                    <tr><td>@(a.Tipo == TipoApunte.FacturaEmitida ? "Emitida" : "Recibida")</td><td class="tabular">@a.Fecha.ToString("dd/MM/yyyy")</td><td class="mono">@a.NumeroFactura</td><td>@a.NombreContraparte <small class="mono texto-3">@a.NifContraparte</small></td><td class="num">@a.BaseImponible.ToString("N2")</td><td class="num">@a.CuotaIva.ToString("N2")</td><td class="num">@a.Total.ToString("N2")</td><td class="texto-sm">@a.Origen @(a.DatosConfirmados ? "" : "· sugerido")</td></tr>
+                }
+                </tbody></table></div>
+                <form method="post" class="mt-3">
+                    <input type="hidden" asp-for="Datos.ClienteId" /><input type="hidden" asp-for="Datos.Ejercicio" /><input type="hidden" asp-for="Datos.Periodo" /><input type="hidden" asp-for="Datos.Formato" /><input type="hidden" asp-for="Datos.IncluirExportados" />
+                    <button class="boton boton-primario">Generar y guardar el fichero</button>
+                </form>
+            }
+            else { <p class="vacio">Nada nuevo que exportar. @(Model.Previa.YaExportados > 0 ? "Marque «incluir ya exportados» para repetir la entrega." : "")</p> }
+        }
+    </div>
+    <div class="panel">
+        <div class="panel-cabecera"><h2>Histórico @(Model.Datos.ClienteId != Guid.Empty && Model.NombresClientes.TryGetValue(Model.Datos.ClienteId, out var nc) ? $"· {nc}" : "")</h2></div>
+        <p class="texto-sm texto-2">Cada fichero generado se conserva íntegro con su hash: es la prueba de lo que se entregó al programa contable.</p>
+        <div class="tabla-envoltorio"><table class="tabla tabla-compacta"><thead><tr><th>Fecha</th><th>Cliente</th><th>Periodo</th><th>Formato</th><th class="num">Reg.</th><th>Por</th><th></th></tr></thead><tbody>
+        @if (Model.Historico.Count == 0) { <tr><td colspan="7" class="vacio">Todavía no se ha exportado nada.</td></tr> }
+        @foreach (var e in Model.Historico)
+        {
+            <tr><td class="tabular">@e.FechaGeneracionUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td><td>@Model.NombresClientes.GetValueOrDefault(e.ClienteId, "—")</td><td>@Periodo.Etiqueta(e.Ejercicio, e.Periodo)</td><td>@e.Formato @if (e.IncluyoExportados) { <small class="texto-3">(repetición)</small> }</td><td class="num">@e.NumRegistros</td><td class="texto-sm">@Model.NombresUsuarios.GetValueOrDefault(e.UsuarioId, "—")</td>
+                <td class="texto-derecha"><a class="boton boton-pequeno" asp-page-handler="Descargar" asp-route-id="@e.Id" title="SHA-256 @e.HashSha256">Descargar</a></td></tr>
+        }
+        </tbody></table></div>
+    </div>
+</div>

@@ -19,6 +19,10 @@ var config = builder.Configuration;
 // --- Persistencia, contexto de ejecucion, servicios de aplicacion (Aserta.Infraestructura) ---
 builder.Services.AddInfraestructuraAserta(config);
 
+// --- Exportadores contables (Aserta.Exportacion): CSV generico disponible; A3 modelado sin especificacion (DA-07) ---
+foreach (var exportador in Aserta.Exportacion.RegistroExportadores.Todos())
+    builder.Services.AddSingleton<Aserta.Dominio.Exportacion.IExportadorContable>(exportador);
+
 // --- Identity -------------------------------------------------------------------------------
 builder.Services
     .AddIdentity<UsuarioIdentity, RolIdentity>(o =>
@@ -81,6 +85,8 @@ builder.Services.AddRazorPages(o =>
     o.Conventions.AuthorizePage("/Documentos/Contenido");
     o.Conventions.AuthorizeFolder("/Portal", Politicas.Cliente);
     o.Conventions.AuthorizeFolder("/Facturacion", Politicas.Gestoria);
+    o.Conventions.AuthorizeFolder("/Exportacion", Politicas.Gestoria);
+    o.Conventions.AuthorizeFolder("/CuadroMando", Politicas.AsesorOSocio);
     o.Conventions.AllowAnonymousToPage("/Facturacion/Pdf");     // gestoria y cliente emisor: el modelo exige sesion y comprueba el cliente (la carpeta exige rol de gestoria)
     o.Conventions.AllowAnonymousToPage("/DeclaracionResponsable/Index");
     o.Conventions.AuthorizeFolder("/Usuarios", Politicas.SocioDirector);

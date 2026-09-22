@@ -1,6 +1,7 @@
 using Aserta.Dominio.Catalogo;
 using Aserta.Dominio.Clientes;
 using Aserta.Dominio.Documental;
+using Aserta.Dominio.Exportacion;
 using Aserta.Dominio.Facturacion;
 using Aserta.Dominio.Mensajeria;
 using Aserta.Dominio.Nucleo;
@@ -56,6 +57,10 @@ public interface IAsertaDb
     DbSet<Apoderamiento> Apoderamientos { get; }
     DbSet<AccesoCertificadoLog> AccesosCertificado { get; }
     DbSet<DeclaracionResponsableHistorico> DeclaracionesResponsables { get; }
+
+    DbSet<ExportacionContable> Exportaciones { get; }
+    DbSet<ExportacionDocumento> ExportacionesDocumento { get; }
+    DbSet<ExportacionFactura> ExportacionesFactura { get; }
 
     Task<int> GuardarCambiosAsync(CancellationToken ct = default);
 }

@@ -382,3 +382,18 @@
   details.portal-subida > summary { cursor: pointer; list-style: none; }
   details.portal-subida > summary::-webkit-details-marker { display: none; }
 }
+
+/* --- Cuadro de mando (fase 5) --- */
+.kpi-aviso .kpi-valor { color: var(--color-aviso-texto); }
+.kpi-error .kpi-valor { color: var(--color-error-texto); }
+.texto-error { color: var(--color-error-texto); }
+.bloque { display: block; }
+.campo-check { display: flex; align-items: center; gap: var(--esp-2); }
+.campo-check input { width: auto; }
+.barras { display: grid; gap: var(--esp-2); }
+.barra-fila { display: grid; grid-template-columns: 11rem 1fr 3rem; align-items: center; gap: var(--esp-3); font-size: var(--tamano-sm); }
+.barra-etiqueta { color: var(--color-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.barra-pista { background: var(--color-superficie-3); border-radius: var(--radio-sm); height: 0.9rem; overflow: hidden; }
+.barra-relleno { background: var(--color-marca); height: 100%; border-radius: var(--radio-sm); min-width: 2px; }
+.barra-valor { text-align: right; }
+@media (max-width: 640px) { .barra-fila { grid-template-columns: 7rem 1fr 3rem; } }

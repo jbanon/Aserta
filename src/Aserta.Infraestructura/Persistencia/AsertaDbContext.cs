@@ -2,6 +2,7 @@ using Aserta.Aplicacion.Puertos;
 using Aserta.Dominio.Catalogo;
 using Aserta.Dominio.Clientes;
 using Aserta.Dominio.Documental;
+using Aserta.Dominio.Exportacion;
 using Aserta.Dominio.Facturacion;
 using Aserta.Dominio.Mensajeria;
 using Aserta.Dominio.Nucleo;
@@ -67,6 +68,9 @@ public sealed class AsertaDbContext : IdentityDbContext<UsuarioIdentity, RolIden
     public DbSet<Apoderamiento> Apoderamientos => Set<Apoderamiento>();
     public DbSet<AccesoCertificadoLog> AccesosCertificado => Set<AccesoCertificadoLog>();
     public DbSet<DeclaracionResponsableHistorico> DeclaracionesResponsables => Set<DeclaracionResponsableHistorico>();
+    public DbSet<ExportacionContable> Exportaciones => Set<ExportacionContable>();
+    public DbSet<ExportacionDocumento> ExportacionesDocumento => Set<ExportacionDocumento>();
+    public DbSet<ExportacionFactura> ExportacionesFactura => Set<ExportacionFactura>();
 
     public Task<int> GuardarCambiosAsync(CancellationToken ct = default) => SaveChangesAsync(ct);
 
@@ -107,5 +111,8 @@ public sealed class AsertaDbContext : IdentityDbContext<UsuarioIdentity, RolIden
         mb.Entity<Certificado>().HasQueryFilter(x => Mantenimiento || x.GestoriaId == GestoriaActual);
         mb.Entity<Apoderamiento>().HasQueryFilter(x => Mantenimiento || x.GestoriaId == GestoriaActual);
         mb.Entity<AccesoCertificadoLog>().HasQueryFilter(x => Mantenimiento || x.GestoriaId == GestoriaActual);
+        mb.Entity<ExportacionContable>().HasQueryFilter(x => Mantenimiento || x.GestoriaId == GestoriaActual);
+        mb.Entity<ExportacionDocumento>().HasQueryFilter(x => Mantenimiento || x.GestoriaId == GestoriaActual);
+        mb.Entity<ExportacionFactura>().HasQueryFilter(x => Mantenimiento || x.GestoriaId == GestoriaActual);
     }
 }

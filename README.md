@@ -9,7 +9,7 @@ src/Aserta.Dominio          entidades, motor de obligaciones, máquina de estado
 src/Aserta.Aplicacion       casos de uso y puertos (IAsertaDb, IRelojSistema, IGestorIdentidad…)
 src/Aserta.Infraestructura  EF Core, Identity, runner de migraciones, interceptores de tenant y auditoría, seed
 src/Aserta.Verifactu        huella, XML validado contra XSD oficial, QR, simulador y cliente AEAT, emisión y envío
-src/Aserta.Exportacion      exportadores contables (fase 5)
+src/Aserta.Exportacion      exportadores contables: CSV genérico y A3 (modelado, sin especificación)
 src/Aserta.Web              Razor Pages, htmx, CSS propio, composición
 tests/                      Dominio.Tests · Integracion.Tests · Verifactu.Tests
 Scripts/Migrations/         scripts SQL idempotentes numerados; los aplica el runner al arrancar

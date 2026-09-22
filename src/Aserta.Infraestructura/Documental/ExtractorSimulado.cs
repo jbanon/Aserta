@@ -27,7 +27,7 @@ public sealed class ExtractorSimulado : IExtractorDocumental
         {
             simulado = true,
             proveedor = Proveedores[rnd.Next(Proveedores.Length)],
-            nifProveedor = "B" + rnd.Next(1000000, 9999999) + "X",
+            nifProveedor = Aserta.Dominio.Comun.ValidadorNif.ConstruirCif('B', rnd.Next(1000000, 9999999)),
             numeroFactura = $"F{fecha.Year}-{rnd.Next(1, 9999):0000}",
             fecha = fecha.ToString("yyyy-MM-dd"),
             baseImponible,
