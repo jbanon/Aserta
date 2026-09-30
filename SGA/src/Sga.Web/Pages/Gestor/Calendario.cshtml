@@ -1,0 +1,26 @@
+@page "/gestor/calendario"
+@model Sga.Web.Pages.Gestor.CalendarioModel
+@{ ViewData["Titulo"] = "Calendario fiscal"; }
+<div class="pagina-cabecera"><div><h1>Calendario de vencimientos</h1><p class="subtitulo">Plazos de presentación y de domiciliación. Los plazos salen del catálogo normativo de Aserta y están <strong>pendientes de confirmar</strong> contra el calendario oficial de la Agencia Tributaria: por eso llevan la marca.</p></div>
+    <div class="acciones"><a class="boton" href="?mes=@Model.Anterior.ToString("yyyy-MM")"><partial name="_Icono" model='"flecha-i"' /></a><strong style="align-self:center;min-width:150px;text-align:center">@Formato.Mes(Model.Mes)</strong><a class="boton" href="?mes=@Model.Siguiente.ToString("yyyy-MM")"><partial name="_Icono" model='"flecha-d"' /></a></div></div>
+<div class="rejilla" style="grid-template-columns:1fr;gap:var(--e-4)">
+<section class="tarjeta" style="padding:var(--e-4)">
+    <div class="calendario-mes">
+        @foreach (var d in new[] { "L", "M", "X", "J", "V", "S", "D" }) { <div class="cabecera-dia">@d</div> }
+        @foreach (var dia in Model.Dias)
+        {
+            <div class="dia @(dia.Fecha.Month != Model.Mes.Month ? "otro-mes" : "") @(dia.Fecha == Reloj.Hoy ? "hoy" : "") @(dia.Inhabil ? "inhabil" : "")">
+                <strong>@dia.Fecha.Day</strong>@if (dia.Festivo is not null) { <span class="texto-3"> @dia.Festivo</span> }
+                @foreach (var e in dia.Eventos) { <span class="evento @(e.Domiciliacion ? "dom" : "") verificar" title="@e.Texto">@e.Texto</span> }
+            </div>
+        }
+    </div>
+    <div class="leyenda mt-3"><span style="--muestra:var(--morado-100)">Fin de plazo de presentación</span><span style="--muestra:var(--ok-suave)">Último día para domiciliar</span><span style="--muestra:var(--superficie-2)">Sábado, domingo o festivo</span></div>
+</section>
+<section class="tarjeta">
+    <div class="tarjeta-cabecera"><h2 style="font-size:var(--t-lg)">Próximos 90 días</h2></div>
+    <div class="tabla-envoltorio"><table class="tabla tabla-compacta"><thead><tr><th>Modelo</th><th>Periodo</th><th>Presentación</th><th>Domiciliación hasta</th><th>Clientes afectados</th><th></th></tr></thead><tbody>
+    @foreach (var p in Model.Proximos) { <tr><td><strong>@p.Plazo.Modelo</strong> <span class="texto-3">@Modelos.Nombre(p.Plazo.Modelo)</span></td><td>@p.Plazo.Periodo @p.Plazo.Ejercicio</td><td class="tabular">@Formato.FechaCorta(p.Plazo.Inicio) – <strong>@Formato.FechaCorta(p.Plazo.Fin)</strong></td><td class="tabular">@(p.Plazo.Domiciliacion is DateOnly d ? Formato.FechaCorta(d) : "—")</td><td>@p.Clientes</td><td><span class="insignia insignia-aviso insignia-sin-punto">[VERIFICAR]</span></td></tr> }
+    </tbody></table></div>
+</section>
+</div>

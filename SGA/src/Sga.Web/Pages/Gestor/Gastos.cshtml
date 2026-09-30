@@ -1,0 +1,15 @@
+@page "/gestor/clientes/{id:int}/gastos"
+@model Sga.Web.Pages.Gestor.GastosModel
+@{ var c = Model.Cliente; ViewData["Titulo"] = $"Libro de gastos · {c.NombreCorto}"; var cats = Enum.GetValues<CategoriaGasto>(); }
+<p class="mb-2"><a href="/gestor/clientes/@c.Id" class="texto-sm"><partial name="_Icono" model='"flecha-i"' /> @c.NombreCorto</a></p>
+<div class="pagina-cabecera"><div><h1>Libro de gastos por actividad · @Model.Ejercicio</h1><p class="subtitulo">Una hoja por actividad (IAE), con las columnas de siempre. Las facturas comunes a varias actividades van a la principal.</p></div></div>
+@foreach (var libro in Model.Libros)
+{
+    <section class="tarjeta mb-4" style="padding:0;overflow:hidden">
+        <div class="tarjeta-cabecera" style="padding:var(--e-4) var(--e-5) 0"><h2 style="font-size:var(--t-lg)">@libro.Actividad.Iae · @libro.Actividad.Descripcion @if (libro.Actividad.Principal) { <span class="insignia insignia-marca">principal</span> }</h2><span class="texto-sm texto-2">@libro.Lineas.Count apuntes@(libro.Comunes > 0 ? $" · {libro.Comunes} comunes imputados aquí" : "") · total @Formato.Euros(libro.Total)</span></div>
+        <div class="tabla-envoltorio"><table class="tabla tabla-compacta"><thead><tr><th>Nº</th><th>Fecha</th><th>Nº doc.</th><th>Proveedor</th><th>Concepto</th>@foreach (var k in cats) { <th class="num" style="font-size:10px">@k.Texto()</th> }</tr></thead><tbody>
+        @{ int n = 0; }
+        @foreach (var l in libro.Lineas) { n++; <tr><td>@n</td><td class="tabular">@Formato.FechaCorta(l.Fecha)</td><td class="mono">@l.Numero</td><td>@l.ProveedorNombre</td><td class="texto-2">@l.Concepto @if (l.Comun) { <span class="insignia insignia-aviso insignia-sin-punto">común</span> }</td>@foreach (var k in cats) { <td class="num">@(l.Categoria == k ? Formato.Numero(l.Base) : "")</td> }</tr> }
+        </tbody><tfoot><tr><td colspan="5">Suma total</td>@foreach (var k in cats) { <td class="num">@Formato.Numero(libro.Totales.FirstOrDefault(t => t.Categoria == k)?.Importe ?? 0m)</td> }</tr></tfoot></table></div>
+    </section>
+}

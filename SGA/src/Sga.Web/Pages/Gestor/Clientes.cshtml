@@ -1,0 +1,11 @@
+@page "/gestor/clientes"
+@model Sga.Web.Pages.Gestor.ClientesModel
+@{ ViewData["Titulo"] = "Clientes"; }
+<div class="pagina-cabecera"><div><h1>Clientes</h1><p class="subtitulo">@Model.Filas.Count clientes · @Model.Filas.Count(f => f.Cliente.Tipo == TipoCliente.Arrendador) arrendadores, @Model.Filas.Count(f => f.Cliente.Tipo == TipoCliente.Profesional) profesionales y @Model.Filas.Count(f => f.Cliente.Tipo == TipoCliente.Sociedad) sociedades.</p></div></div>
+<div class="pildoras mb-4"><a class="pildora" href="/gestor/clientes" aria-current="@(Model.Tipo is null ? "true" : null)">Todos</a>@foreach (var t in Enum.GetValues<TipoCliente>()) { <a class="pildora" href="?tipo=@t" aria-current="@(Model.Tipo == t ? "true" : null)">@t.Texto()</a> }</div>
+<div class="tarjeta"><ul class="lista lista-enlazada">
+@foreach (var f in Model.Filas)
+{
+    <li><a href="/gestor/clientes/@f.Cliente.Id"><span class="avatar avatar-@(f.Cliente.Tipo == TipoCliente.Arrendador ? "verde" : f.Cliente.Tipo == TipoCliente.Sociedad ? "morado" : "ambar")">@f.Cliente.Iniciales</span><div class="crece"><div class="principal">@f.Cliente.Nombre</div><div class="secundario">@f.Cliente.Tipo.Texto() · @f.Cliente.Nif · lleva @f.Cliente.Gestor!.Nombre.Split(' ')[0] · @(f.Cliente.Emisor == QuienEmite.Sga ? "facturamos nosotros" : "factura el cliente")</div></div><div class="solo-escritorio" style="width:160px"><div class="texto-xs texto-2 mb-2">@f.Presentadas/@f.Aplicables presentados</div><div class="barra"><span class="@(f.Completa ? "" : "morado")" style="width:@(f.Aplicables == 0 ? 0 : 100 * f.Presentadas / f.Aplicables)%"></span></div></div>@if (f.IncidenciasAbiertas > 0) { <span class="insignia insignia-aviso">@f.IncidenciasAbiertas</span> }<partial name="_Icono" model='"flecha-d"' /></a></li>
+}
+</ul></div>

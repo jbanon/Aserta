@@ -1,0 +1,40 @@
+@page "/gestor/incidencias/{id:int?}"
+@model Sga.Web.Pages.Gestor.IncidenciasModel
+@{ ViewData["Titulo"] = "Incidencias"; }
+@if (Model.Actual is null)
+{
+    <div class="pagina-cabecera"><div><h1>Incidencias y mensajes</h1><p class="subtitulo">Todo lo que hay que resolver con un cliente: fraccionamientos, numeración, documentos que faltan, movimientos sin cuadrar, consultas.</p></div></div>
+    <div class="pildoras mb-4"><a class="pildora" href="/gestor/incidencias" aria-current="@(Model.Filtro == "abiertas" ? "true" : null)">Abiertas (@Model.Abiertas)</a><a class="pildora" href="?filtro=mias" aria-current="@(Model.Filtro == "mias" ? "true" : null)">Las mías</a><a class="pildora" href="?filtro=todas" aria-current="@(Model.Filtro == "todas" ? "true" : null)">Todas</a></div>
+    <div class="tarjeta"><ul class="lista lista-enlazada">
+    @foreach (var i in Model.Lista)
+    {
+        var ultimo = i.Mensajes.OrderByDescending(m => m.FechaUtc).FirstOrDefault(); var sinLeer = i.Mensajes.Any(m => !m.EsGestor && !m.LeidoPorGestor);
+        <li><a href="/gestor/incidencias/@i.Id"><span class="marca-tipo @(i.Estado == EstadoIncidencia.Resuelta ? "ok" : i.Tipo == TipoIncidencia.Fraccionamiento ? "aviso" : "")"><partial name="_Icono" model='@(i.Tipo switch { TipoIncidencia.Fraccionamiento => "euro", TipoIncidencia.Numeracion => "numeracion", TipoIncidencia.Documento => "documentos", TipoIncidencia.Conciliacion => "banco", _ => "mensajes" })' /></span><div class="crece"><div class="@(sinLeer ? "principal" : "")">@i.Titulo @if (sinLeer) { <span class="insignia insignia-marca">nuevo</span> }</div><div class="secundario">@i.Cliente!.NombreCorto · @i.Tipo.Texto()@(ultimo is not null ? $" · {ultimo.Autor}: {(ultimo.Texto.Length > 70 ? ultimo.Texto[..70] + "…" : ultimo.Texto)}" : "")</div></div><div style="text-align:right"><span class="insignia @(i.Estado == EstadoIncidencia.Resuelta ? "insignia-ok" : i.Estado == EstadoIncidencia.EnCurso ? "insignia-aviso" : "insignia-info")">@i.Estado.Texto()</span><div class="texto-xs texto-3 mt-2">@Formato.Relativa(ultimo?.FechaUtc ?? i.CreadaUtc, Reloj.AhoraUtc)</div></div></a></li>
+    }
+    @if (Model.Lista.Count == 0) { <li><partial name="_Vacio" model='("ok", "Nada abierto", "No hay incidencias pendientes.")' /></li> }
+    </ul></div>
+}
+else
+{
+    var i = Model.Actual;
+    <p class="mb-2"><a href="/gestor/incidencias" class="texto-sm"><partial name="_Icono" model='"flecha-i"' /> Incidencias</a></p>
+    <div class="pagina-cabecera"><div><h1 style="font-size:var(--t-xl)">@i.Titulo</h1><p class="subtitulo"><a href="/gestor/clientes/@i.ClienteId">@i.Cliente!.Nombre</a> · @i.Tipo.Texto() · <span class="insignia @(i.Estado == EstadoIncidencia.Resuelta ? "insignia-ok" : "insignia-info")">@i.Estado.Texto()</span></p></div>
+        <div class="acciones">
+            @if (i.Tipo == TipoIncidencia.Fraccionamiento && Model.ObligacionFracc is { Fraccionamiento: EstadoFraccionamiento.Solicitado }) { <form method="post" asp-page-handler="Fraccionar" asp-route-id="@i.Id" asp-route-conceder="true"><button class="boton boton-primario" type="submit">Conceder fraccionamiento</button></form><form method="post" asp-page-handler="Fraccionar" asp-route-id="@i.Id" asp-route-conceder="false"><button class="boton" type="submit">Denegar</button></form> }
+            @if (i.Estado != EstadoIncidencia.Resuelta) { <form method="post" asp-page-handler="Resolver" asp-route-id="@i.Id"><button class="boton" type="submit"><partial name="_Icono" model='"ok"' /> Marcar resuelta</button></form> }
+        </div></div>
+    <div class="rejilla rejilla-2" style="align-items:start">
+        <section class="tarjeta">
+            <div class="col gap-3">@foreach (var m in i.Mensajes.OrderBy(m => m.FechaUtc)) { <div class="burbuja @(m.EsGestor ? "mia" : "")"><span class="quien">@m.Autor · @Formato.FechaHora(m.FechaUtc)</span>@m.Texto</div> }</div>
+            @if (i.Estado != EstadoIncidencia.Resuelta) { <form method="post" asp-page-handler="Responder" asp-route-id="@i.Id" class="mt-4"><div class="campo"><label for="Texto">Respuesta al cliente</label><textarea id="Texto" name="Texto" required></textarea></div><button class="boton boton-primario" type="submit"><partial name="_Icono" model='"enviar"' /> Enviar</button></form> }
+        </section>
+        <section class="tarjeta">
+            <h2 style="font-size:var(--t-lg)">Contexto</h2>
+            @if (Model.ObligacionFracc is Obligacion of) { <dl class="hoja-detalle"><dt>Modelo</dt><dd>@of.Modelo @of.Periodo @of.Ejercicio</dd><dt>Importe</dt><dd>@(Model.ImporteFracc is decimal imp ? Formato.Euros(imp) : "—")</dd><dt>Fraccionamiento</dt><dd>@of.Fraccionamiento</dd><dt>Estado del modelo</dt><dd>@of.Estado.Texto()</dd></dl><p class="texto-xs texto-3 mt-3">El trámite real de aplazamiento o fraccionamiento ante la Agencia Tributaria no se simula; aquí solo se registra la decisión.</p> }
+            else if (i.Tipo == TipoIncidencia.Numeracion) { <p class="texto-sm texto-2"><a href="/gestor/clientes/@i.ClienteId/numeracion">Ver la comprobación de numeración</a></p> }
+            else if (i.Tipo == TipoIncidencia.Conciliacion) { <p class="texto-sm texto-2"><a href="/gestor/clientes/@i.ClienteId/conciliacion">Ver la conciliación</a></p> }
+            else if (i.Tipo == TipoIncidencia.Documento) { <p class="texto-sm texto-2"><a href="/gestor/clientes/@i.ClienteId?pestana=documentos">Ver los documentos del cliente</a></p> }
+            else { <p class="texto-sm texto-2">Consulta del cliente. Abierta @Formato.FechaHora(i.CreadaUtc).</p> }
+        </section>
+    </div>
+}

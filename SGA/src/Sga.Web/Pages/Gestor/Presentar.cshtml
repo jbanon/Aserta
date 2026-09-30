@@ -1,0 +1,39 @@
+@page "/gestor/clientes/{id:int}/presentar/{obligacionId:int}"
+@model Sga.Web.Pages.Gestor.PresentarModel
+@{ var c = Model.Cliente; var o = Model.Obligacion; ViewData["Titulo"] = $"Presentar {o.Modelo}"; }
+<p class="mb-2"><a href="/gestor/clientes/@c.Id" class="texto-sm"><partial name="_Icono" model='"flecha-i"' /> @c.NombreCorto</a></p>
+<div class="pagina-cabecera"><div><h1>Presentar el modelo @o.Modelo · @o.Periodo @o.Ejercicio</h1><p class="subtitulo">@Modelos.Nombre(o.Modelo) de @c.Nombre. Se genera un justificante con el mismo formato que el de la Agencia Tributaria.</p></div></div>
+<div class="alerta alerta-aviso"><partial name="_Icono" model='"alerta"' /><div><strong>Simulación.</strong> Esta demostración no se conecta con la Agencia Tributaria: el expediente, el código seguro de verificación y el número de justificante se generan aquí y no tienen validez.</div></div>
+<div class="rejilla rejilla-2" style="align-items:start">
+    <section class="tarjeta">
+        <h2 style="font-size:var(--t-lg)">Lo que se va a presentar</h2>
+        <dl class="hoja-detalle">
+            <dt>Declarante</dt><dd>@c.Nombre · <span class="mono">@c.Nif</span></dd>
+            <dt>Modelo</dt><dd>@o.Modelo · @Modelos.Nombre(o.Modelo)</dd>
+            <dt>Periodo</dt><dd>@o.Periodo @o.Ejercicio</dd>
+            <dt>Presentador</dt><dd>@Model.Gestor.Nombre · <span class="mono">@Model.Gestor.Nif</span> · en calidad de colaborador</dd>
+            <dt>Resultado</dt><dd><strong>@Formato.Euros(Model.Importe)</strong> @(Model.Importe > 0 ? "a ingresar" : Model.Importe < 0 ? "a compensar" : "")</dd>
+            @if (Model.Importe > 0) { <dt>Domiciliación</dt><dd class="mono">@c.Iban</dd> }
+            @if (o.Fraccionamiento == EstadoFraccionamiento.Solicitado) { <dt>Fraccionamiento</dt><dd><span class="insignia insignia-aviso">solicitado por el cliente</span> resuélvelo en la incidencia antes o después de presentar</dd> }
+        </dl>
+        <form method="post" class="mt-4 fila gap-2">
+            @if (o.Modelo != "303") { <div class="campo" style="margin:0"><label for="Importe">Importe (@o.Modelo)</label><input id="Importe" name="importe" type="number" step="0.01" value="@Model.Importe.ToString(System.Globalization.CultureInfo.InvariantCulture)" style="width:180px" /></div> }
+            <button class="boton boton-primario boton-grande" type="submit"><partial name="_Icono" model='"justificante"' /> Presentar (simulado)</button>
+            <a class="boton boton-grande" href="/gestor/clientes/@c.Id">Cancelar</a>
+        </form>
+    </section>
+    @if (Model.Iva is not null)
+    {
+        <section class="tarjeta">
+            <h2 style="font-size:var(--t-lg)">Casillas del 303</h2>
+            <table class="tabla tabla-compacta"><tbody>
+                @foreach (var d in Model.Iva.DesgloseRepercutido.Where(d => d.Tipo > 0)) { <tr><td>[07] Base al @Formato.Porcentaje(d.Tipo) (acumulada)</td><td class="num">@Formato.Numero(d.Base)</td></tr><tr><td>[09] Cuota al @Formato.Porcentaje(d.Tipo)</td><td class="num">@Formato.Numero(d.Cuota)</td></tr> }
+                <tr><td>[27] Total cuota devengada a liquidar</td><td class="num"><strong>@Formato.Numero(Model.Iva.RepercutidoALiquidar)</strong></td></tr>
+                <tr><td>[28] Base soportada (periodo)</td><td class="num">@Formato.Numero(Model.Iva.BaseSoportadaTrimestre)</td></tr>
+                <tr><td>[29] / [45] Cuota deducible</td><td class="num"><strong>@Formato.Numero(Model.Iva.SoportadoALiquidar)</strong></td></tr>
+                <tr><td>[46] / [71] Resultado</td><td class="num"><strong>@Formato.Numero(Model.Iva.Resultado)</strong></td></tr>
+            </tbody></table>
+            <p class="texto-xs texto-3 mt-2 mb-0">Casillas según el justificante de referencia; su correspondencia exacta está pendiente de verificar.</p>
+        </section>
+    }
+</div>

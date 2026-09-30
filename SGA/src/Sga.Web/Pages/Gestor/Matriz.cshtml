@@ -1,0 +1,51 @@
+@page "/gestor/matriz"
+@model Sga.Web.Pages.Gestor.MatrizModel
+@{ ViewData["Titulo"] = "Matriz de control"; var m = Model.Matriz; }
+<div class="pagina-cabecera">
+    <div><h1>Control de impuestos · @m.Periodo @m.Ejercicio</h1><p class="subtitulo">La misma matriz que el Excel: un cliente por fila, un modelo por columna. Vacío es pendiente, un nombre es quien lo lleva, verde es presentado y NP es que no procede. Pulsa una celda para ir al detalle.</p></div>
+    <div class="acciones"><span class="aviso-demo">las presentaciones son simuladas</span></div>
+</div>
+<form method="get" class="filtros">
+    <div class="campo"><label for="periodo">Trimestre</label><select id="periodo" name="periodo">@foreach (var t in new[] { "1T", "2T", "3T", "4T" }) { <option value="@t" selected="@(Model.Periodo == t)">@t @Model.Ejercicio</option> }</select></div>
+    <div class="campo"><label for="gestor">Persona</label><select id="gestor" name="gestor"><option value="">Todas</option>@foreach (var g in Model.Gestores) { <option value="@g.Id" selected="@(Model.GestorFiltro == g.Id)">@g.Nombre</option> }</select></div>
+    <div class="campo"><label for="tipo">Tipo de cliente</label><select id="tipo" name="tipo"><option value="">Todos</option>@foreach (var t in Enum.GetValues<TipoCliente>()) { <option value="@t" selected="@(Model.TipoFiltro == t)">@t.Texto()</option> }</select></div>
+    <div class="campo"><label for="modelo">Modelo</label><select id="modelo" name="modelo"><option value="">Todos</option>@foreach (var c in m.Columnas) { <option value="@c" selected="@(Model.ModeloFiltro == c)">@c</option> }</select></div>
+    <button class="boton" type="submit"><partial name="_Icono" model='"filtro"' /> Filtrar</button>
+</form>
+<div class="tarjeta tarjeta-compacta mb-4">
+    <div class="fila-entre"><div><strong>@m.Presentadas de @m.Aplicables</strong> <span class="texto-2 texto-sm">modelos presentados en @m.Filas.Count clientes</span></div><div class="leyenda"><span style="--muestra:var(--celda-presentado)">Presentado</span><span style="--muestra:var(--celda-curso)">En curso</span><span style="--muestra:#fff">Pendiente</span><span style="--muestra:var(--celda-np)">NP</span></div></div>
+    <div class="barra mt-3"><span class="@(m.Avance == 100 ? "" : "morado")" style="width:@m.Avance%"></span></div>
+</div>
+<div class="tarjeta" style="padding:0;overflow:hidden">
+<div class="tabla-envoltorio"><table class="matriz">
+    <thead>
+        <tr class="grupo"><th class="cliente" rowspan="2">Cliente</th>@foreach (var (grupo, cols) in Model.Grupos) { <th colspan="@cols.Length">@grupo</th> }<th rowspan="2">Documentos</th><th rowspan="2">Avance</th></tr>
+        <tr>@foreach (var (_, cols) in Model.Grupos) { foreach (var c in cols) { <th title="@Modelos.Nombre(c)">@(c == "LIBROS" ? "Libros" : c == "CCAA" ? "CC.AA." : c)</th> } }</tr>
+    </thead>
+    <tbody>
+    @foreach (var f in m.Filas)
+    {
+        <tr>
+            <td class="cliente"><a href="/gestor/clientes/@f.Cliente.Id" class="fila gap-2" style="text-decoration:none;color:inherit"><span class="avatar avatar-pequeno avatar-@(f.Cliente.Tipo == TipoCliente.Arrendador ? "verde" : f.Cliente.Tipo == TipoCliente.Sociedad ? "morado" : "ambar")">@f.Cliente.Iniciales</span><span><strong>@f.Cliente.NombreCorto</strong><br /><span class="texto-xs texto-3">@f.Cliente.Tipo.Texto() · @f.Cliente.Gestor!.Nombre.Split(' ')[0]</span></span>@if (f.IncidenciasAbiertas > 0) { <span class="insignia insignia-aviso insignia-sin-punto" title="incidencias abiertas">@f.IncidenciasAbiertas</span> }</a></td>
+            @foreach (var (_, cols) in Model.Grupos)
+            {
+                foreach (var col in cols)
+                {
+                    var c = f.Celdas.First(x => x.Modelo == col);
+                    if (c.Obligacion is null || c.Estado == EstadoObligacion.NoProcede) { <td><span class="celda celda-np">NP</span></td>; continue; }
+                    var o = c.Obligacion; var esFuturo = o.Periodo != Model.Periodo && o.Periodo.EndsWith('T');
+                    var clase = o.Estado switch { EstadoObligacion.Presentado => "celda-presentado", EstadoObligacion.EnCurso => "celda-curso", _ => esFuturo ? "celda-futuro" : "celda-pendiente" };
+                    <td><a class="celda @clase" href="/gestor/clientes/@f.Cliente.Id?pestana=trimestre&modelo=@o.Modelo&periodo=@o.Periodo" title="@Modelos.Nombre(o.Modelo) @o.Periodo · @o.Estado.Texto()@(o.Gestor is not null ? $" · {o.Gestor.Nombre}" : "")">
+                        @if (o.Estado == EstadoObligacion.Presentado) { <partial name="_Icono" model='"cheque"' /> <span>@(o.FechaPresentacion is DateOnly fp ? fp.ToString("d/M") : "")</span> }
+                        else if (o.Estado == EstadoObligacion.EnCurso) { <span class="avatar avatar-pequeno avatar-@o.Gestor?.Color">@o.Gestor?.Iniciales</span> <span>@(o.Gestor?.Nombre.Split(' ')[0].ToUpperInvariant())</span> }
+                        else { <span>@(o.Periodo.EndsWith('P') ? o.Periodo : "—")</span> }
+                    </a></td>
+                }
+            }
+            <td class="resumen">@if (f.DocsEsperados > 0) { <div class="texto-xs texto-2 mb-2">@f.DocsRecibidos de @f.DocsEsperados</div><div class="barra"><span class="@(f.DocsRecibidos >= f.DocsEsperados ? "" : "ambar")" style="width:@(100 * f.DocsRecibidos / f.DocsEsperados)%"></span></div> } else { <span class="texto-xs texto-3">nada que pedir</span> }</td>
+            <td class="resumen"><span class="insignia @(f.Completa ? "insignia-ok" : f.Presentadas > 0 ? "insignia-aviso" : "")">@f.Presentadas/@f.Aplicables</span></td>
+        </tr>
+    }
+    </tbody>
+</table></div>
+</div>

@@ -1,0 +1,117 @@
+@page "/gestor/clientes/{id:int}"
+@model Sga.Web.Pages.Gestor.FichaModel
+@{ var c = Model.Cliente; ViewData["Titulo"] = c.NombreCorto; string Tab(string t) => Model.Pestana == t ? "true" : null!; }
+<p class="mb-2"><a href="/gestor/clientes" class="texto-sm"><partial name="_Icono" model='"flecha-i"' /> Clientes</a></p>
+<div class="pagina-cabecera">
+    <div class="fila gap-4"><span class="avatar avatar-grande avatar-@(c.Tipo == TipoCliente.Arrendador ? "verde" : c.Tipo == TipoCliente.Sociedad ? "morado" : "ambar")">@c.Iniciales</span><div><h1 style="margin-bottom:2px">@c.Nombre</h1><p class="subtitulo">@c.Tipo.Texto() · <span class="mono">@c.Nif</span> · lleva @c.Gestor!.Nombre · cliente desde @c.FechaAlta.Year</p></div></div>
+    <div class="acciones"><a class="boton" href="/gestor/clientes/@c.Id/iva"><partial name="_Icono" model='"calculadora"' /> Mesa de IVA</a>@if (c.Tipo == TipoCliente.Arrendador) { <a class="boton" href="/gestor/alquileres#cliente-@c.Id"><partial name="_Icono" model='"casa"' /> Alquileres</a> }@if (c.Tipo == TipoCliente.Profesional) { <a class="boton" href="/gestor/clientes/@c.Id/gastos"><partial name="_Icono" model='"gastos"' /> Libro de gastos</a> }@if (c.Emisor == QuienEmite.Cliente) { <a class="boton" href="/gestor/clientes/@c.Id/numeracion"><partial name="_Icono" model='"numeracion"' /> Numeración</a> }@if (c.Tipo == TipoCliente.Sociedad) { <a class="boton" href="/gestor/clientes/@c.Id/conciliacion"><partial name="_Icono" model='"banco"' /> Conciliación</a> }</div>
+</div>
+<div class="tabs">
+    <a href="?pestana=trimestre" aria-current="@Tab("trimestre")">Trimestre @Model.Periodo</a>
+    <a href="?pestana=resumen" aria-current="@Tab("resumen")">Ficha</a>
+    <a href="?pestana=documentos" aria-current="@Tab("documentos")">Documentos (@Model.Documentos.Count)</a>
+    <a href="?pestana=facturas" aria-current="@Tab("facturas")">Facturas (@Model.Emitidas.Count)</a>
+    <a href="?pestana=historial" aria-current="@Tab("historial")">Presentaciones</a>
+</div>
+
+@if (Model.Pestana == "trimestre")
+{
+    <div class="rejilla rejilla-2" style="align-items:start">
+        <section class="tarjeta">
+            <div class="tarjeta-cabecera"><h2 style="font-size:var(--t-lg)">Modelos del @Model.Periodo @Model.Ejercicio</h2></div>
+            <ul class="lista">
+                @foreach (var o in Model.Obligaciones)
+                {
+                    <li id="modelo-@o.Modelo-@o.Periodo" style="@(Model.ModeloDestacado == o.Modelo && Model.PeriodoDestacado == o.Periodo ? "background:var(--morado-50);margin:0 -16px;padding:12px 16px;border-radius:12px" : "")">
+                        <span class="marca-tipo @(o.Estado == EstadoObligacion.Presentado ? "ok" : o.Estado == EstadoObligacion.EnCurso ? "aviso" : "")"><partial name="_Icono" model='"justificante"' /></span>
+                        <div class="crece"><div class="principal">@Modelos.Nombre(o.Modelo) <span class="texto-3">(@o.Modelo · @o.Periodo)</span></div><div class="secundario">@(CalendarioFiscal.Buscar(o.Modelo, o.Ejercicio, o.Periodo) is Plazo p ? $"hasta el {Formato.Fecha(p.Fin)}" : "")@(o.Gestor is not null ? $" · {o.Gestor.Nombre}" : "")@(o.Estado == EstadoObligacion.Presentado && o.Resultado is decimal r ? $" · {Formato.Euros(r)}" : "")@(o.Fraccionamiento == EstadoFraccionamiento.Solicitado ? " · fraccionamiento solicitado" : "")</div></div>
+                        <partial name="_Estado" model="o.Estado" />
+                        @if (o.Estado == EstadoObligacion.Pendiente) { <form method="post" asp-page-handler="Empezar" asp-route-id="@c.Id" asp-route-obligacionId="@o.Id"><button class="boton boton-pequeno" type="submit">Lo cojo yo</button></form> }
+                        else if (o.Estado == EstadoObligacion.EnCurso) { <a class="boton boton-pequeno boton-primario" href="/gestor/clientes/@c.Id/presentar/@o.Id">Presentar</a> }
+                        else if (o.Presentacion is not null) { <a class="boton boton-pequeno" href="/gestor/justificante/@o.Presentacion.Id"><partial name="_Icono" model='"descargar"' /></a> }
+                    </li>
+                }
+            </ul>
+        </section>
+        <div class="col gap-4">
+            @if (Model.Iva is not null)
+            {
+                <section class="tarjeta">
+                    <div class="tarjeta-cabecera"><h2 style="font-size:var(--t-lg)">IVA @Model.Periodo, según libros</h2><a class="texto-sm" href="/gestor/clientes/@c.Id/iva">Mesa de cálculo</a></div>
+                    <div class="kpi"><span class="kpi-valor kpi-valor-sm">@Formato.Euros(Model.Iva.Resultado)</span><span class="kpi-etiqueta">@(Model.Iva.AIngresar ? "a ingresar" : Model.Iva.ACompensar ? "a compensar" : "sin cuota") · repercutido @Formato.Euros(Model.Iva.RepercutidoALiquidar) − soportado @Formato.Euros(Model.Iva.SoportadoALiquidar)</span></div>
+                </section>
+            }
+            <section class="tarjeta">
+                <div class="tarjeta-cabecera"><h2 style="font-size:var(--t-lg)">Documentación del trimestre</h2></div>
+                @if (Model.Requisitos.Count == 0) { <p class="texto-sm texto-2 mb-0">@(c.Tipo == TipoCliente.Arrendador ? "Nada que pedir: las facturas las emitimos nosotros." : "Sin requisitos definidos.")</p> }
+                else
+                {
+                    <p class="texto-sm mb-3"><strong>@Model.FraseDocumentos</strong></p>
+                    <div class="col gap-2">@foreach (var q in Model.Requisitos) { <div class="requisito @(q.Completo ? "completo" : "falta")"><partial name="_Icono" model='@(q.Completo ? "ok" : "alerta")' /><span>@q.Nombre</span><span class="contador">@Math.Min(q.Recibidos, q.Esperados)/@q.Esperados</span></div> }</div>
+                    @if (Model.Requisitos.Any(q => !q.Completo)) { <form method="post" asp-page-handler="Reclamar" asp-route-id="@c.Id" class="mt-3"><button class="boton boton-pequeno" type="submit"><partial name="_Icono" model='"enviar"' /> Reclamar lo que falta</button></form> }
+                }
+            </section>
+            @if (Model.IncidenciasAbiertas.Count > 0)
+            {
+                <section class="tarjeta"><div class="tarjeta-cabecera"><h2 style="font-size:var(--t-lg)">Incidencias abiertas</h2></div><ul class="lista lista-enlazada">@foreach (var i in Model.IncidenciasAbiertas) { <li><a href="/gestor/incidencias/@i.Id"><span class="marca-tipo aviso"><partial name="_Icono" model='"mensajes"' /></span><div class="crece"><div class="principal">@i.Titulo</div><div class="secundario">@i.Tipo.Texto() · @i.Estado.Texto()</div></div><partial name="_Icono" model='"flecha-d"' /></a></li> }</ul></section>
+            }
+        </div>
+    </div>
+}
+else if (Model.Pestana == "resumen")
+{
+    <div class="rejilla rejilla-2" style="align-items:start">
+        <section class="tarjeta">
+            <h2 style="font-size:var(--t-lg)">Datos</h2>
+            <dl class="hoja-detalle">
+                <dt>Tipo</dt><dd>@c.Tipo.Texto()</dd>
+                <dt>NIF</dt><dd class="mono">@c.Nif</dd>
+                <dt>Dirección</dt><dd>@c.Direccion, @c.CodigoPostal @c.Localidad</dd>
+                <dt>Contacto</dt><dd>@(c.NombreContacto ?? c.Nombre) · @c.Telefono · @c.Email</dd>
+                <dt>Quién emite sus facturas</dt><dd>@(c.Emisor == QuienEmite.Sga ? "SGA, por cuenta del cliente" : "El propio cliente (comprobamos numeración)")</dd>
+                <dt>Forma de pago</dt><dd>@(c.FormaPago == FormaPago.Domiciliacion ? $"Domiciliación · {Formato.Iban(c.Iban)}" : "Transferencia")</dd>
+                <dt>Empleados</dt><dd>@(c.TieneEmpleados ? "Sí (111 y 190)" : "No")</dd>
+                <dt>Alquila local</dt><dd>@(c.AlquilaLocal ? "Sí (115 y 180)" : "No")</dd>
+                <dt>Operaciones con la UE</dt><dd>@(c.OperacionesIntracomunitarias ? "Sí (349)" : "No")</dd>
+                @if (c.Tipo == TipoCliente.Sociedad) { <dt>Banco</dt><dd>@(c.ClaveConsultaBanco ? $"Clave de consulta configurada · última descarga {(c.UltimaDescargaBancoUtc is DateTime u ? Formato.FechaHora(u) : "—")}" : "Sin clave: nos envían el extracto")</dd> }
+                <dt>Honorarios</dt><dd>@Formato.Euros(c.Honorarios) @(c.PeriodicidadHonorarios == PeriodicidadHonorarios.Mensual ? "al mes" : "al trimestre")</dd>
+            </dl>
+        </section>
+        <div class="col gap-4">
+            <section class="tarjeta"><h2 style="font-size:var(--t-lg)">Actividades (IAE)</h2><ul class="lista">@foreach (var a in c.Actividades) { <li><span class="mono">@a.Iae</span><div class="crece">@a.Descripcion</div>@if (a.Principal) { <span class="insignia insignia-marca">principal</span> }</li> }</ul>@if (c.Actividades.Count > 1) { <p class="texto-xs texto-2 mt-2 mb-0">Las facturas comunes a varias actividades se imputan a la principal.</p> }</section>
+            <section class="tarjeta"><h2 style="font-size:var(--t-lg)">Modelos que le aplican</h2><div class="pildoras">@foreach (var (modelo, aplica) in Model.ModelosAplicables) { <span class="insignia @(aplica ? "insignia-marca" : "insignia-sin-punto texto-3")" title="@Modelos.Nombre(modelo)">@modelo@(aplica ? "" : " · NP")</span> }</div></section>
+            @if (c.Contratos.Count > 0) { <section class="tarjeta"><h2 style="font-size:var(--t-lg)">Contratos de alquiler</h2><ul class="lista">@foreach (var k in c.Contratos) { <li><span class="marca-tipo"><partial name="_Icono" model='"casa"' /></span><div class="crece"><div class="principal">@k.Inmueble</div><div class="secundario">@k.InquilinoNombre · @k.InquilinoNif · @k.InquilinoEmail</div></div><strong class="num">@Formato.Euros(k.RentaMensual)/mes</strong></li> }</ul></section> }
+        </div>
+    </div>
+}
+else if (Model.Pestana == "documentos")
+{
+    <section class="tarjeta">
+        @if (Model.Documentos.Count == 0) { <partial name="_Vacio" model='("documentos", "Sin documentos", "Este cliente no ha subido nada todavía.")' /> }
+        else
+        {
+            <ul class="lista">
+            @foreach (var d in Model.Documentos)
+            {
+                <li><partial name="_Miniatura" model="d" /><div class="crece"><div class="principal">@d.Nombre</div><div class="secundario">@d.Tipo.Texto() · @d.Periodo @d.Ejercicio · @Formato.FechaHora(d.SubidoUtc) · @d.SubidoPor@(d.Nota is not null ? $" · «{d.Nota}»" : "")</div></div><span class="insignia @(d.Estado == EstadoDocumento.Revisado ? "insignia-ok" : d.Estado == EstadoDocumento.Incidencia ? "insignia-error" : "insignia-info")">@(d.Estado == EstadoDocumento.Revisado ? "Revisado" : d.Estado == EstadoDocumento.Incidencia ? "Incidencia" : "Recibido")</span>@if (d.Estado == EstadoDocumento.Recibido) { <form method="post" asp-page-handler="Revisar" asp-route-id="@c.Id" asp-route-documentoId="@d.Id"><button class="boton boton-pequeno" type="submit">Revisado</button></form> }</li>
+            }
+            </ul>
+        }
+    </section>
+}
+else if (Model.Pestana == "facturas")
+{
+    <section class="tarjeta">
+        <div class="tabla-envoltorio"><table class="tabla tabla-compacta"><thead><tr><th>Número</th><th>Fecha</th><th>Destinatario</th><th class="num">Base</th><th class="num">IVA</th><th class="num">IRPF</th><th class="num">Total</th><th>Estado</th></tr></thead><tbody>
+        @foreach (var f in Model.Emitidas) { <tr><td class="mono">@f.Numero</td><td class="tabular">@Formato.FechaCorta(f.Fecha)</td><td>@f.DestinatarioNombre</td><td class="num">@Formato.Numero(f.Base)</td><td class="num">@Formato.Numero(f.CuotaIva)</td><td class="num">@(f.CuotaRetencion > 0 ? Formato.Numero(f.CuotaRetencion) : "—")</td><td class="num"><strong>@Formato.Numero(f.Total)</strong></td><td><span class="insignia @(f.Origen == OrigenFactura.Sga ? (f.Estado >= EstadoFacturaEmitida.EnviadaInquilino ? "insignia-ok" : "insignia-info") : "insignia-marca")">@(f.Origen == OrigenFactura.Sga ? f.Estado.Texto() : "del cliente")</span></td></tr> }
+        </tbody></table></div>
+    </section>
+}
+else
+{
+    <section class="tarjeta">
+        <div class="tabla-envoltorio"><table class="tabla tabla-compacta"><thead><tr><th>Modelo</th><th>Periodo</th><th>Presentado</th><th>Por</th><th>Expediente</th><th>CSV</th><th class="num">Importe</th><th></th></tr></thead><tbody>
+        @foreach (var o in Model.Historial) { <tr><td><strong>@o.Modelo</strong> <span class="texto-3">@Modelos.Nombre(o.Modelo)</span></td><td>@o.Periodo @o.Ejercicio</td><td class="tabular">@(o.FechaPresentacion is DateOnly fp ? Formato.FechaCorta(fp) : "—")</td><td>@o.Presentacion?.PresentadorNombre</td><td class="mono texto-xs">@o.Presentacion?.Expediente</td><td class="mono texto-xs">@o.Presentacion?.Csv</td><td class="num">@(o.Resultado is decimal r ? Formato.Euros(r) : "—")</td><td class="num">@if (o.Presentacion is not null) { <a class="boton boton-pequeno" href="/gestor/justificante/@o.Presentacion.Id">PDF</a> }</td></tr> }
+        </tbody></table></div>
+    </section>
+}

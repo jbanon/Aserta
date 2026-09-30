@@ -1,0 +1,40 @@
+@page "/gestor"
+@model Sga.Web.Pages.Gestor.IndexModel
+@{ ViewData["Titulo"] = "Hoy"; }
+<div class="fila-entre mb-4">
+    <div><h1 class="display" style="font-size:var(--t-2xl);margin:0">Hola, @Model.Gestor.Nombre.Split(' ')[0]</h1><span class="texto-sm texto-2">@Formato.FechaLarga(Reloj.Hoy) · campaña del @CalendarioFiscal.NombrePeriodo(Model.Periodo) de @Model.Ejercicio@(Model.Plazo is not null ? $" · el 303 vence el {Formato.Fecha(Model.Plazo.Fin)} ({Model.DiasPlazo} días)" : "")</span></div>
+    <div class="acciones"><a class="boton boton-marca" href="/gestor/matriz"><partial name="_Icono" model='"matriz"' /> Matriz de control</a></div>
+</div>
+<div class="rejilla rejilla-4 mb-4">
+    <div class="tarjeta"><div class="fila" style="align-items:center"><partial name="_Anillo" model='(Model.Matriz.Avance, Model.Matriz.Avance == 100 ? "" : Model.DiasPlazo <= 5 ? "rojo" : "morado", $"{Model.Matriz.Avance} %", "del trimestre")' /><div class="kpi"><span class="kpi-valor kpi-valor-sm">@Model.Matriz.Presentadas<span class="texto-3" style="font-size:var(--t-lg)">/@Model.Matriz.Aplicables</span></span><span class="kpi-etiqueta">modelos presentados</span></div></div></div>
+    <div class="tarjeta kpi"><span class="kpi-valor kpi-valor-sm">@Model.Tareas.Count(t => t.Tipo == "modelo")</span><span class="kpi-etiqueta">modelos que llevo yo, sin presentar</span></div>
+    <div class="tarjeta kpi"><span class="kpi-valor kpi-valor-sm @(Model.Tareas.Count(t => t.Tipo == "incidencia") > 0 ? "texto-aviso" : "")">@Model.Tareas.Count(t => t.Tipo == "incidencia")</span><span class="kpi-etiqueta">incidencias abiertas de mis clientes</span></div>
+    <div class="tarjeta kpi"><span class="kpi-valor kpi-valor-sm">@Model.DocsPorRevisar</span><span class="kpi-etiqueta">documentos por revisar</span></div>
+</div>
+<div class="rejilla rejilla-2" style="align-items:start">
+    <section class="tarjeta">
+        <div class="tarjeta-cabecera"><h2 style="font-size:var(--t-lg)">Hoy: qué me toca</h2><span class="texto-sm texto-2">@Model.Tareas.Count cosas</span></div>
+        @if (Model.Tareas.Count == 0) { <partial name="_Vacio" model='("ok", "Nada pendiente", "Todo lo tuyo está presentado o al día.")' /> }
+        else
+        {
+            <ul class="lista lista-enlazada">
+                @foreach (var t in Model.Tareas)
+                {
+                    <li><a href="@t.Enlace"><span class="marca-tipo @(t.Nivel == "rojo" ? "error" : t.Nivel == "ambar" ? "aviso" : "")"><partial name="_Icono" model='@(t.Tipo == "modelo" ? "justificante" : t.Tipo == "incidencia" ? "mensajes" : "documentos")' /></span><div class="crece"><div class="principal">@t.Titulo</div><div class="secundario">@t.Detalle</div></div><partial name="_Icono" model='"flecha-d"' /></a></li>
+                }
+            </ul>
+        }
+    </section>
+    <div class="col gap-4">
+        <section class="tarjeta">
+            <div class="tarjeta-cabecera"><h2 style="font-size:var(--t-lg)">Próximos vencimientos</h2><a class="texto-sm" href="/gestor/calendario">Calendario</a></div>
+            <ul class="lista">
+                @foreach (var p in Model.Proximos) { <li><span class="marca-tipo"><partial name="_Icono" model='"calendario"' /></span><div class="crece"><div class="principal">@Modelos.Nombre(p.Modelo) (@p.Modelo) · @p.Periodo</div><div class="secundario">hasta el @Formato.Fecha(p.Fin)@(p.Domiciliacion is DateOnly d ? $" · domiciliación hasta el {Formato.Fecha(d)}" : "") <span class="insignia insignia-aviso insignia-sin-punto">pendiente de confirmar</span></div></div><strong class="texto-sm">@(p.Fin.DayNumber - Reloj.Hoy.DayNumber) días</strong></li> }
+            </ul>
+        </section>
+        <section class="tarjeta">
+            <div class="tarjeta-cabecera"><h2 style="font-size:var(--t-lg)">Reparto del trimestre</h2></div>
+            @foreach (var g in Model.Matriz.PorGestor.OrderByDescending(g => g.Value)) { <div class="fila-entre texto-sm mb-2"><span>@g.Key</span><strong>@g.Value modelos</strong></div><div class="barra mb-3"><span class="morado" style="width:@(Model.Matriz.Aplicables == 0 ? 0 : 100 * g.Value / Model.Matriz.Aplicables)%"></span></div> }
+        </section>
+    </div>
+</div>

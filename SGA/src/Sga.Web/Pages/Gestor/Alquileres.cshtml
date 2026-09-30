@@ -1,0 +1,26 @@
+@page "/gestor/alquileres"
+@model Sga.Web.Pages.Gestor.AlquileresModel
+@{ ViewData["Titulo"] = "Facturas de alquiler"; }
+<div class="pagina-cabecera"><div><h1>Facturas de alquiler · @Model.Periodo @Model.Ejercicio</h1><p class="subtitulo">Las emitimos nosotros por cuenta de cada arrendador: una al mes por contrato, con IVA del 21 % y retención del 19 %. Se generan en bloque al cierre del trimestre y se envían al inquilino con copia al cliente.</p></div>
+    <div class="acciones"><form method="get" class="fila gap-2"><select name="periodo" aria-label="Trimestre" style="min-height:44px">@foreach (var t in new[] { "1T", "2T", "3T", "4T" }) { <option value="@t" selected="@(Model.Periodo == t)">@t @Model.Ejercicio</option> }</select><button class="boton" type="submit">Ver</button></form></div></div>
+@foreach (var b in Model.Bloques)
+{
+    <section class="tarjeta mb-4" id="cliente-@b.Cliente.Id">
+        <div class="tarjeta-cabecera">
+            <div class="fila gap-3"><span class="avatar avatar-verde">@b.Cliente.Iniciales</span><div><h2 style="font-size:var(--t-lg);margin:0"><a href="/gestor/clientes/@b.Cliente.Id" style="text-decoration:none">@b.Cliente.Nombre</a></h2><span class="texto-sm texto-2">@b.Cliente.Contratos.Count contrato@(b.Cliente.Contratos.Count == 1 ? "" : "s") · @b.Facturas.Count de @b.Esperadas facturas del trimestre</span></div></div>
+            <div class="fila gap-2">
+                @if (b.Facturas.Count < b.Esperadas) { <form method="post" asp-page-handler="Generar" asp-route-clienteId="@b.Cliente.Id" asp-route-periodo="@Model.Periodo"><button class="boton boton-primario" type="submit"><partial name="_Icono" model='"factura"' /> Generar bloque @Model.Periodo (@(b.Esperadas - b.Facturas.Count))</button></form> }
+                @if (b.Facturas.Any(f => f.Estado == EstadoFacturaEmitida.Generada)) { <form method="post" asp-page-handler="EnviarTodas" asp-route-clienteId="@b.Cliente.Id" asp-route-periodo="@Model.Periodo"><button class="boton" type="submit"><partial name="_Icono" model='"enviar"' /> Enviar pendientes</button></form> }
+            </div>
+        </div>
+        <div class="tabla-envoltorio"><table class="tabla tabla-compacta"><thead><tr><th>Número</th><th>Mes</th><th>Inmueble · inquilino</th><th class="num">Base</th><th class="num">IVA 21 %</th><th class="num">IRPF 19 %</th><th class="num">Total</th><th>Estado</th><th></th></tr></thead><tbody>
+        @if (b.Facturas.Count == 0) { <tr><td colspan="9" class="vacio">Todavía sin facturas de este trimestre.</td></tr> }
+        @foreach (var f in b.Facturas)
+        {
+            <tr><td class="mono"><strong>@f.Numero</strong></td><td>@Formato.Mes(f.Fecha)</td><td>@f.Concepto.Replace("Cuota alquiler ", "")<br /><span class="texto-xs texto-3">@f.DestinatarioNombre · @f.DestinatarioNif</span></td><td class="num">@Formato.Numero(f.Base)</td><td class="num">@Formato.Numero(f.CuotaIva)</td><td class="num">−@Formato.Numero(f.CuotaRetencion)</td><td class="num"><strong>@Formato.Numero(f.Total)</strong></td>
+                <td><span class="insignia @(f.Estado >= EstadoFacturaEmitida.EnviadaInquilino ? "insignia-ok" : "insignia-info")">@f.Estado.Texto()</span>@if (f.RegistradaMonitor) { <span class="texto-xs texto-3"> · en Monitor</span> }</td>
+                <td class="num"><div class="fila gap-1" style="justify-content:flex-end"><a class="boton boton-pequeno" href="/gestor/alquileres/@f.Id/pdf" title="PDF"><partial name="_Icono" model='"descargar"' /> PDF</a>@if (f.Estado == EstadoFacturaEmitida.Generada) { <form method="post" asp-page-handler="Enviar" asp-route-facturaId="@f.Id" asp-route-periodo="@Model.Periodo"><button class="boton boton-pequeno boton-primario" type="submit"><partial name="_Icono" model='"enviar"' /> Enviar</button></form> }</div></td></tr>
+        }
+        </tbody></table></div>
+    </section>
+}

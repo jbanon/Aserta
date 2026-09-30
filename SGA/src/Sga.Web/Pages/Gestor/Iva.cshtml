@@ -1,0 +1,65 @@
+@page "/gestor/clientes/{id:int}/iva"
+@model Sga.Web.Pages.Gestor.IvaModel
+@{ var c = Model.Cliente; var r = Model.Iva; ViewData["Titulo"] = $"Mesa de IVA · {c.NombreCorto}"; }
+<p class="mb-2"><a href="/gestor/clientes/@c.Id" class="texto-sm"><partial name="_Icono" model='"flecha-i"' /> @c.NombreCorto</a></p>
+<div class="pagina-cabecera">
+    <div><h1>Liquidación IVA @Model.Periodo @Model.Ejercicio</h1><p class="subtitulo">La hoja «LIQ IVA» de siempre, calculada sola a partir de los libros: cuota del año hasta la fecha, menos lo liquidado en trimestres anteriores.</p></div>
+    <div class="acciones">
+        <form method="get" class="fila gap-2"><select name="periodo" aria-label="Trimestre" style="min-height:44px">@foreach (var t in new[] { "1T", "2T", "3T", "4T" }) { <option value="@t" selected="@(Model.Periodo == t)">@t @Model.Ejercicio</option> }</select><button class="boton" type="submit">Ver</button></form>
+        <a class="boton" href="/gestor/clientes/@c.Id/iva?periodo=@Model.Periodo&handler=Csv"><partial name="_Icono" model='"descargar"' /> Exportar a Monitor (CSV)</a>
+        @if (Model.Obligacion is { Estado: not EstadoObligacion.Presentado } o) { <a class="boton boton-primario" href="/gestor/clientes/@c.Id/presentar/@o.Id"><partial name="_Icono" model='"justificante"' /> Presentar 303</a> } else if (Model.Obligacion?.Presentacion is not null) { <a class="boton" href="/gestor/justificante/@Model.Obligacion.Presentacion.Id">Justificante</a> }
+    </div>
+</div>
+<partial name="_Alertas" />
+<div class="rejilla rejilla-3 mb-4" style="align-items:start">
+    <section class="tarjeta">
+        <h2 style="font-size:var(--t-lg)">IVA repercutido</h2>
+        <dl class="hoja-detalle" style="grid-template-columns:1fr auto">
+            <dt>Según libros (base @Formato.Numero(r.BaseRepercutidaAcumulada))</dt><dd class="num">@Formato.Numero(r.RepercutidoAcumulado)</dd>
+            @foreach (var a in r.Anteriores) { <dt>Liquidado @a.Periodo</dt><dd class="num">− @Formato.Numero(a.RepercutidoLiquidado)</dd> }
+            <dt><strong>A liquidar @Model.Periodo</strong></dt><dd class="num"><strong>@Formato.Numero(r.RepercutidoALiquidar)</strong></dd>
+        </dl>
+        <table class="tabla tabla-compacta mt-3"><thead><tr><th>Tipo</th><th class="num">Base</th><th class="num">Cuota</th></tr></thead><tbody>@foreach (var d in r.DesgloseRepercutido) { <tr><td>@Formato.Porcentaje(d.Tipo)</td><td class="num">@Formato.Numero(d.Base)</td><td class="num">@Formato.Numero(d.Cuota)</td></tr> }</tbody></table>
+    </section>
+    <section class="tarjeta">
+        <h2 style="font-size:var(--t-lg)">IVA soportado</h2>
+        <dl class="hoja-detalle" style="grid-template-columns:1fr auto">
+            <dt>Según libros (base @Formato.Numero(r.BaseSoportadaAcumulada))</dt><dd class="num">@Formato.Numero(r.SoportadoAcumulado)</dd>
+            @foreach (var a in r.Anteriores) { <dt>Liquidado @a.Periodo</dt><dd class="num">− @Formato.Numero(a.SoportadoLiquidado)</dd> }
+            <dt><strong>A liquidar @Model.Periodo</strong></dt><dd class="num"><strong>@Formato.Numero(r.SoportadoALiquidar)</strong></dd>
+        </dl>
+        <table class="tabla tabla-compacta mt-3"><thead><tr><th>Tipo</th><th class="num">Base</th><th class="num">Cuota</th></tr></thead><tbody>@foreach (var d in r.DesgloseSoportado) { <tr><td>@Formato.Porcentaje(d.Tipo)</td><td class="num">@Formato.Numero(d.Base)</td><td class="num">@Formato.Numero(d.Cuota)</td></tr> }</tbody></table>
+    </section>
+    <section class="tarjeta tarjeta-marca">
+        <span class="kpi-etiqueta" style="color:rgba(255,255,255,.75)">Resultado @Model.Periodo</span>
+        <div class="kpi-valor" style="color:#fff">@Formato.Euros(r.Resultado)</div>
+        <p class="mt-2 mb-0" style="color:rgba(255,255,255,.8)">@(r.AIngresar ? "A ingresar" : r.ACompensar ? "A compensar" : "Sin cuota") · casilla 27 @Formato.Numero(r.RepercutidoALiquidar) − casilla 45 @Formato.Numero(r.SoportadoALiquidar)</p>
+        @if (Model.Obligacion?.Estado == EstadoObligacion.Presentado) { <span class="insignia insignia-ok mt-3">Presentado el @Formato.FechaCorta(Model.Obligacion.FechaPresentacion!.Value)</span> }
+        @if (Model.Obligacion?.Fraccionamiento == EstadoFraccionamiento.Solicitado) { <span class="insignia insignia-aviso mt-3">El cliente ha pedido fraccionar</span> }
+        <hr style="border-color:rgba(255,255,255,.2)" />
+        <form method="post" enctype="multipart/form-data" asp-page-handler="Importar" asp-route-id="@c.Id" asp-route-periodo="@Model.Periodo">
+            <label class="texto-sm" for="Excel" style="color:rgba(255,255,255,.8)">Importar un Excel de cálculo (los suyos)</label>
+            <input id="Excel" name="Excel" type="file" accept=".xlsx" style="margin:8px 0;color:#fff" />
+            <button class="boton boton-pequeno" type="submit" style="background:rgba(255,255,255,.14);border-color:transparent;color:#fff">Leer el fichero</button>
+        </form>
+    </section>
+</div>
+<div class="tabs"><a href="?periodo=@Model.Periodo&libro=emitidas" aria-current="@(Model.Libro == "emitidas" ? "true" : null)">Libro de facturas emitidas (@Model.Emitidas.Count)</a><a href="?periodo=@Model.Periodo&libro=recibidas" aria-current="@(Model.Libro == "recibidas" ? "true" : null)">Libro de facturas recibidas (@Model.Recibidas.Count)</a></div>
+<section class="tarjeta" style="padding:0;overflow:hidden">
+<div class="tabla-envoltorio">
+@if (Model.Libro == "emitidas")
+{
+    <table class="tabla tabla-compacta"><thead><tr><th>Nº</th><th>Fecha</th><th>Nº doc.</th><th>NIF</th><th>Cliente</th><th>Concepto</th><th class="num">Base</th><th class="num">Tipo</th><th class="num">Cuota</th><th class="num">Ret.</th><th class="num">Total</th></tr></thead><tbody>
+    @{ int n = 0; }
+    @foreach (var f in Model.Emitidas) { n++; <tr><td>@n</td><td class="tabular">@Formato.FechaCorta(f.Fecha)</td><td class="mono">@f.Numero</td><td class="mono">@f.DestinatarioNif</td><td>@f.DestinatarioNombre</td><td class="texto-2">@f.Concepto</td><td class="num">@Formato.Numero(f.Base)</td><td class="num">@Formato.Porcentaje(f.TipoIva)</td><td class="num">@Formato.Numero(f.CuotaIva)</td><td class="num">@(f.CuotaRetencion > 0 ? Formato.Numero(f.CuotaRetencion) : "")</td><td class="num">@Formato.Numero(f.Total)</td></tr> }
+    </tbody><tfoot><tr><td colspan="6">Suma total (1 de enero a fin del @Model.Periodo)</td><td class="num">@Formato.Numero(Model.Emitidas.Sum(f => f.Base))</td><td></td><td class="num">@Formato.Numero(Model.Emitidas.Sum(f => f.CuotaIva))</td><td class="num">@Formato.Numero(Model.Emitidas.Sum(f => f.CuotaRetencion))</td><td class="num">@Formato.Numero(Model.Emitidas.Sum(f => f.Total))</td></tr></tfoot></table>
+}
+else
+{
+    <table class="tabla tabla-compacta"><thead><tr><th>Nº</th><th>Fecha</th><th>Nº doc.</th><th>NIF</th><th>Proveedor</th><th>Concepto</th><th class="num">Base</th><th class="num">Tipo</th><th class="num">Cuota</th><th>Deducible</th><th class="num">Total</th></tr></thead><tbody>
+    @{ int n = 0; }
+    @foreach (var f in Model.Recibidas) { n++; <tr><td>@n</td><td class="tabular">@Formato.FechaCorta(f.Fecha)</td><td class="mono">@f.Numero</td><td class="mono">@f.ProveedorNif</td><td>@f.ProveedorNombre</td><td class="texto-2">@f.Concepto</td><td class="num">@Formato.Numero(f.Base)</td><td class="num">@Formato.Porcentaje(f.TipoIva)</td><td class="num">@Formato.Numero(f.CuotaIva)</td><td>@(f.Deducible ? "Sí" : "No")</td><td class="num">@Formato.Numero(f.Total)</td></tr> }
+    </tbody><tfoot><tr><td colspan="6">Suma total (1 de enero a fin del @Model.Periodo)</td><td class="num">@Formato.Numero(Model.Recibidas.Sum(f => f.Base))</td><td></td><td class="num">@Formato.Numero(Model.Recibidas.Where(f => f.Deducible).Sum(f => f.CuotaIva))</td><td></td><td class="num">@Formato.Numero(Model.Recibidas.Sum(f => f.Total))</td></tr></tfoot></table>
+}
+</div>
+</section>

@@ -1,0 +1,17 @@
+@page "/gestor/clientes/{id:int}/numeracion"
+@model Sga.Web.Pages.Gestor.NumeracionModel
+@{ var c = Model.Cliente; var n = Model.Informe; ViewData["Titulo"] = $"Numeración · {c.NombreCorto}"; }
+<p class="mb-2"><a href="/gestor/clientes/@c.Id" class="texto-sm"><partial name="_Icono" model='"flecha-i"' /> @c.NombreCorto</a></p>
+<div class="pagina-cabecera"><div><h1>Comprobación de numeración · @Model.Ejercicio</h1><p class="subtitulo">Las facturas las emite el cliente: antes de presentar comprobamos que la serie no tenga huecos, repetidos ni fechas fuera de orden.</p></div>
+    <div class="acciones">@if (!n.Correcta && !Model.IncidenciaAbierta) { <form method="post" asp-route-id="@c.Id"><button class="boton boton-primario" type="submit"><partial name="_Icono" model='"enviar"' /> Avisar al cliente</button></form> } else if (Model.IncidenciaAbierta) { <a class="boton" href="/gestor/incidencias/@Model.IncidenciaId">Ver la incidencia abierta</a> }</div></div>
+<div class="rejilla rejilla-4 mb-4">
+    <div class="tarjeta kpi"><span class="kpi-valor kpi-valor-sm">@n.Total</span><span class="kpi-etiqueta">facturas · serie «@n.Serie»</span></div>
+    <div class="tarjeta kpi"><span class="kpi-valor kpi-valor-sm @(n.Huecos > 0 ? "texto-error" : "texto-ok")">@n.Huecos</span><span class="kpi-etiqueta">huecos</span></div>
+    <div class="tarjeta kpi"><span class="kpi-valor kpi-valor-sm @(n.Duplicados > 0 ? "texto-error" : "texto-ok")">@n.Duplicados</span><span class="kpi-etiqueta">duplicados</span></div>
+    <div class="tarjeta kpi"><span class="kpi-valor kpi-valor-sm @(n.Desordenadas > 0 ? "texto-aviso" : "texto-ok")">@n.Desordenadas</span><span class="kpi-etiqueta">fechas fuera de orden</span></div>
+</div>
+@if (n.Correcta) { <div class="alerta alerta-ok"><partial name="_Icono" model='"ok"' /><div>Numeración correcta. Se puede presentar.</div></div> }
+else { <div class="alerta alerta-aviso"><partial name="_Icono" model='"alerta"' /><div><strong>Hay que aclararlo antes de presentar.</strong><ul class="mb-0 mt-2">@foreach (var a in n.Anomalias) { <li><strong>@a.Numero</strong> · @a.Detalle</li> }</ul></div></div> }
+<section class="tarjeta" style="padding:0;overflow:hidden"><div class="tabla-envoltorio"><table class="tabla tabla-compacta"><thead><tr><th>Número</th><th>Fecha</th><th>Cliente</th><th class="num">Base</th><th class="num">Total</th><th></th></tr></thead><tbody>
+@foreach (var f in Model.Facturas) { var an = n.Anomalias.FirstOrDefault(a => a.Numero == f.Numero); <tr style="@(an is not null ? "background:var(--aviso-suave)" : "")"><td class="mono"><strong>@f.Numero</strong></td><td class="tabular">@Formato.FechaCorta(f.Fecha)</td><td>@f.DestinatarioNombre</td><td class="num">@Formato.Numero(f.Base)</td><td class="num">@Formato.Numero(f.Total)</td><td>@if (an is not null) { <span class="insignia @(an.Tipo == TipoAnomalia.FechaDesordenada ? "insignia-aviso" : "insignia-error")">@an.Tipo</span> }</td></tr> }
+</tbody></table></div></section>

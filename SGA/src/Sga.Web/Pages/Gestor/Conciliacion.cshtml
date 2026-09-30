@@ -1,0 +1,27 @@
+@page "/gestor/clientes/{id:int}/conciliacion"
+@model Sga.Web.Pages.Gestor.ConciliacionModel
+@{ var c = Model.Cliente; ViewData["Titulo"] = $"Conciliación · {c.NombreCorto}"; }
+<p class="mb-2"><a href="/gestor/clientes/@c.Id" class="texto-sm"><partial name="_Icono" model='"flecha-i"' /> @c.NombreCorto</a></p>
+<div class="pagina-cabecera"><div><h1>Conciliación bancaria · @Model.Periodo @Model.Ejercicio</h1><p class="subtitulo">Cada movimiento del extracto contra una factura. Lo que no casa queda resaltado para preguntarlo al cliente.</p></div>
+    <div class="acciones">@if (c.ClaveConsultaBanco) { <span class="insignia insignia-ok">Extracto descargado con clave de consulta · @(c.UltimaDescargaBancoUtc is DateTime u ? Formato.FechaHora(u) : "")</span> } else { <span class="insignia insignia-info">Extracto subido por el cliente</span> }</div></div>
+<div class="rejilla rejilla-3 mb-4">
+    <div class="tarjeta kpi"><span class="kpi-valor kpi-valor-sm">@Model.Movimientos.Count</span><span class="kpi-etiqueta">movimientos del trimestre</span></div>
+    <div class="tarjeta kpi"><span class="kpi-valor kpi-valor-sm texto-ok">@Model.Movimientos.Count(m => m.Estado == EstadoConciliacion.Conciliado)</span><span class="kpi-etiqueta">conciliados</span></div>
+    <div class="tarjeta kpi"><span class="kpi-valor kpi-valor-sm @(Model.Pendientes > 0 ? "texto-aviso" : "")">@Model.Pendientes</span><span class="kpi-etiqueta">sin cuadrar</span></div>
+</div>
+@if (Model.Movimientos.Count == 0) { <div class="tarjeta"><partial name="_Vacio" model='("banco", "Sin extracto", "No hay movimientos cargados para este trimestre.")' /></div> }
+else
+{
+    <section class="tarjeta" style="padding:0;overflow:hidden"><div class="tabla-envoltorio"><table class="tabla tabla-compacta"><thead><tr><th>Fecha</th><th>Concepto</th><th class="num">Importe</th><th class="num">Saldo</th><th>Factura</th><th></th></tr></thead><tbody>
+    @foreach (var m in Model.Movimientos)
+    {
+        var sug = Model.Sugerencia(m);
+        <tr style="@(m.Estado == EstadoConciliacion.Pendiente ? "background:var(--aviso-suave)" : "")">
+            <td class="tabular">@Formato.FechaCorta(m.Fecha)</td><td>@m.Concepto</td><td class="num @(m.Importe < 0 ? "texto-error" : "texto-ok")">@Formato.Numero(m.Importe)</td><td class="num texto-3">@Formato.Numero(m.Saldo)</td>
+            <td>@if (m.Estado == EstadoConciliacion.Conciliado) { <span class="insignia insignia-ok">@Model.Referencia(m)</span> } else if (m.Estado == EstadoConciliacion.Ignorado) { <span class="insignia">ignorado</span> } else if (sug is not null) { <span class="texto-sm">¿@sug.Value.Texto?</span> } else { <span class="insignia insignia-aviso">sin factura</span> }</td>
+            <td class="num">@if (m.Estado == EstadoConciliacion.Pendiente) { <div class="fila gap-1" style="justify-content:flex-end">@if (sug is not null) { <form method="post" asp-page-handler="Conciliar" asp-route-id="@c.Id" asp-route-movimientoId="@m.Id" asp-route-emitidaId="@sug.Value.EmitidaId" asp-route-recibidaId="@sug.Value.RecibidaId"><button class="boton boton-pequeno boton-primario" type="submit">Conciliar</button></form> }<form method="post" asp-page-handler="Ignorar" asp-route-id="@c.Id" asp-route-movimientoId="@m.Id"><button class="boton boton-pequeno" type="submit">Ignorar</button></form></div> }</td>
+        </tr>
+    }
+    </tbody></table></div></section>
+    @if (Model.Pendientes > 0 && !Model.IncidenciaAbierta) { <form method="post" asp-page-handler="Preguntar" asp-route-id="@c.Id" class="mt-4"><button class="boton" type="submit"><partial name="_Icono" model='"enviar"' /> Preguntar al cliente por lo que no cuadra</button></form> }
+}
