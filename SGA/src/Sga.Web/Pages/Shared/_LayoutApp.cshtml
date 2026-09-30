@@ -1,0 +1,91 @@
+@{
+    var esGestor = User.EsGestor();
+    var ruta = Context.Request.Path.Value ?? "/";
+    string Act(string p) => ruta.Equals(p, StringComparison.OrdinalIgnoreCase) || (p.Length > 9 && ruta.StartsWith(p + "/", StringComparison.OrdinalIgnoreCase)) ? "page" : null!;
+    var nombre = User.NombreActual();
+    var iniciales = string.Concat(nombre.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => char.ToUpperInvariant(p[0])));
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>@(ViewData["Titulo"] ?? "Área de clientes") · SGA</title>
+    <meta name="robots" content="noindex" />
+    <link rel="icon" href="/img/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/css/tokens.css" asp-append-version="true" />
+    <link rel="stylesheet" href="/css/sga.css" asp-append-version="true" />
+    <meta name="theme-color" content="#2A1A3D" />
+</head>
+<body>
+<div class="app">
+    <aside class="app-lateral">
+        <a class="marca" href="@(esGestor ? "/gestor" : "/cliente")"><img src="/img/sga-flor.svg" alt="" width="34" height="34" /><span>SGA</span></a>
+        @if (esGestor)
+        {
+            <div class="titulo-nav">Trabajo</div>
+            <nav aria-label="Principal">
+                <a href="/gestor" aria-current="@Act("/gestor")"><partial name="_Icono" model='"sol"'  /><span>Hoy</span></a>
+                <a href="/gestor/matriz" aria-current="@Act("/gestor/matriz")"><partial name="_Icono" model='"matriz"'  /><span>Matriz de control</span></a>
+                <a href="/gestor/clientes" aria-current="@Act("/gestor/clientes")"><partial name="_Icono" model='"clientes"'  /><span>Clientes</span></a>
+                <a href="/gestor/alquileres" aria-current="@Act("/gestor/alquileres")"><partial name="_Icono" model='"casa"'  /><span>Facturas de alquiler</span></a>
+                <a href="/gestor/incidencias" aria-current="@Act("/gestor/incidencias")"><partial name="_Icono" model='"mensajes"'  /><span>Incidencias</span></a>
+                <a href="/gestor/calendario" aria-current="@Act("/gestor/calendario")"><partial name="_Icono" model='"calendario"'  /><span>Calendario</span></a>
+            </nav>
+        }
+        else
+        {
+            <div class="titulo-nav">Mi trimestre</div>
+            <nav aria-label="Principal">
+                <a href="/cliente" aria-current="@Act("/cliente")"><partial name="_Icono" model='"inicio"'  /><span>Inicio</span></a>
+                <a href="/cliente/documentos" aria-current="@Act("/cliente/documentos")"><partial name="_Icono" model='"documentos"'  /><span>Documentos</span></a>
+                <a href="/cliente/subir" aria-current="@Act("/cliente/subir")"><partial name="_Icono" model='"camara"'  /><span>Subir</span></a>
+                <a href="/cliente/impuestos" aria-current="@Act("/cliente/impuestos")"><partial name="_Icono" model='"euro"'  /><span>Cuánto voy a pagar</span></a>
+                <a href="/cliente/facturas" aria-current="@Act("/cliente/facturas")"><partial name="_Icono" model='"factura"'  /><span>Facturas</span></a>
+                <a href="/cliente/presentaciones" aria-current="@Act("/cliente/presentaciones")"><partial name="_Icono" model='"justificante"'  /><span>Presentaciones</span></a>
+                <a href="/cliente/honorarios" aria-current="@Act("/cliente/honorarios")"><partial name="_Icono" model='"maletin"'  /><span>Facturas de SGA</span></a>
+                <a href="/cliente/mensajes" aria-current="@Act("/cliente/mensajes")"><partial name="_Icono" model='"mensajes"'  /><span>Mensajes</span></a>
+            </nav>
+        }
+        <div class="lateral-pie">
+            <span class="avatar avatar-pequeno avatar-ambar">@iniciales</span>
+            <span class="texto crece" style="overflow:hidden;text-overflow:ellipsis">@nombre</span>
+            <a href="/salir" class="boton boton-icono boton-sutil" style="color:inherit" title="Salir" aria-label="Salir"><partial name="_Icono" model='"salir"'  /></a>
+        </div>
+    </aside>
+    <header class="app-cabecera">
+        <a class="marca solo-movil" href="@(esGestor ? "/gestor" : "/cliente")" aria-label="Inicio"><img src="/img/sga-flor.svg" alt="" width="32" height="32" /></a>
+        <button class="boton boton-icono boton-sutil solo-escritorio" type="button" data-plegar aria-expanded="true" aria-label="Plegar o desplegar el menú"><partial name="_Icono" model='"menu"'  /></button>
+        <h1 class="titulo crece">@(ViewData["Titulo"] ?? "")</h1>
+        <span class="aviso-demo solo-escritorio">reloj fijado al @Formato.FechaCorta(Reloj.Hoy)</span>
+        @if (!esGestor) { <a href="/cliente/mensajes" class="boton boton-icono boton-sutil" aria-label="Mensajes"><partial name="_Icono" model='"campana"'  /></a> }
+        <a href="/salir" class="avatar avatar-ambar solo-movil" style="text-decoration:none" title="Salir (@nombre)">@iniciales</a>
+    </header>
+    <main class="app-contenido">
+        <div id="anuncios" class="visualmente-oculto" aria-live="polite"></div>
+        <partial name="_Alertas" />
+        @RenderBody()
+    </main>
+    <nav class="nav-inferior" aria-label="Principal (móvil)">
+        @if (esGestor)
+        {
+            <a href="/gestor" aria-current="@Act("/gestor")"><partial name="_Icono" model='"sol"'  /><span>Hoy</span></a>
+            <a href="/gestor/matriz" aria-current="@Act("/gestor/matriz")"><partial name="_Icono" model='"matriz"'  /><span>Matriz</span></a>
+            <a href="/gestor/clientes" class="central" aria-current="@Act("/gestor/clientes")"><span class="redondo"><partial name="_Icono" model='"clientes"'  /></span><span>Clientes</span></a>
+            <a href="/gestor/incidencias" aria-current="@Act("/gestor/incidencias")"><partial name="_Icono" model='"mensajes"'  /><span>Incidencias</span></a>
+            <a href="/gestor/calendario" aria-current="@Act("/gestor/calendario")"><partial name="_Icono" model='"calendario"'  /><span>Plazos</span></a>
+        }
+        else
+        {
+            <a href="/cliente" aria-current="@Act("/cliente")"><partial name="_Icono" model='"inicio"'  /><span>Inicio</span></a>
+            <a href="/cliente/documentos" aria-current="@Act("/cliente/documentos")"><partial name="_Icono" model='"documentos"'  /><span>Documentos</span></a>
+            <a href="/cliente/subir" class="central" aria-current="@Act("/cliente/subir")"><span class="redondo"><partial name="_Icono" model='"camara"'  /></span><span>Subir</span></a>
+            <a href="/cliente/impuestos" aria-current="@Act("/cliente/impuestos")"><partial name="_Icono" model='"euro"'  /><span>Impuestos</span></a>
+            <a href="/cliente/mas" aria-current="@Act("/cliente/mas")"><partial name="_Icono" model='"menu"'  /><span>Más</span></a>
+        }
+    </nav>
+</div>
+<script src="/lib/htmx-2.0.8.min.js"></script>
+<script src="/js/app.js" asp-append-version="true"></script>
+</body>
+</html>

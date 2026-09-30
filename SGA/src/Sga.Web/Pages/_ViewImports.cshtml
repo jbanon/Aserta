@@ -1,0 +1,10 @@
+@using Sga.Web
+@using Sga.Web.Infraestructura
+@using Sga.Nucleo.Modelo
+@using Sga.Nucleo.Calendario
+@using Sga.Nucleo.Calculo
+@using Microsoft.AspNetCore.Authorization
+@namespace Sga.Web.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@inject Microsoft.Extensions.Options.IOptions<OpcionesSga> OpcionesSga
+@inject Sga.Nucleo.Calendario.IReloj Reloj

@@ -1,0 +1,45 @@
+@page "/contacto"
+@model Sga.Web.Pages.ContactoModel
+@{ ViewData["Titulo"] = "Contacto"; var o = OpcionesSga.Value; }
+<section class="contenedor" style="padding-top:var(--e-7)">
+    <span class="antetitulo">Contacto</span>
+    <h1>Cuéntanos tu caso</h1>
+    <p class="entradilla texto-2">Un local, tu actividad o tu empresa. Con tres líneas nos basta para decirte cómo lo llevaríamos y cuánto cuesta.</p>
+</section>
+<section class="seccion">
+    <div class="contenedor rejilla rejilla-2" style="align-items:start">
+        <div class="tarjeta">
+            @if (Model.Enviado)
+            {
+                <partial name="_Vacio" model='("ok", "Recibido", "Te llamamos o escribimos en menos de dos días laborables. (En la demostración no se envía nada.)")' />
+            }
+            else
+            {
+                <form method="post">
+                    <div class="campo"><label for="Nombre">Tu nombre</label><input id="Nombre" name="Nombre" required autocomplete="name" /></div>
+                    <div class="campo"><label for="Contacto">Teléfono o correo</label><input id="Contacto" name="Contacto" required autocomplete="tel" /></div>
+                    <div class="campo"><label for="Perfil">Qué eres</label>
+                        <select id="Perfil" name="Perfil"><option>Tengo un local alquilado</option><option>Soy autónomo o profesional</option><option>Tengo una sociedad</option><option>Otra cosa</option></select></div>
+                    <div class="campo"><label for="Mensaje">Cuéntanos en tres líneas</label><textarea id="Mensaje" name="Mensaje" placeholder="Por ejemplo: tengo un local alquilado a una peluquería y quiero que me lleven el IVA y las facturas."></textarea></div>
+                    <button class="boton boton-primario boton-grande" type="submit">Enviar</button>
+                    <p class="texto-xs texto-3 mt-3">Demostración: el formulario no envía nada a ningún sitio.</p>
+                </form>
+            }
+        </div>
+        <div class="col gap-4">
+            <div class="tarjeta">
+                <h3>Dónde estamos</h3>
+                <ul class="lista">
+                    <li><span class="marca-tipo"><partial name="_Icono" model='"ubicacion"' /></span><div><div class="principal">@o.Direccion</div><div class="secundario">@o.CodigoPostal @o.Localidad</div></div></li>
+                    <li><span class="marca-tipo"><partial name="_Icono" model='"telefono"' /></span><div><div class="principal">@o.Telefono</div><div class="secundario">Lo coge una persona.</div></div></li>
+                    <li><span class="marca-tipo"><partial name="_Icono" model='"correo"' /></span><div><div class="principal">@o.Email</div><div class="secundario">Respuesta en menos de 48 h laborables.</div></div></li>
+                    <li><span class="marca-tipo"><partial name="_Icono" model='"reloj"' /></span><div><div class="principal">@o.Horario</div><div class="secundario">Del 1 al 20 de abril, julio, octubre y enero ampliamos horario.</div></div></li>
+                </ul>
+            </div>
+            <div class="tarjeta tarjeta-suave" aria-hidden="true">
+                <svg viewBox="0 0 400 180" width="100%" role="img" aria-label="Plano esquemático de la zona"><rect width="400" height="180" fill="#F3ECF7" rx="12"/><path d="M0 60 H400 M0 120 H400 M80 0 V180 M200 0 V180 M320 0 V180" stroke="#fff" stroke-width="10"/><path d="M0 60 H400 M0 120 H400 M80 0 V180 M200 0 V180 M320 0 V180" stroke="#DCCFE6" stroke-width="2"/><circle cx="240" cy="90" r="14" fill="#7B3F8E"/><circle cx="240" cy="90" r="5" fill="#F6D33C"/><text x="262" y="95" font-family="Inter, sans-serif" font-size="13" fill="#4A2660" font-weight="600">SGA Contabilizado</text></svg>
+                <p class="texto-xs texto-3 mb-0 mt-2">Plano esquemático. En la web definitiva irá el mapa real.</p>
+            </div>
+        </div>
+    </div>
+</section>

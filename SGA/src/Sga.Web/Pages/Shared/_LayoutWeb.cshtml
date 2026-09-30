@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>@(ViewData["Titulo"] is string t ? t + " · " : "")SGA Contabilizado</title>
+    <meta name="description" content="@(ViewData["Descripcion"] ?? "Gestoría en Madrid para arrendadores, autónomos y pequeñas sociedades. Tus impuestos al día, con un área de clientes que te dice qué falta y cuánto vas a pagar.")" />
+    <link rel="icon" href="/img/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/css/tokens.css" asp-append-version="true" />
+    <link rel="stylesheet" href="/css/sga.css" asp-append-version="true" />
+    <meta name="theme-color" content="#2A1A3D" />
+</head>
+<body>
+    <a class="visualmente-oculto" href="#contenido">Saltar al contenido</a>
+    <header class="web-cabecera">
+        <div class="contenedor">
+            <a class="marca" href="/" aria-label="SGA Contabilizado, inicio"><img src="/img/sga-compacto.svg" alt="" width="104" height="40" /><span class="visualmente-oculto">SGA Contabilizado</span></a>
+            @{ var ruta = Context.Request.Path.Value ?? "/"; string Actual(string p) => (p == "/" ? ruta == "/" : ruta.StartsWith(p, StringComparison.OrdinalIgnoreCase)) ? "page" : null!; }
+            <nav class="web-nav" aria-label="Principal">
+                <a href="/servicios" aria-current="@Actual("/servicios")">Servicios</a>
+                <a href="/como-trabajamos" aria-current="@Actual("/como-trabajamos")">Cómo trabajamos</a>
+                <a href="/equipo" aria-current="@Actual("/equipo")">Equipo</a>
+                <a href="/contacto" aria-current="@Actual("/contacto")">Contacto</a>
+                <a class="boton boton-marca" href="/acceso" style="margin-left:8px">Área de clientes</a>
+            </nav>
+            <button class="boton boton-icono boton-sutil web-menu-boton" type="button" data-menu aria-expanded="false" aria-controls="menu-movil" aria-label="Abrir el menú"><partial name="_Icono" model='"menu"'  /></button>
+        </div>
+        <nav id="menu-movil" class="web-menu-movil" aria-label="Principal (móvil)">
+            <a href="/servicios">Servicios</a><a href="/como-trabajamos">Cómo trabajamos</a><a href="/equipo">Equipo</a><a href="/contacto">Contacto</a>
+            <a class="boton boton-marca" href="/acceso">Área de clientes</a>
+        </nav>
+    </header>
+    <main id="contenido">
+        @RenderBody()
+    </main>
+    <footer class="pie">
+        <div class="contenedor">
+            <div>
+                <img src="/img/sga-logo-oscuro.svg" alt="SGA Contabilizado" width="260" height="100" style="height:auto;max-width:260px" />
+                <p class="mt-4" style="max-width:38ch">Gestoría para arrendadores, autónomos y pequeñas sociedades. Cuentas claras, plazos cumplidos y una persona con nombre al otro lado.</p>
+            </div>
+            <div><h4>Servicios</h4><ul><li><a href="/servicios#arrendadores">Arrendadores</a></li><li><a href="/servicios#autonomos">Autónomos y profesionales</a></li><li><a href="/servicios#sociedades">Sociedades</a></li></ul></div>
+            <div><h4>SGA</h4><ul><li><a href="/como-trabajamos">Cómo trabajamos</a></li><li><a href="/equipo">Equipo</a></li><li><a href="/contacto">Contacto</a></li><li><a href="/acceso">Área de clientes</a></li></ul></div>
+            <div><h4>Dónde estamos</h4><ul><li>@OpcionesSga.Value.Direccion<br />@OpcionesSga.Value.CodigoPostal @OpcionesSga.Value.Localidad</li><li>@OpcionesSga.Value.Telefono</li><li>@OpcionesSga.Value.Email</li><li>@OpcionesSga.Value.Horario</li></ul></div>
+            <div class="legal">© @Reloj.Hoy.Year SGA Contabilizado · Demostración con datos ficticios: nombres, NIF, importes y contactos son inventados. Ninguna presentación se envía a la Agencia Tributaria.</div>
+        </div>
+    </footer>
+    <script src="/js/app.js" asp-append-version="true"></script>
+</body>
+</html>

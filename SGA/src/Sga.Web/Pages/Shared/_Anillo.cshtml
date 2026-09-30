@@ -1,0 +1,6 @@
+@model (int Porcentaje, string Color, string Texto, string Sub)
+@{ var r = 52.0; var c = 2 * Math.PI * r; var off = c * (1 - Math.Clamp(Model.Porcentaje, 0, 100) / 100.0); }
+<div class="anillo-envoltorio" role="img" aria-label="@Model.Porcentaje % · @Model.Sub">
+    <svg class="anillo" viewBox="0 0 120 120"><circle class="pista" cx="60" cy="60" r="52"></circle><circle class="progreso @Model.Color" cx="60" cy="60" r="52" stroke-dasharray="@c.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)" stroke-dashoffset="@off.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)"></circle></svg>
+    <div class="anillo-texto"><strong>@Model.Texto</strong><small class="texto-2">@Model.Sub</small></div>
+</div>

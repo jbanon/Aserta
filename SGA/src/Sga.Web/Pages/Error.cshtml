@@ -1,0 +1,7 @@
+@page "/error"
+@model Sga.Web.Pages.ErrorModel
+@{ ViewData["Titulo"] = "Algo no ha ido bien"; }
+<section class="contenedor" style="padding:var(--e-8) 0;max-width:640px">
+    <partial name="_Vacio" model='("alerta", Model.Codigo == 404 ? "Esta página no existe" : "Algo no ha ido bien", Model.Codigo == 404 ? "Puede que el enlace esté mal o que la página se haya movido." : "Hemos anotado el error. Prueba a volver al inicio.")' />
+    <p class="centro"><a class="boton boton-primario" href="/">Volver al inicio</a></p>
+</section>

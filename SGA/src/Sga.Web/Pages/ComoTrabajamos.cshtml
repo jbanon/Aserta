@@ -1,0 +1,44 @@
+@page "/como-trabajamos"
+@model Sga.Web.Pages.ComoTrabajamosModel
+@{ ViewData["Titulo"] = "Cómo trabajamos"; }
+<section class="contenedor" style="padding-top:var(--e-7)">
+    <span class="antetitulo">Cómo trabajamos</span>
+    <h1>Un método que cabe en cuatro pasos y se repite cada trimestre</h1>
+    <p class="entradilla texto-2">Lo que te contamos aquí es exactamente lo que verás en tu área de clientes. Sin jerga: cuando aparece el nombre de un modelo, va con su explicación.</p>
+</section>
+<section class="seccion">
+    <div class="contenedor pasos">
+        <div class="paso"><h3>Nos cuentas tu caso</h3><p>Una reunión de media hora, en el despacho o por videollamada. Te decimos qué modelos te tocan, qué necesitamos de ti y la cuota cerrada.</p></div>
+        <div class="paso"><h3>Cada mes, poco</h3><p>Si te facturamos nosotros, no haces nada. Si facturas tú, nos mandas las facturas. Los tickets, con una foto desde el móvil, en el momento.</p></div>
+        <div class="paso"><h3>Cada trimestre, cuentas claras</h3><p>Del 1 al 10 te decimos qué falta. Calculamos el IVA con tus libros y ves la cifra en tu área. Presentamos antes del 20.</p></div>
+        <div class="paso"><h3>Justificante y pago</h3><p>El justificante con su código de verificación queda en tu área. El pago va domiciliado; si es alto, pides fraccionarlo.</p></div>
+    </div>
+</section>
+<section class="seccion seccion-suave">
+    <div class="contenedor rejilla rejilla-2" style="align-items:start">
+        <div>
+            <h2>Tu primer mes con nosotros</h2>
+            <ul class="lista">
+                <li><span class="marca-tipo"><partial name="_Icono" model='"ok"' /></span><div><div class="principal">Semana 1: alta y datos</div><div class="secundario">Contrato de servicio, autorización para presentar por ti (modelo de representación) y datos de tu cuenta para la domiciliación.</div></div></li>
+                <li><span class="marca-tipo"><partial name="_Icono" model='"documentos"' /></span><div><div class="principal">Semana 2: lo que ya tienes</div><div class="secundario">Si vienes de otra gestoría, pedimos lo que te tiene que entregar: libros, últimos impuestos presentados y tus facturas del año.</div></div></li>
+                <li><span class="marca-tipo"><partial name="_Icono" model='"camara"' /></span><div><div class="principal">Semana 3: tu área en el móvil</div><div class="secundario">Entras, ves tus modelos y pruebas a subir un ticket. Diez minutos con tu gestora por teléfono.</div></div></li>
+                <li><span class="marca-tipo ok"><partial name="_Icono" model='"justificante"' /></span><div><div class="principal">Primer trimestre con revisión extra</div><div class="secundario">El primer cierre lo revisamos dos personas antes de presentar.</div></div></li>
+            </ul>
+        </div>
+        <div class="tarjeta">
+            <h3>Lo que puedes esperar de nosotros</h3>
+            <ul class="texto-2"><li>Una gestora asignada, con nombre y teléfono directo.</li><li>Respuesta a cualquier consulta en menos de 48 horas laborables.</li><li>Ninguna presentación sin que antes veas la cifra en tu área.</li><li>Si el error es nuestro, respondemos nosotros: lo corregimos y asumimos el recargo.</li><li>Tus documentos, en nuestro sistema y en tu área, durante los años que exige la ley.</li></ul>
+            <p class="texto-xs texto-3">Compromisos de la demostración; la versión definitiva la fijará SGA.</p>
+        </div>
+    </div>
+</section>
+<section class="seccion">
+    <div class="contenedor">
+        <h2>Las herramientas</h2>
+        <div class="rejilla rejilla-3">
+            <div class="tarjeta"><h3>Tu área de clientes</h3><p class="texto-sm texto-2 mb-0">Móvil y ordenador. Qué falta, cuánto pagarás, tus facturas y tus justificantes. Es lo que estás viendo en esta demostración.</p></div>
+            <div class="tarjeta"><h3>Nuestro programa de gestión</h3><p class="texto-sm texto-2 mb-0">Donde registramos facturas, libros y modelos. Lo que emitimos por ti queda registrado ahí.</p></div>
+            <div class="tarjeta"><h3>La Agencia Tributaria</h3><p class="texto-sm texto-2 mb-0">Presentamos como colaboradores sociales. En esta demostración las presentaciones son simuladas: nada llega a Hacienda.</p></div>
+        </div>
+    </div>
+</section>

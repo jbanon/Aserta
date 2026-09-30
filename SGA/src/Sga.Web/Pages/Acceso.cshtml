@@ -1,0 +1,43 @@
+@page "/acceso"
+@model Sga.Web.Pages.AccesoModel
+@{ ViewData["Titulo"] = "Área de clientes"; }
+<section class="contenedor" style="padding-top:var(--e-7);max-width:980px">
+    <span class="antetitulo">Área de clientes · demostración</span>
+    <h1>Entra con un clic</h1>
+    <p class="entradilla texto-2">En la demostración no hay contraseñas: elige quién quieres ser. Cada perfil ve su propia información, con datos ficticios.</p>
+    <div class="rejilla rejilla-2 mt-5" style="align-items:start">
+        <div class="tarjeta">
+            <h2 style="font-size:var(--t-xl)">Soy cliente</h2>
+            <p class="texto-sm texto-2">Cuatro clientes con situaciones distintas, para ver cómo cambia el área según el perfil.</p>
+            <div class="col gap-2">
+                @foreach (var c in Model.Clientes)
+                {
+                    <form method="post" asp-page-handler="Cliente" asp-route-id="@c.Id">
+                        <button class="acceso-perfil" type="submit">
+                            <span class="avatar avatar-@(c.Tipo == TipoCliente.Arrendador ? "verde" : c.Tipo == TipoCliente.Sociedad ? "morado" : "ambar")">@c.Iniciales</span>
+                            <span><strong>@c.NombreCorto</strong><br /><span class="texto-sm texto-2">@Model.Descripcion(c)</span></span>
+                            <partial name="_Icono" model='"flecha-d"' />
+                        </button>
+                    </form>
+                }
+            </div>
+        </div>
+        <div class="tarjeta">
+            <h2 style="font-size:var(--t-xl)">Trabajo en SGA</h2>
+            <p class="texto-sm texto-2">La mesa de trabajo: matriz de control, cálculo de IVA, facturas de alquiler, presentaciones.</p>
+            <div class="col gap-2">
+                @foreach (var g in Model.Gestores)
+                {
+                    <form method="post" asp-page-handler="Gestor" asp-route-id="@g.Id">
+                        <button class="acceso-perfil" type="submit">
+                            <span class="avatar avatar-@g.Color">@g.Iniciales</span>
+                            <span><strong>@g.Nombre</strong><br /><span class="texto-sm texto-2">@g.Rol</span></span>
+                            <partial name="_Icono" model='"flecha-d"' />
+                        </button>
+                    </form>
+                }
+            </div>
+            <p class="texto-xs texto-3 mt-4 mb-0">La demo tiene el reloj fijado al @Formato.FechaLarga(Reloj.Hoy): en plena campaña del tercer trimestre.</p>
+        </div>
+    </div>
+</section>

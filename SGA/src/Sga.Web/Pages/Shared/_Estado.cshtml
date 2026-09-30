@@ -1,0 +1,8 @@
+@model EstadoObligacion
+@switch (Model)
+{
+    case EstadoObligacion.Presentado: <span class="insignia insignia-ok">Presentado</span> break;
+    case EstadoObligacion.EnCurso: <span class="insignia insignia-aviso">En curso</span> break;
+    case EstadoObligacion.Pendiente: <span class="insignia">Pendiente</span> break;
+    default: <span class="insignia insignia-sin-punto texto-3">No procede</span> break;
+}

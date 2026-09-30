@@ -1,0 +1,4 @@
+@model Documento
+<div class="miniatura @(Model.TipoMime.StartsWith("image/") ? "miniatura-foto" : "")" aria-hidden="true">
+    <partial name="_Icono" model="@(Model.Tipo switch { TipoDocumento.Ticket => "camara", TipoDocumento.ExtractoBancario => "banco", TipoDocumento.Nomina => "usuario", TipoDocumento.SeguroOCuota => "justificante", _ => "factura" })" />
+</div>

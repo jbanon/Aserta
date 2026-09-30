@@ -1,0 +1,3 @@
+@if (TempData["AvisoOk"] is string ok) { <div class="alerta alerta-ok" role="status"><partial name="_Icono" model='"ok"'  /><div>@ok</div></div> }
+@if (TempData["AvisoError"] is string err) { <div class="alerta alerta-error" role="alert"><partial name="_Icono" model='"alerta"'  /><div>@err</div></div> }
+@if (TempData["AvisoInfo"] is string info) { <div class="alerta alerta-info" role="status"><partial name="_Icono" model='"info"'  /><div>@info</div></div> }

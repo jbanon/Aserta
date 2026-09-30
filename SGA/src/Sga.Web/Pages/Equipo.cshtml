@@ -1,0 +1,23 @@
+@page "/equipo"
+@model Sga.Web.Pages.EquipoModel
+@{ ViewData["Titulo"] = "Equipo"; }
+<section class="contenedor" style="padding-top:var(--e-7)">
+    <span class="antetitulo">Equipo</span>
+    <h1>Tres personas. Sabrás quién lleva lo tuyo.</h1>
+    <p class="entradilla texto-2">Cada cliente tiene una gestora o gestor de referencia. Es quien te llama, quien te contesta y quien firma las presentaciones.</p>
+</section>
+<section class="seccion">
+    <div class="contenedor rejilla rejilla-3">
+        @foreach (var g in Model.Gestores)
+        {
+            <div class="tarjeta persona">
+                <span class="avatar avatar-@g.Color">@g.Iniciales</span>
+                <div><h3 style="margin-bottom:2px">@g.Nombre</h3><div class="texto-sm texto-2 mb-2">@g.Rol</div><p class="cita" style="font-size:var(--t-base)">@Model.Cita(g)</p><div class="texto-xs texto-3">@g.Email</div></div>
+            </div>
+        }
+    </div>
+    <div class="contenedor mt-6">
+        <div class="tarjeta tarjeta-suave"><h3>Cómo nos organizamos</h3><p class="texto-2 mb-0">Marta revisa cada cierre de trimestre antes de presentar. Lucía lleva el día a día fiscal de autónomos y sociedades. Raúl lleva la contabilidad, las nóminas y las cuentas anuales. Si tu gestora está de vacaciones, otra persona del equipo tiene tu expediente al día: nada se queda en un cajón.</p></div>
+        <p class="texto-xs texto-3 mt-3">Nombres y datos ficticios para la demostración.</p>
+    </div>
+</section>

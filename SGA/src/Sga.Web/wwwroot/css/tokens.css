@@ -1,0 +1,41 @@
+/* SGA Contabilizado · tokens del sistema de diseño. La paleta sale del logo: morado (flor), verde (tallo y "SGA"), amarillo (centro). */
+@font-face { font-family: "Fraunces"; src: url("/fonts/Fraunces-roman.woff2") format("woff2"); font-weight: 300 900; font-style: normal; font-display: swap; }
+@font-face { font-family: "Fraunces"; src: url("/fonts/Fraunces-italic.woff2") format("woff2"); font-weight: 300 900; font-style: italic; font-display: swap; }
+@font-face { font-family: "Inter"; src: url("/fonts/InterVariable.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: swap; }
+
+:root {
+  color-scheme: light;
+  /* Marca */
+  --morado-900: #2A1A3D; --morado-700: #4A2660; --morado-500: #7B3F8E; --morado-300: #B48BC4; --morado-100: #F3ECF7; --morado-50: #FAF6FC;
+  --verde-700: #1F6E40; --verde-500: #2F9E5B; --verde-300: #8AD0A4; --verde-100: #E4F4EA;
+  --amarillo-500: #F6D33C; --amarillo-700: #8A6100; --amarillo-100: #FDF5CF;
+  --rojo-700: #8F2A1B; --rojo-500: #C8412B; --rojo-100: #FBE7E3;
+  --azul-500: #3B6EA8; --azul-100: #E6EEF8;
+  /* Neutros cálidos */
+  --papel: #FBFAF7; --superficie: #FFFFFF; --superficie-2: #F4F1F6; --superficie-3: #ECE7F0;
+  --tinta: #221B2A; --tinta-2: #5B5366; --tinta-3: #8B8494; --tinta-inversa: #FFFFFF;
+  --linea: #E6E1EA; --linea-fuerte: #CFC7D6;
+  /* Semántica */
+  --primario: var(--morado-700); --primario-suave: var(--morado-100); --acento: var(--verde-500); --acento-fuerte: var(--verde-700);
+  --ok: var(--verde-500); --ok-suave: var(--verde-100); --ok-texto: var(--verde-700);
+  --aviso: var(--amarillo-500); --aviso-suave: var(--amarillo-100); --aviso-texto: var(--amarillo-700);
+  --error: var(--rojo-500); --error-suave: var(--rojo-100); --error-texto: var(--rojo-700);
+  --info: var(--azul-500); --info-suave: var(--azul-100);
+  --foco: #7B3F8E;
+  /* Estados de la matriz (mismos colores que el Excel, pero con criterio) */
+  --celda-np: var(--superficie-3); --celda-pendiente: #FFFFFF; --celda-curso: var(--amarillo-100); --celda-presentado: var(--verde-100);
+  /* Tipografía */
+  --f-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --f-texto: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --f-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --t-xs: 0.75rem; --t-sm: 0.875rem; --t-base: 1rem; --t-lg: 1.125rem; --t-xl: 1.375rem; --t-2xl: 1.75rem; --t-3xl: 2.25rem; --t-4xl: 3rem; --t-5xl: 4rem;
+  --peso-normal: 400; --peso-medio: 500; --peso-semi: 600; --peso-negrita: 700;
+  /* Espacio, radios, sombras */
+  --e-1: 4px; --e-2: 8px; --e-3: 12px; --e-4: 16px; --e-5: 24px; --e-6: 32px; --e-7: 48px; --e-8: 64px; --e-9: 96px;
+  --r-sm: 6px; --r: 12px; --r-lg: 20px; --r-xl: 28px; --r-full: 999px;
+  --sombra-1: 0 1px 2px rgba(34, 27, 42, .06), 0 1px 3px rgba(34, 27, 42, .04);
+  --sombra-2: 0 4px 12px rgba(34, 27, 42, .08), 0 2px 4px rgba(34, 27, 42, .04);
+  --sombra-3: 0 16px 40px rgba(42, 26, 61, .14);
+  --transicion: 160ms ease;
+  --ancho-lateral: 264px; --ancho-lateral-plegado: 76px; --alto-cabecera: 64px; --alto-nav-inferior: 68px;
+}
