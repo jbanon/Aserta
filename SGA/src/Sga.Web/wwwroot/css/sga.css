@@ -65,7 +65,7 @@ ul.limpia { list-style: none; margin: 0; padding: 0; }
 .tarjeta-marca h1, .tarjeta-marca h2, .tarjeta-marca h3 { color: #fff; }
 .tarjeta-marca .texto-2 { color: rgba(255, 255, 255, .75); }
 .tarjeta-marca .anillo .pista { stroke: rgba(255, 255, 255, .18); }
-.tarjeta-marca .anillo-texto strong, .tarjeta-marca .anillo-texto small { color: #fff; }
+.tarjeta-marca .anillo-envoltorio .anillo-texto strong, .tarjeta-marca .anillo-envoltorio .anillo-texto small { color: #fff; }
 .tarjeta-marca .anillo .progreso.ambar { stroke: var(--amarillo-500); } .tarjeta-marca .anillo .progreso { stroke: var(--verde-300); }
 .tarjeta-suave { background: var(--morado-50); border-color: var(--morado-100); box-shadow: none; }
 .tarjeta-cabecera { display: flex; align-items: baseline; justify-content: space-between; gap: var(--e-3); margin-bottom: var(--e-4); flex-wrap: wrap; }
@@ -121,7 +121,7 @@ ul.limpia { list-style: none; margin: 0; padding: 0; }
 /* Línea de tiempo del trimestre */
 .linea-tiempo { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; position: relative; margin: var(--e-4) 0; }
 .linea-tiempo::before { content: ""; position: absolute; left: 12.5%; right: 12.5%; top: 11px; height: 3px; background: var(--superficie-3); border-radius: 2px; }
-.hito { position: relative; text-align: center; font-size: var(--t-xs); color: var(--tinta-2); padding: 30px 3px 0; overflow-wrap: anywhere; line-height: 1.3; }
+.hito { position: relative; text-align: center; font-size: 11px; color: var(--tinta-2); padding: 30px 2px 0; line-height: 1.3; hyphens: auto; }
 .hito::before { content: ""; position: absolute; top: 4px; left: 50%; transform: translateX(-50%); width: 18px; height: 18px; border-radius: 50%; background: var(--superficie); border: 3px solid var(--linea-fuerte); }
 .hito.hecho::before { background: var(--ok); border-color: var(--ok); }
 .hito.actual::before { background: var(--superficie); border-color: var(--morado-500); box-shadow: 0 0 0 4px var(--morado-100); }

@@ -365,9 +365,8 @@ public static class Sembrador
 
         // --- Extracto bancario de Luz Norte (3T) con movimientos sin conciliar ---------------------------
         var movs = new List<MovimientoBancario>();
-        decimal saldo = 41_250.33m;
         void Mov(Cliente c, DateOnly f, string concepto, decimal importe, int? emitida = null, int? recibida = null, EstadoConciliacion estado = EstadoConciliacion.Conciliado)
-        { saldo += importe; movs.Add(new MovimientoBancario { ClienteId = c.Id, Fecha = f, Concepto = concepto, Importe = importe, Saldo = saldo, FacturaEmitidaId = emitida, FacturaRecibidaId = recibida, Estado = estado }); }
+            => movs.Add(new MovimientoBancario { ClienteId = c.Id, Fecha = f, Concepto = concepto, Importe = importe, FacturaEmitidaId = emitida, FacturaRecibidaId = recibida, Estado = estado });
         var emLN = emitidas.Where(f => f.ClienteId == luzNorte.Id && f.Fecha.Month >= 7).OrderBy(f => f.Fecha).ToList();
         var reLN = recibidas.Where(f => f.ClienteId == luzNorte.Id && f.Fecha.Month >= 7 && !f.EsHonorariosSga).OrderBy(f => f.Fecha).ToList();
         int mi = 0;
@@ -377,8 +376,13 @@ public static class Sembrador
         Mov(luzNorte, F(9, 12), "TRANSF. RECIBIDA CORDILLERA MEDIA LLC (SIN REFERENCIA)", 9450m, estado: EstadoConciliacion.Pendiente);
         Mov(luzNorte, F(9, 27), "ADEUDO SGA CONTABILIZADO SL", -254.1m, estado: EstadoConciliacion.Pendiente);
         // Nexo: extracto 3T subido, conciliado en su mayoria
-        saldo = 12_800m;
         foreach (var f in emitidas.Where(f => f.ClienteId == nexo.Id && f.Fecha.Month >= 7)) Mov(nexo, f.Fecha.AddDays(30), $"TRANSF. {f.DestinatarioNombre.ToUpperInvariant()}", f.Total, f.Id);
+        // Saldo corrido por cliente, en orden de fecha
+        foreach (var grupo in movs.GroupBy(m => m.ClienteId))
+        {
+            decimal saldo = grupo.Key == luzNorte.Id ? 141_250.33m : 12_800m;
+            foreach (var m in grupo.OrderBy(m => m.Fecha).ThenBy(m => m.Importe)) { saldo += m.Importe; m.Saldo = saldo; }
+        }
         movs.Sort((a, b) => a.Fecha.CompareTo(b.Fecha));
         db.Movimientos.AddRange(movs);
 

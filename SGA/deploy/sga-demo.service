@@ -1,0 +1,27 @@
+# /etc/systemd/system/sga-demo.service
+# Demo SGA Contabilizado. Instalar: sudo cp deploy/sga-demo.service /etc/systemd/system/ && sudo systemctl daemon-reload && sudo systemctl enable --now sga-demo
+[Unit]
+Description=Demo SGA Contabilizado (ASP.NET Core)
+After=network.target mssql-server.service
+
+[Service]
+Type=simple
+User=dev
+WorkingDirectory=/home/dev/proyectos/Aserta/SGA/publicado
+ExecStart=/usr/bin/dotnet /home/dev/proyectos/Aserta/SGA/publicado/Sga.Web.dll
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=120
+MemoryMax=450M
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=ASPNETCORE_URLS=http://127.0.0.1:5120
+Environment=DOTNET_gcServer=0
+# Base de datos: SQL Server (base SGA) o SQLite. Con SQLite no hace falta cadena de conexion.
+Environment=Datos__Proveedor=Sqlite
+Environment=Datos__Sqlite=/var/lib/sga-demo/sga-demo.db
+Environment=Demo__Almacen=/var/lib/sga-demo/documentos
+# Para SQL Server: Datos__Proveedor=SqlServer y la cadena en un fichero de entorno fuera del repositorio:
+# EnvironmentFile=/etc/sga-demo.env   (contenido: ConnectionStrings__SGA=Server=localhost,1433;Database=SGA;User Id=...;Password=...;TrustServerCertificate=True;Encrypt=True)
+
+[Install]
+WantedBy=multi-user.target

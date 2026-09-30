@@ -35,8 +35,16 @@ public class ConciliacionModel(SgaDb db, IReloj reloj) : PaginaGestor(db)
     {
         var usadasE = Movimientos.Where(x => x.FacturaEmitidaId != null).Select(x => x.FacturaEmitidaId!.Value).ToHashSet();
         var usadasR = Movimientos.Where(x => x.FacturaRecibidaId != null).Select(x => x.FacturaRecibidaId!.Value).ToHashSet();
-        if (m.Importe > 0) { var f = _emitidas.Values.FirstOrDefault(f => f.Total == m.Importe && !usadasE.Contains(f.Id)); return f is null ? null : ($"{f.Numero} · {f.DestinatarioNombre}", f.Id, null); }
-        var r = _recibidas.Values.FirstOrDefault(f => f.Total == -m.Importe && !usadasR.Contains(f.Id)); return r is null ? null : ($"{r.Numero} · {r.ProveedorNombre}", null, r.Id);
+        // 1) el numero de factura aparece en el concepto; 2) mismo importe y fecha cercana (60 dias antes del movimiento)
+        if (m.Importe > 0)
+        {
+            var f = _emitidas.Values.Where(f => !usadasE.Contains(f.Id)).FirstOrDefault(f => m.Concepto.Contains(f.Numero, StringComparison.OrdinalIgnoreCase))
+                ?? _emitidas.Values.Where(f => !usadasE.Contains(f.Id) && f.Total == m.Importe && f.Fecha <= m.Fecha && f.Fecha >= m.Fecha.AddDays(-60)).OrderByDescending(f => f.Fecha).FirstOrDefault();
+            return f is null ? null : ($"{f.Numero} · {f.DestinatarioNombre}", f.Id, null);
+        }
+        var r = _recibidas.Values.Where(f => !usadasR.Contains(f.Id)).FirstOrDefault(f => f.Numero.Length > 2 && m.Concepto.Contains(f.Numero, StringComparison.OrdinalIgnoreCase))
+            ?? _recibidas.Values.Where(f => !usadasR.Contains(f.Id) && f.Total == -m.Importe && f.Fecha <= m.Fecha && f.Fecha >= m.Fecha.AddDays(-60)).OrderByDescending(f => f.Fecha).FirstOrDefault();
+        return r is null ? null : ($"{r.Numero} · {r.ProveedorNombre}", null, r.Id);
     }
 
     public async Task<IActionResult> OnGetAsync(int id) => await CargarAsync(id) ? Page() : NotFound();

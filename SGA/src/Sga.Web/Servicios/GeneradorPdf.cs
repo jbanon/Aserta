@@ -40,7 +40,13 @@ public sealed class GeneradorPdf
             {
                 if (ch is '(' or ')' or '\\') sb.Append('\\').Append(ch);
                 else if (ch < 128) sb.Append(ch);
-                else { var b = Encoding.Latin1.GetBytes(ch.ToString())[0]; sb.Append(b == (byte)'?' ? "?" : $"\\{Convert.ToString(b, 8).PadLeft(3, '0')}"); }
+                else
+                {
+                    // WinAnsi (cp1252): los simbolos que Latin-1 no tiene van en 0x80-0x9F
+                    int b = ch switch { '€' => 0x80, '…' => 0x85, '\u2018' => 0x91, '\u2019' => 0x92, '\u201C' => 0x93, '\u201D' => 0x94, '•' => 0x95, '–' => 0x96, '—' => 0x97, '™' => 0x99, _ => -1 };
+                    if (b < 0) { var l = Encoding.Latin1.GetBytes(ch.ToString())[0]; b = l == (byte)'?' ? (byte)'?' : l; }
+                    sb.Append(b == '?' ? "?" : $"\\{Convert.ToString(b, 8).PadLeft(3, '0')}");
+                }
             }
             return sb.ToString();
         }
@@ -102,7 +108,9 @@ public sealed class GeneradorPdf
         p.Texto(190, 84, 8.5, "Importe", negrita: true, derecha: true);
         p.Rect(15, 78, 180, 150, borde: borde);
         p.Linea(125, 86, 125, 228, 0.3, borde); p.Linea(155, 86, 155, 228, 0.3, borde);
-        p.Texto(19, 92, 8.5, f.Concepto.ToUpperInvariant());
+        var concepto = f.Concepto.ToUpperInvariant();
+        if (concepto.Length > 52) { int corte = concepto.LastIndexOf(' ', 52); if (corte < 20) corte = 52; p.Texto(19, 92, 8.5, concepto[..corte].Trim()); p.Texto(19, 97, 8.5, concepto[corte..].Trim()); }
+        else p.Texto(19, 92, 8.5, concepto);
         p.Texto(150, 92, 8.5, E(f.Base), derecha: true);
         p.Texto(190, 92, 8.5, E(f.Base), derecha: true);
 
@@ -114,7 +122,7 @@ public sealed class GeneradorPdf
         p.Texto(18, y + 30, 8, "Forma de pago:", negrita: true); p.Texto(43, y + 30, 8, emisor.FormaPago == FormaPago.Domiciliacion ? "DOMICILIACIÓN BANCARIA" : "MTE TRANSFERENCIA VTO FECHA FAC");
         p.Linea(15, 278, 195, 278, 0.4);
         p.Texto(15, 282, 6.5, $"{emisor.Nombre.ToUpperInvariant()}   {emisor.Direccion.ToUpperInvariant()}   {emisor.CodigoPostal} {emisor.Localidad.ToUpperInvariant()}   NIF: {emisor.Nif}");
-        p.Texto(195, 282, 6.5, $"Retención IRPF {f.TipoRetencion:0} % · Emitida por SGA Contabilizado por cuenta del arrendador · DEMO", derecha: true, color: "0.45 0.45 0.45");
+        p.Texto(15, 286.5, 6.5, $"Retención IRPF {f.TipoRetencion:0} % a cuenta del arrendador · Emitida por SGA Contabilizado por cuenta del arrendador · DEMOSTRACIÓN CON DATOS FICTICIOS", color: "0.45 0.45 0.45");
         return Ensamblar([p]);
     }
 
