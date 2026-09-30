@@ -25,3 +25,12 @@ obj/
 /claves-dataprotection/
 /tests/**/TestResults/
 /almacen-dev/
+
+# === SGA: documentos reales de clientes de la gestoria (datos personales, NUNCA al repositorio) ===
+/SGA/Recursos/
+
+# === SGA: almacen documental de la demo y resultados de pruebas ===
+/SGA/almacen-sga/
+**/TestResults/
+/SGA/*.db
+/SGA/*.db-*
