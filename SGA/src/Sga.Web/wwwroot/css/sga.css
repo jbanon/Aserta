@@ -266,6 +266,8 @@ a.celda:hover { filter: brightness(.95); }
 /* Maqueta de móvil en la web pública (dibujada con CSS, sin imágenes) */
 .movil { width: 300px; margin: 0 auto; border-radius: 40px; background: var(--morado-900); padding: 12px; box-shadow: var(--sombra-3); }
 .movil-pantalla { background: var(--papel); border-radius: 30px; overflow: hidden; padding: var(--e-4); min-height: 560px; display: flex; flex-direction: column; gap: var(--e-3); font-size: var(--t-sm); }
+.movil-pantalla.movil-real { padding: 0; min-height: 0; display: block; }
+.movil-real img { width: 100%; height: auto; display: block; }
 .movil-pantalla .hola { font-family: var(--f-display); font-size: var(--t-xl); color: var(--morado-900); }
 .movil-nav { margin-top: auto; display: flex; justify-content: space-around; padding-top: var(--e-3); border-top: 1px solid var(--linea); color: var(--tinta-3); }
 .movil-nav .icono { width: 22px; height: 22px; }
@@ -317,16 +319,20 @@ a.celda:hover { filter: brightness(.95); }
 @media (min-width: 900px) {
   .app { display: grid; grid-template-columns: var(--ancho-lateral) 1fr; grid-template-rows: auto 1fr; }
   .app.plegado { grid-template-columns: var(--ancho-lateral-plegado) 1fr; }
-  .app-lateral { display: flex; flex-direction: column; grid-row: 1 / -1; position: sticky; top: 0; height: 100dvh; background: var(--morado-900); color: rgba(255, 255, 255, .85); padding: var(--e-4) var(--e-3); gap: var(--e-2); overflow-y: auto; }
-  .app-lateral .marca { color: #fff; padding: 6px 10px 14px; }
+  .app-lateral { display: flex; flex-direction: column; grid-row: 1 / -1; position: sticky; top: 0; height: 100dvh; background: linear-gradient(180deg, #FBF9FD 0%, #F5EFF9 100%); color: var(--tinta-2); padding: var(--e-4) var(--e-3); gap: var(--e-2); overflow-y: auto; border-right: 1px solid var(--linea); }
+  .app-lateral .marca { color: var(--morado-900); padding: 6px 10px 14px; }
   .app-lateral .marca img { height: 34px; }
-  .app-lateral .titulo-nav { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: rgba(255, 255, 255, .45); padding: var(--e-3) 12px 4px; }
+  .app-lateral .titulo-nav { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--tinta-3); padding: var(--e-3) 12px 4px; }
   .app-lateral nav { display: flex; flex-direction: column; gap: 2px; }
-  .app-lateral nav a { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--r); color: rgba(255, 255, 255, .85); text-decoration: none; font-size: var(--t-sm); font-weight: var(--peso-medio); white-space: nowrap; }
-  .app-lateral nav a:hover { background: rgba(255, 255, 255, .08); color: #fff; }
-  .app-lateral nav a[aria-current="page"] { background: rgba(255, 255, 255, .14); color: #fff; box-shadow: inset 3px 0 0 var(--amarillo-500); }
+  .app-lateral nav a { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--r); color: var(--tinta-2); text-decoration: none; font-size: var(--t-sm); font-weight: var(--peso-medio); white-space: nowrap; transition: background var(--transicion), color var(--transicion); }
+  .app-lateral nav a .icono { color: var(--morado-300); transition: color var(--transicion); }
+  .app-lateral nav a:hover { background: rgba(123, 63, 142, .08); color: var(--morado-900); }
+  .app-lateral nav a:hover .icono { color: var(--morado-500); }
+  .app-lateral nav a[aria-current="page"] { background: #fff; color: var(--morado-900); font-weight: var(--peso-semi); box-shadow: var(--sombra-1), inset 3px 0 0 var(--morado-500); }
+  .app-lateral nav a[aria-current="page"] .icono { color: var(--morado-700); }
   .app-lateral nav a .icono { width: 22px; height: 22px; }
-  .app-lateral .lateral-pie { margin-top: auto; padding: var(--e-3) 8px 0; border-top: 1px solid rgba(255, 255, 255, .12); display: flex; align-items: center; gap: 10px; font-size: var(--t-xs); color: rgba(255, 255, 255, .7); }
+  .app-lateral .lateral-pie { margin-top: auto; padding: var(--e-3) 8px 0; border-top: 1px solid var(--linea); display: flex; align-items: center; gap: 10px; font-size: var(--t-xs); color: var(--tinta-2); }
+  .app-lateral .lateral-pie .boton { color: var(--tinta-2); }
   .app.plegado .app-lateral nav a span, .app.plegado .app-lateral .titulo-nav, .app.plegado .app-lateral .lateral-pie .texto, .app.plegado .app-lateral .marca span { display: none; }
   .app.plegado .app-lateral nav a { justify-content: center; padding: 12px; }
   .app-cabecera { grid-column: 2; min-height: var(--alto-cabecera); padding: 0 var(--e-6); }
