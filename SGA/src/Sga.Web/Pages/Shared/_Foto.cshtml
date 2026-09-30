@@ -1,0 +1,6 @@
+@model (string Nombre, string Alt, string Sizes, bool Prioritaria)
+@* Foto responsive: <partial name="_Foto" model='("mesa", "", "100vw", true)' />. Nombre = mesa | calculadora | firma. Usa la variante vertical en pantallas estrechas. *@
+<picture>
+    <source media="(max-width: 699px)" srcset="/img/fotos/@(Model.Nombre)-v-480.webp 480w, /img/fotos/@(Model.Nombre)-v-960.webp 960w" sizes="@Model.Sizes" type="image/webp" />
+    <img src="/img/fotos/@(Model.Nombre)-h-1600.webp" srcset="/img/fotos/@(Model.Nombre)-h-480.webp 480w, /img/fotos/@(Model.Nombre)-h-960.webp 960w, /img/fotos/@(Model.Nombre)-h-1600.webp 1600w, /img/fotos/@(Model.Nombre)-h-2400.webp 2400w" sizes="@Model.Sizes" alt="@Model.Alt" loading="@(Model.Prioritaria ? "eager" : "lazy")" fetchpriority="@(Model.Prioritaria ? "high" : "auto")" decoding="async" />
+</picture>

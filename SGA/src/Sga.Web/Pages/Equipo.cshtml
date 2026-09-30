@@ -1,13 +1,16 @@
 @page "/equipo"
 @model Sga.Web.Pages.EquipoModel
 @{ ViewData["Titulo"] = "Equipo"; }
-<section class="contenedor" style="padding-top:var(--e-7)">
-    <span class="antetitulo">Equipo</span>
-    <h1>Tres personas. Sabrás quién lleva lo tuyo.</h1>
-    <p class="entradilla texto-2">Cada cliente tiene una gestora o gestor de referencia. Es quien te llama, quien te contesta y quien firma las presentaciones.</p>
+<section class="con-foto banda-cabecera">
+    <div class="foto-fondo velo-lateral fondo-mesa-h" aria-hidden="true"><partial name="_Foto" model='("mesa", "", "100vw", true)' /></div>
+    <div class="contenedor"><div style="max-width:620px">
+        <span class="antetitulo">Equipo</span>
+        <h1>Tres personas. Sabrás quién lleva lo tuyo.</h1>
+        <p class="entradilla">Cada cliente tiene una gestora o gestor de referencia. Es quien te llama, quien te contesta y quien firma las presentaciones.</p>
+    </div></div>
 </section>
 <section class="seccion">
-    <div class="contenedor rejilla rejilla-3">
+    <div class="contenedor rejilla rejilla-3 aparece">
         @foreach (var g in Model.Gestores)
         {
             <div class="tarjeta persona">

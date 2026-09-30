@@ -1,13 +1,21 @@
 @page "/como-trabajamos"
 @model Sga.Web.Pages.ComoTrabajamosModel
 @{ ViewData["Titulo"] = "Cómo trabajamos"; }
-<section class="contenedor" style="padding-top:var(--e-7)">
-    <span class="antetitulo">Cómo trabajamos</span>
-    <h1>Un método que cabe en cuatro pasos y se repite cada trimestre</h1>
-    <p class="entradilla texto-2">Lo que te contamos aquí es exactamente lo que verás en tu área de clientes. Sin jerga: cuando aparece el nombre de un modelo, va con su explicación.</p>
+<section class="con-foto banda-cabecera">
+    <div class="foto-fondo velo-lateral fondo-firma-h" aria-hidden="true"><partial name="_Foto" model='("firma", "", "100vw", true)' /></div>
+    <div class="contenedor" style="max-width:1180px"><div style="max-width:620px">
+        <span class="antetitulo">Cómo trabajamos</span>
+        <h1>Un método que cabe en cuatro pasos y se repite cada trimestre</h1>
+        <p class="entradilla">Lo que te contamos aquí es exactamente lo que verás en tu área de clientes. Sin jerga: cuando aparece el nombre de un modelo, va con su explicación.</p>
+    </div></div>
 </section>
 <section class="seccion">
-    <div class="contenedor pasos">
+    <div class="contenedor" style="max-width:960px;margin-bottom:var(--e-7)">
+        <div class="video-envoltorio aparece">
+            <video controls muted playsinline preload="none" poster="/img/sga-como-trabajamos-poster.webp" width="1280" height="720" aria-label="Vídeo mudo: cómo es un trimestre con SGA en cuatro momentos"><source src="/img/sga-como-trabajamos.webm" type="video/webm" />Tu navegador no reproduce este vídeo; el contenido está en los cuatro pasos de abajo.</video>
+        </div>
+    </div>
+    <div class="contenedor pasos aparece">
         <div class="paso"><h3>Nos cuentas tu caso</h3><p>Una reunión de media hora, en el despacho o por videollamada. Te decimos qué modelos te tocan, qué necesitamos de ti y la cuota cerrada.</p></div>
         <div class="paso"><h3>Cada mes, poco</h3><p>Si te facturamos nosotros, no haces nada. Si facturas tú, nos mandas las facturas. Los tickets, con una foto desde el móvil, en el momento.</p></div>
         <div class="paso"><h3>Cada trimestre, cuentas claras</h3><p>Del 1 al 10 te decimos qué falta. Calculamos el IVA con tus libros y ves la cifra en tu área. Presentamos antes del 20.</p></div>

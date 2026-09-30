@@ -24,5 +24,16 @@ Cada duda lleva el supuesto que he aplicado para no parar. Javier o SGA pueden c
 | S-18 | Documentos «esperados» por trimestre (3 facturas, 3 tickets, 3 recibos, 1 extracto…). | Regla fija por tipo de cliente en `RequisitosDocumentales`; en producto sería configurable por cliente. | «Te faltan…» | Confirmar |
 | S-19 | Cuota de autónomos y seguro: sin IVA, deducibles en IRPF. | Así se cargan (tipo 0 %, categoría Seguridad Social / servicios exteriores). | Libro de gastos | `[VERIFICAR]` |
 | S-20 | Web pública: mapa. | Plano esquemático dibujado en SVG (sin servicios externos, por la política de seguridad de contenidos). En la web real iría un mapa. | Contacto | Decidir |
-| S-21 | Despliegue: subdominio `sga-demo.winsoft.es`, servicio `sga-demo` en el puerto 5120. | Ficheros en `SGA/deploy/`; DNS, systemd, nginx y certificado los tiene que instalar Javier (sin sudo no puedo). Mientras tanto la demo corre en `127.0.0.1:5120` en este servidor. | Despliegue | **Necesita acción de Javier** |
+| S-21 | Despliegue: subdominio `sga.winsoft.es`, servicio `sga-demo` en el puerto 5120. | Ficheros en `SGA/deploy/`; DNS, systemd, nginx y certificado los tiene que instalar Javier (sin sudo no puedo). Mientras tanto la demo corre en `127.0.0.1:5120` en este servidor. | Despliegue | **Necesita acción de Javier** |
 | S-22 | Bloque opcional «Veri*Factu listo», avisos por correo y modo oscuro. | No hechos: el tiempo se ha ido en las cuatro vistas y los cálculos. Explicado en el informe 07. | Opcionales | Abierto |
+
+## Encargo 02 (fotos y vídeo)
+
+| # | Duda | Supuesto aplicado | Afecta a | Estado |
+|---|---|---|---|---|
+| S-23 | Fotos de stock (Pexels) en la web pública. | Tratadas con velo de marca y sin describirlas como oficina o equipo de SGA. Los originales quedan en `Recursos/`, fuera de git; en el repositorio solo los WebP recortados. | Web pública | Confirmar que SGA acepta fotografía de stock |
+| S-24 | El servicio systemd `sga-demo` quedó parado por un `pkill` mío; sin sudo no puedo arrancarlo. He publicado la versión nueva y la sirvo a mano en el 5120 con la misma configuración. | Volver al servicio: `pkill -f publicado/Sga.Web.dll && sudo systemctl start sga-demo`. | Despliegue | **Necesita acción de Javier** |
+| S-25 | Vídeo explicativo de 526 KB en el repositorio (supera por poco los «cientos de KB»). | Se sirve con `preload="none"`. Alternativas: recortar a 12 s o dejarlo fuera de git. | Peso del repositorio | Decisión de Javier |
+| S-26 | Sin `.mp4`: el ffmpeg de Playwright solo codifica VP8 (WebM). | WebM lo reproducen los navegadores actuales, incluido Safari 16+. | Vídeo | Abierto |
+| S-27 | Cifras de la franja bajo el hero (48 h, 21/44, 15 años, 14 clientes). | Ilustrativas y marcadas como tales en el pie. | Web pública | Sustituir antes de publicar |
+| S-28 | Teléfono y WhatsApp de la barra móvil apuntan al número ficticio de `appsettings`. | Cambiar en `Sga:Telefono`. | Web pública | Sustituir |

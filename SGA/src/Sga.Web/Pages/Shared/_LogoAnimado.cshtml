@@ -1,0 +1,9 @@
+@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment Entorno
+@model string
+@* Logo animado en linea (SVG + CSS del fichero de marca), para que las preferencias de movimiento del usuario se apliquen. Model = "oscuro" | "claro". *@
+@{
+    var nombre = Model == "oscuro" ? "sga-logo-animado-oscuro.svg" : "sga-logo-animado.svg";
+    var ruta = System.IO.Path.Combine(Entorno.WebRootPath, "img", nombre);
+    var svg = Sga.Web.Pages.Shared.CacheEstaticos.Leer(ruta);
+}
+<div class="logo-animado" role="img" aria-label="SGA Contabilizado: el logo se dibuja, la flor se abre pétalo a pétalo y las letras se trazan">@Html.Raw(svg)</div>

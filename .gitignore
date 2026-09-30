@@ -34,3 +34,4 @@ obj/
 **/TestResults/
 /SGA/*.db
 /SGA/*.db-*
+/SGA/publicado/

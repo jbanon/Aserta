@@ -40,6 +40,15 @@
     });
   });
 
+  // Aparicion suave al hacer scroll (respeta prefers-reduced-motion: sin movimiento, todo visible)
+  const sinMovimiento = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const aparecen = $$(".aparece");
+  if (sinMovimiento || !("IntersectionObserver" in window)) aparecen.forEach((el) => el.classList.add("visible"));
+  else {
+    const obs = new IntersectionObserver((entradas) => entradas.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("visible"); obs.unobserve(e.target); } }), { rootMargin: "0px 0px -8% 0px", threshold: 0.08 });
+    aparecen.forEach((el) => obs.observe(el));
+  }
+
   // Confirmaciones sencillas
   $$("[data-confirmar]").forEach((el) => el.addEventListener("click", (e) => { if (!confirm(el.dataset.confirmar)) e.preventDefault(); }));
 

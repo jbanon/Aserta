@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <script>document.documentElement.classList.add("js");</script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>@(ViewData["Titulo"] is string t ? t + " · " : "")SGA Contabilizado</title>
@@ -8,9 +9,10 @@
     <link rel="icon" href="/img/favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="/css/tokens.css" asp-append-version="true" />
     <link rel="stylesheet" href="/css/sga.css" asp-append-version="true" />
+    <link rel="stylesheet" href="/css/fotos.css" asp-append-version="true" />
     <meta name="theme-color" content="#2A1A3D" />
 </head>
-<body>
+<body class="con-barra-movil">
     <a class="visualmente-oculto" href="#contenido">Saltar al contenido</a>
     <header class="web-cabecera">
         <div class="contenedor">
@@ -45,6 +47,11 @@
             <div class="legal">© @Reloj.Hoy.Year SGA Contabilizado · Demostración con datos ficticios: nombres, NIF, importes y contactos son inventados. Ninguna presentación se envía a la Agencia Tributaria.</div>
         </div>
     </footer>
+    <nav class="barra-movil" aria-label="Acciones rápidas">
+        <a href="tel:@OpcionesSga.Value.Telefono.Replace(" ", "")"><partial name="_Icono" model='"telefono"' /><span>Llamar</span></a>
+        <a href="https://wa.me/34@OpcionesSga.Value.Telefono.Replace(" ", "")" rel="noopener"><partial name="_Icono" model='"mensajes"' /><span>WhatsApp</span></a>
+        <a class="principal" href="/acceso"><partial name="_Icono" model='"llave"' /><span>Área de clientes</span></a>
+    </nav>
     <script src="/js/app.js" asp-append-version="true"></script>
 </body>
 </html>

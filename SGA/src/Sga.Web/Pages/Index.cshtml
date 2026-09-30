@@ -1,18 +1,16 @@
 @page "/"
 @model Sga.Web.Pages.IndexModel
 @{ ViewData["Titulo"] = "Gestoría en Madrid para arrendadores, autónomos y sociedades"; }
-<section class="contenedor hero">
-    <div>
+<section class="con-foto hero-foto hero-capa">
+    <div class="foto-fondo velo-morado fondo-mesa-h" aria-hidden="true"><partial name="_Foto" model='("mesa", "", "100vw", true)' /></div>
+    <div class="contenedor hero">
+    <div class="aparece visible">
         <span class="antetitulo">Gestoría en Madrid · arrendadores, autónomos y pequeñas sociedades</span>
         <h1>Tus impuestos al día, sin sustos. <em>Y tú sabiendo cuánto vas a pagar.</em></h1>
         <p class="entradilla">Llevamos el IVA, las retenciones y la contabilidad de propietarios de locales, profesionales y pequeñas empresas. Cada trimestre te decimos qué falta, calculamos, presentamos y te dejamos el justificante en tu área. Con una persona con nombre al otro lado.</p>
-        <div class="fila gap-2 mt-4">
-            <a class="boton boton-primario boton-grande" href="/contacto">Cuéntanos tu caso</a>
-            <a class="boton boton-grande" href="/acceso">Ver el área de clientes <partial name="_Icono" model='"flecha-d"' /></a>
-        </div>
         <p class="texto-sm texto-3 mt-4">Sin permanencia. Cuota mensual cerrada que te decimos en la primera reunión.</p>
     </div>
-    <div class="movil" aria-hidden="true">
+    <div class="movil aparece visible aparece-2" aria-hidden="true">
         <div class="movil-pantalla">
             <div class="fila-entre"><span class="hola">Hola, Nuria</span><span class="avatar avatar-pequeno avatar-ambar">NC</span></div>
             <div class="tarjeta tarjeta-marca tarjeta-compacta">
@@ -32,46 +30,85 @@
             <div class="movil-nav"><span class="activo"><partial name="_Icono" model='"inicio"' /></span><partial name="_Icono" model='"documentos"' /><span class="central"><partial name="_Icono" model='"camara"' /></span><partial name="_Icono" model='"euro"' /><partial name="_Icono" model='"menu"' /></div>
         </div>
     </div>
-</section>
-
-<section class="seccion seccion-suave">
-    <div class="contenedor franja-confianza">
-        <div class="dato"><strong>Desde 2011</strong>Un despacho de barrio con clientes de toda la Comunidad de Madrid.</div>
-        <div class="dato"><strong>Presentamos por ti</strong>Como colaboradores sociales de la Agencia Tributaria: tú firmas una vez, nosotros presentamos.</div>
-        <div class="dato"><strong>Horario de verdad</strong>@OpcionesSga.Value.Horario. Y el teléfono lo coge una persona.</div>
-        <div class="dato"><strong>Respuesta en 48 h</strong>Cualquier consulta, contestada en menos de dos días laborables por tu gestora.</div>
+    </div>
+    <div class="contenedor pie-hero">
+        <div class="barra-accion aparece visible aparece-3">
+            <div class="dato"><strong>@OpcionesSga.Value.Telefono</strong>@OpcionesSga.Value.Horario.Split(" y ")[0]</div>
+            <a class="boton boton-primario" href="/contacto"><partial name="_Icono" model='"calendario"' /> Pide tu primera reunión</a>
+            <a class="boton" href="/acceso"><partial name="_Icono" model='"llave"' /> Área de clientes</a>
+        </div>
     </div>
 </section>
 
+<section class="seccion-suave">
+    <div class="contenedor">
+        <div class="cifras aparece">
+            <div class="cifra"><span class="valor">48<small>h</small></span><span class="etiqueta">tiempo máximo de respuesta a una consulta</span></div>
+            <div class="cifra"><span class="valor">21<small>/44</small></span><span class="etiqueta">modelos ya presentados en la campaña del trimestre</span></div>
+            <div class="cifra"><span class="valor">15<small>años</small></span><span class="etiqueta">llevando cuentas de arrendadores, autónomos y sociedades</span></div>
+            <div class="cifra"><span class="valor">14</span><span class="etiqueta">clientes activos en la demostración</span></div>
+        </div>
+        <p class="nota-cifras mb-0">Cifras ilustrativas de la demostración: salen de los datos ficticios cargados o son ejemplos. No son datos reales de SGA ni están verificadas.</p>
+    </div>
+</section>
+
+<section class="seccion seccion-marca">
+    <div class="contenedor capas">
+        <div class="aparece"><partial name="_LogoAnimado" model='"oscuro"' /></div>
+        <div class="aparece aparece-2" style="padding:var(--e-4) 0 var(--e-4) var(--e-6)">
+            <span class="antetitulo">SGA Contabilizado</span>
+            <h2>Un despacho pequeño que lleva bien las cuentas de mucha gente</h2>
+            <p>Tres personas, una cartera de arrendadores, autónomos y pequeñas sociedades, y una manera de trabajar en la que cada cliente sabe qué falta, cuánto va a pagar y quién lo lleva. Lo demás es el día 20.</p>
+            <p class="texto-sm mb-0" style="color:rgba(255,255,255,.55)">La flor del logo es la de siempre: solo la hemos dibujado en limpio.</p>
+        </div>
+    </div>
+</section>
+
+
+
 <section class="seccion">
     <div class="contenedor">
-        <span class="antetitulo">Para quién trabajamos</span>
-        <h2>Tres formas de trabajar, porque tres clientes distintos no se llevan igual</h2>
-        <p class="texto-2" style="max-width:60ch">No es lo mismo tener un local alquilado que ser diseñadora o llevar una productora. Cada perfil tiene sus modelos, sus plazos y su ritmo. Esto es lo que hacemos en cada caso.</p>
-        <div class="rejilla rejilla-3 mt-5">
+        <div class="capas mb-5">
+            <figure class="figura fondo-calculadora-v aparece" style="margin:0">
+                <partial name="_Foto" model='("calculadora", "Una mano con una calculadora sobre una carpeta de facturas", "(min-width: 900px) 40vw, 100vw", false)' />
+                <figcaption class="pie-figura"><strong>Sobre tus libros, no sobre estimaciones</strong>Cada trimestre se calcula con tus facturas de verdad; por eso la cifra que ves en tu área es la que se presenta.</figcaption>
+            </figure>
+            <div class="tarjeta tarjeta-flotante aparece aparece-2">
+                <span class="antetitulo">Para quién trabajamos</span>
+                <h2>Tres formas de trabajar, porque tres clientes distintos no se llevan igual</h2>
+                <p class="texto-2 mb-0" style="max-width:60ch">No es lo mismo tener un local alquilado que ser diseñadora o llevar una productora. Cada perfil tiene sus modelos, sus plazos y su ritmo. Esto es lo que hacemos en cada caso.</p>
+            </div>
+        </div>
+        <div class="rejilla rejilla-3 aparece">
             <div class="tarjeta perfil" id="arrendadores">
+                <span class="numero" aria-hidden="true">01</span>
                 <partial name="_Icono" model='"casa"' />
                 <h3>Arrendadores</h3>
                 <p class="texto-sm texto-2">Tienes uno o varios locales alquilados. Nosotros emitimos la factura mensual al inquilino con su IVA y su retención, se la enviamos con copia a ti, y cada trimestre presentamos tu IVA.</p>
                 <ul><li>Factura mensual generada y enviada por nosotros</li><li>IVA trimestral (modelo 303) y resumen anual (390)</li><li>Tu renta, con las retenciones que ya te han practicado</li></ul>
-                <div class="modelos"><span class="insignia insignia-marca insignia-sin-punto">303</span><span class="insignia insignia-marca insignia-sin-punto">390</span><span class="insignia insignia-marca insignia-sin-punto">Renta</span></div>
+                <dl class="ficha"><dt>Factura</dt><dd>mensual, IVA 21 % + retención 19 %</dd><dt>Modelos</dt><dd>303 trimestral · 390 · Renta</dd><dt>Tú envías</dt><dd>nada</dd></dl>
                 <div class="precio"><strong>desde 45 €</strong> / trimestre · orientativo</div>
+                <a class="enlace" href="/servicios#arrendadores">Ver el servicio <partial name="_Icono" model='"flecha-d"' /></a>
             </div>
             <div class="tarjeta perfil" id="autonomos">
+                <span class="numero" aria-hidden="true">02</span>
                 <partial name="_Icono" model='"usuario"' />
                 <h3>Autónomos y profesionales</h3>
                 <p class="texto-sm texto-2">Con una o varias actividades. Si quieres, te emitimos nosotros las facturas; si las haces tú, comprobamos la numeración. Tú subes tickets y facturas desde el móvil; nosotros llevamos los libros por actividad.</p>
                 <ul><li>IVA trimestral (303) y pago a cuenta del IRPF (130)</li><li>Resúmenes anuales (390, 347) y tu renta</li><li>Si tienes empleados: retenciones (111) y su resumen (190)</li></ul>
-                <div class="modelos"><span class="insignia insignia-marca insignia-sin-punto">303</span><span class="insignia insignia-marca insignia-sin-punto">130</span><span class="insignia insignia-marca insignia-sin-punto">111</span><span class="insignia insignia-marca insignia-sin-punto">390</span><span class="insignia insignia-marca insignia-sin-punto">347</span></div>
+                <dl class="ficha"><dt>Trimestral</dt><dd>303 y, a algunos, 130</dd><dt>Anual</dt><dd>390 · 347 · Renta (111 y 190 con empleados)</dd><dt>Tú envías</dt><dd>tickets, facturas y extracto, desde el móvil</dd></dl>
                 <div class="precio"><strong>desde 50 €</strong> / mes · orientativo</div>
+                <a class="enlace" href="/servicios#autonomos">Ver el servicio <partial name="_Icono" model='"flecha-d"' /></a>
             </div>
             <div class="tarjeta perfil" id="sociedades">
+                <span class="numero" aria-hidden="true">03</span>
                 <partial name="_Icono" model='"edificio"' />
                 <h3>Sociedades</h3>
                 <p class="texto-sm texto-2">Facturas en tu sistema; nosotros llevamos la contabilidad, cuadramos el banco con una clave de solo consulta y presentamos todo lo trimestral y lo anual, hasta las cuentas en el Registro.</p>
                 <ul><li>IVA (303, 349), retenciones (111, 115) y pagos fraccionados (202)</li><li>Impuesto de Sociedades (200), libros y cuentas anuales</li><li>Conciliación bancaria y libro de facturas emitidas y recibidas</li></ul>
-                <div class="modelos"><span class="insignia insignia-marca insignia-sin-punto">303</span><span class="insignia insignia-marca insignia-sin-punto">111</span><span class="insignia insignia-marca insignia-sin-punto">202</span><span class="insignia insignia-marca insignia-sin-punto">200</span><span class="insignia insignia-marca insignia-sin-punto">CC.AA.</span></div>
+                <dl class="ficha"><dt>Trimestral</dt><dd>303 · 111 · 115 · pagos fraccionados (202)</dd><dt>Anual</dt><dd>200 · libros · cuentas anuales</dd><dt>Tú envías</dt><dd>facturas a la carpeta y clave de consulta del banco</dd></dl>
                 <div class="precio"><strong>desde 150 €</strong> / mes · orientativo</div>
+                <a class="enlace" href="/servicios#sociedades">Ver el servicio <partial name="_Icono" model='"flecha-d"' /></a>
             </div>
         </div>
     </div>
@@ -79,9 +116,20 @@
 
 <section class="seccion seccion-marca">
     <div class="contenedor">
-        <span class="antetitulo">Cómo es un trimestre con SGA</span>
-        <h2>Cuatro momentos. Ninguna sorpresa.</h2>
-        <div class="pasos mt-5">
+        <div class="capas capas-invertidas mb-5" style="gap:var(--e-6)">
+            <div>
+                <span class="antetitulo">Cómo es un trimestre con SGA</span>
+                <h2>Cuatro momentos. Ninguna sorpresa.</h2>
+                <p>Dieciocho segundos que resumen lo que pasa cada tres meses: recopilar, calcular, presentar y pagar. Sin sonido: se entiende leyendo.</p>
+            </div>
+            <div class="video-envoltorio aparece" style="order:2">
+                <video controls muted playsinline preload="none" poster="/img/sga-como-trabajamos-poster.webp" width="1280" height="720" aria-label="Vídeo mudo: cómo es un trimestre con SGA en cuatro momentos">
+                    <source src="/img/sga-como-trabajamos.webm" type="video/webm" />
+                    Tu navegador no reproduce este vídeo; el contenido está en los cuatro pasos de abajo.
+                </video>
+            </div>
+        </div>
+        <div class="pasos aparece">
             <div class="paso"><h3>Recopilamos</h3><p>Del 1 al 10 del mes siguiente al trimestre. Tu área te dice exactamente qué falta: «te faltan 2 tickets y el extracto».</p></div>
             <div class="paso"><h3>Calculamos</h3><p>Con tus libros al día, el IVA sale solo. Ves la cifra en tu área antes de que la presentemos.</p></div>
             <div class="paso"><h3>Presentamos</h3><p>Antes del día 20. Te avisamos y dejamos el justificante con su código de verificación en tu área.</p></div>
@@ -94,7 +142,7 @@
     <div class="contenedor">
         <span class="antetitulo">Tu área de clientes</span>
         <h2>Sencilla, muy visual y hecha para el móvil</h2>
-        <div class="rejilla rejilla-3 mt-5">
+        <div class="rejilla rejilla-3 mt-5 aparece">
             <div class="tarjeta"><span class="marca-tipo aviso"><partial name="_Icono" model='"alerta"' /></span><h3 class="mt-3">Qué me falta</h3><p class="texto-sm texto-2 mb-0">Una lista clara por trimestre. Haces una foto al ticket y desaparece de la lista.</p></div>
             <div class="tarjeta"><span class="marca-tipo"><partial name="_Icono" model='"euro"' /></span><h3 class="mt-3">Cuánto voy a pagar</h3><p class="texto-sm texto-2 mb-0">El IVA cobrado menos el pagado, dibujado. Con la fecha del cargo y la cuenta.</p></div>
             <div class="tarjeta"><span class="marca-tipo ok"><partial name="_Icono" model='"justificante"' /></span><h3 class="mt-3">Todo lo presentado</h3><p class="texto-sm texto-2 mb-0">Justificantes descargables con su código de verificación, trimestre a trimestre.</p></div>
@@ -114,11 +162,14 @@
     </div>
 </section>
 
-<section class="seccion">
-    <div class="contenedor tarjeta tarjeta-marca" style="padding:var(--e-6)">
-        <div class="fila-entre">
-            <div><h2 style="margin-bottom:6px">¿Hablamos de tu caso?</h2><p class="mb-0">Cuéntanos qué tienes (un local, tu actividad, tu empresa) y te decimos cómo lo llevaríamos y cuánto cuesta.</p></div>
-            <a class="boton boton-primario boton-grande" href="/contacto">Pedir una primera reunión</a>
+<section class="con-foto banda-foto">
+    <div class="foto-fondo velo-lateral fondo-firma-h" aria-hidden="true"><partial name="_Foto" model='("firma", "", "100vw", false)' /></div>
+    <div class="contenedor">
+        <div class="aparece" style="max-width:560px">
+            <span class="antetitulo">Primera reunión</span>
+            <h2 style="font-size:var(--t-3xl)">¿Hablamos de tu caso?</h2>
+            <p>Cuéntanos qué tienes (un local, tu actividad, tu empresa) y te decimos cómo lo llevaríamos y cuánto cuesta. Media hora, en el despacho o por videollamada, sin compromiso.</p>
+            <div class="fila gap-2 mt-4"><a class="boton boton-primario boton-grande" href="/contacto">Pedir una primera reunión</a><a class="boton boton-grande" href="/como-trabajamos">Ver cómo trabajamos</a></div>
         </div>
     </div>
 </section>
