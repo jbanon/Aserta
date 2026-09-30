@@ -19,6 +19,26 @@
   }
   aplicarTemaGuardado();
 
+  // --- Menu lateral (colapsable, para ganar pantalla) --------------------------
+  const CLAVE_LATERAL = "aserta.lateral";
+  function aplicarLateralGuardado() {
+    try {
+      if (localStorage.getItem(CLAVE_LATERAL) === "colapsado") document.documentElement.dataset.lateral = "colapsado";
+    } catch (_) { /* almacenamiento no disponible */ }
+  }
+  aplicarLateralGuardado();
+
+  function alternarLateral() {
+    const html = document.documentElement;
+    const colapsado = html.dataset.lateral === "colapsado";
+    if (colapsado) delete html.dataset.lateral; else html.dataset.lateral = "colapsado";
+    document.querySelectorAll("[data-accion='alternar-lateral']").forEach(function (b) {
+      b.setAttribute("aria-expanded", String(colapsado));
+    });
+    try { localStorage.setItem(CLAVE_LATERAL, colapsado ? "expandido" : "colapsado"); } catch (_) { }
+    anunciar(colapsado ? "Menú lateral mostrado" : "Menú lateral oculto");
+  }
+
   function alternarTema() {
     const html = document.documentElement;
     const oscuroSistema = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -81,6 +101,12 @@
     // Boton de tema
     document.querySelectorAll("[data-accion='alternar-tema']").forEach(function (b) {
       b.addEventListener("click", alternarTema);
+    });
+
+    // Boton de menu lateral
+    document.querySelectorAll("[data-accion='alternar-lateral']").forEach(function (b) {
+      b.setAttribute("aria-expanded", String(document.documentElement.dataset.lateral !== "colapsado"));
+      b.addEventListener("click", alternarLateral);
     });
 
     // Confirmaciones sin hx-confirm (que usa eval): data-confirmar="texto"

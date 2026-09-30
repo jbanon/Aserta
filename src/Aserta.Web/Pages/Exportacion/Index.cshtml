@@ -22,7 +22,8 @@
             </div>
             <div class="campo"><label asp-for="Datos.Formato">Formato</label>
                 <select asp-for="Datos.Formato">@foreach (var e in Model.Exportadores) { <option value="@e.Formato" disabled="@(!e.Disponible)">@e.Nombre@(e.Disponible ? "" : " (no disponible)")</option> }</select>
-                @foreach (var e in Model.Exportadores) { <small class="texto-2 bloque">@e.Nombre: @e.Descripcion</small> }</div>
+                @{ var formatoElegido = Model.Exportadores.FirstOrDefault(e => e.Formato == Model.Datos.Formato) ?? Model.Exportadores.FirstOrDefault(); }
+                @if (formatoElegido is not null) { <small class="texto-2 bloque">@formatoElegido.Nombre: @formatoElegido.Descripcion</small> }</div>
             <div class="campo campo-check"><input asp-for="Datos.IncluirExportados" type="checkbox" /><label asp-for="Datos.IncluirExportados">Incluir también los registros ya exportados (petición explícita)</label></div>
             <div class="acciones"><button class="boton">Ver qué se exportaría</button></div>
         </form>

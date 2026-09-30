@@ -26,12 +26,13 @@
     @foreach (var estado in EstadoObligacionExtensiones.ColumnasKanban)
     {
         var tarjetas = Model.Tarjetas.Where(t => t.Obligacion.Estado == estado).ToList();
-        <section class="kanban-columna estado-@estado" aria-labelledby="col-@estado">
+        <section class="kanban-columna estado-@estado" data-columna-estado="@estado" aria-labelledby="col-@estado" title="@estado.Etiqueta()">
             <header class="kanban-cabecera">
-                <h2 id="col-@estado"><span class="estado estado-@estado">@estado.Etiqueta()</span></h2>
+                <button type="button" class="boton boton-sutil boton-pequeno kanban-colapsar" data-accion="alternar-columna" aria-expanded="true" aria-controls="lista-@estado" aria-label="Ocultar columna @estado.Etiqueta()">@Icono.Flecha</button>
+                <h2 id="col-@estado"><span class="estado estado-@estado"><span class="kanban-titulo-texto">@estado.Etiqueta()</span></span></h2>
                 <span class="kanban-contador" data-contador="@estado">@tarjetas.Count</span>
             </header>
-            <ol class="kanban-lista" data-columna="@estado" aria-label="Tarjetas en @estado.Etiqueta()">
+            <ol class="kanban-lista" id="lista-@estado" data-columna="@estado" aria-label="Tarjetas en @estado.Etiqueta()">
                 @foreach (var t in tarjetas) { <partial name="_Tarjeta" model="t" view-data="@(new ViewDataDictionary(ViewData) { ["Hoy"] = Model.Hoy })" /> }
             </ol>
         </section>

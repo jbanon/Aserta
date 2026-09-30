@@ -26,7 +26,7 @@
         <div class="barras">
         @foreach (var (estado, n) in c.PorEstado)
         {
-            <div class="barra-fila"><span class="barra-etiqueta">@estado.Etiqueta()</span><div class="barra-pista"><div class="barra-relleno" style="width:@(Math.Round(100.0 * n / maxEstado))%"></div></div><span class="barra-valor tabular">@n</span></div>
+            <div class="barra-fila"><span class="barra-etiqueta">@estado.Etiqueta()</span><progress class="carga" value="@n" max="@maxEstado"></progress><span class="barra-valor tabular">@n</span></div>
         }
         </div>
     </div>

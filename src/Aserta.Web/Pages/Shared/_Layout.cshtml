@@ -32,6 +32,10 @@
             @if (!string.IsNullOrEmpty(nombreGestoria)) { <span class="marca-tenant">· @nombreGestoria</span> }
         </a>
         <div class="cabecera-derecha">
+            @if (esGestoria || Usuario.EstaAutenticado)
+            {
+                <button type="button" class="boton boton-sutil lateral-boton" data-accion="alternar-lateral" aria-label="Ocultar el menú lateral" aria-expanded="true" aria-controls="app-lateral" title="Ocultar/mostrar menú">@Icono.Flecha</button>
+            }
             <button type="button" class="boton boton-sutil tema-boton" data-accion="alternar-tema" aria-label="Cambiar entre tema claro y oscuro" title="Tema claro/oscuro">
                 <span class="icono-sol">@Icono.Sol</span><span class="icono-luna">@Icono.Luna</span>
             </button>
@@ -52,7 +56,7 @@
         </div>
     </header>
 
-    <nav class="app-lateral" aria-label="Principal">
+    <nav class="app-lateral" id="app-lateral" aria-label="Principal">
         @if (esGestoria)
         {
             <ul class="nav">

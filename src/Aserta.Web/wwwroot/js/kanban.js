@@ -78,6 +78,34 @@
     });
   });
 
+  // --- Colapsar columnas (para ganar pantalla; persistente entre sesiones) -------------
+  const CLAVE_COLAPSADAS = "aserta.kanban.colapsadas";
+  function columnasColapsadasGuardadas() {
+    try { return new Set(JSON.parse(localStorage.getItem(CLAVE_COLAPSADAS) || "[]")); } catch (_) { return new Set(); }
+  }
+  function guardarColumnasColapsadas(set) {
+    try { localStorage.setItem(CLAVE_COLAPSADAS, JSON.stringify(Array.from(set))); } catch (_) { }
+  }
+  function aplicarColumna(seccion, colapsar) {
+    const boton = seccion.querySelector("[data-accion='alternar-columna']");
+    seccion.classList.toggle("colapsada", colapsar);
+    if (boton) boton.setAttribute("aria-expanded", String(!colapsar));
+  }
+  const colapsadas = columnasColapsadasGuardadas();
+  kanban.querySelectorAll(".kanban-columna").forEach(function (seccion) {
+    const estado = seccion.dataset.columnaEstado;
+    if (colapsadas.has(estado)) aplicarColumna(seccion, true);
+    const boton = seccion.querySelector("[data-accion='alternar-columna']");
+    if (!boton) return;
+    boton.addEventListener("click", function () {
+      const yaColapsada = seccion.classList.contains("colapsada");
+      aplicarColumna(seccion, !yaColapsada);
+      if (yaColapsada) colapsadas.delete(estado); else colapsadas.add(estado);
+      guardarColumnasColapsadas(colapsadas);
+      if (window.aserta) window.aserta.anunciar((yaColapsada ? "Columna mostrada: " : "Columna ocultada: ") + seccion.getAttribute("title"));
+    });
+  });
+
   // --- Menu "Mover a…" (htmx): tras el swap, la tarjeta nueva se recoloca en su columna ----
   document.body.addEventListener("htmx:afterSwap", function (e) {
     const t = e.detail.target;

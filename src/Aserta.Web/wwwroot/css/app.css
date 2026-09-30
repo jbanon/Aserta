@@ -11,6 +11,7 @@
   html { -webkit-text-size-adjust: 100%; }
   body { min-height: 100dvh; line-height: var(--interlineado); -webkit-font-smoothing: antialiased; }
   img, svg { display: block; max-width: 100%; }
+  svg { width: 20px; height: 20px; flex: none; } /* tamano por defecto de Icono.cs; los contextos con su propia regla (.nav svg, .boton svg...) la sobrescriben */
   input, button, textarea, select { font: inherit; color: inherit; }
   button { cursor: pointer; background: none; border: 0; }
   table { border-collapse: collapse; width: 100%; }
@@ -34,7 +35,13 @@
 
 @layer componentes {
   /* ---- Estructura general ------------------------------------------------ */
-  .app { display: grid; grid-template-columns: var(--ancho-lateral) 1fr; grid-template-rows: var(--alto-cabecera) 1fr; min-height: 100dvh; }
+  .app { display: grid; grid-template-columns: var(--ancho-lateral) 1fr; grid-template-rows: var(--alto-cabecera) 1fr; min-height: 100dvh; transition: grid-template-columns var(--dur); }
+  .lateral-boton svg { transition: transform var(--dur-rapida); }
+  @media (min-width: 901px) {
+    :root[data-lateral="colapsado"] .app { grid-template-columns: 0 1fr; }
+    :root[data-lateral="colapsado"] .app-lateral { display: none; }
+    :root[data-lateral="colapsado"] .lateral-boton svg { transform: rotate(180deg); }
+  }
   .app-cabecera { grid-column: 1 / -1; display: flex; align-items: center; gap: var(--esp-4); padding: 0 var(--esp-4); background: var(--color-superficie); border-bottom: 1px solid var(--color-borde); position: sticky; top: 0; z-index: 20; }
   .app-lateral { background: var(--color-superficie); border-right: 1px solid var(--color-borde); padding: var(--esp-3); position: sticky; top: var(--alto-cabecera); height: calc(100dvh - var(--alto-cabecera)); overflow: auto; }
   .app-contenido { padding: var(--esp-5) var(--esp-5) var(--esp-7); max-width: var(--ancho-contenido); width: 100%; min-width: 0; }
@@ -210,6 +217,7 @@
   .cuenta-tarjeta h1 { font-size: var(--tamano-lg); margin-bottom: var(--esp-4); }
   .cuenta-demo { margin-top: var(--esp-5); padding-top: var(--esp-4); border-top: 1px dashed var(--color-borde); font-size: var(--tamano-xs); color: var(--color-texto-3); }
   .cuenta-demo code { user-select: all; }
+  .cuenta-demo-nota { display: block; margin-top: 1px; color: var(--color-texto-3); font-style: italic; }
 
   /* ---- Barra de filtros --------------------------------------------------------------------- */
   .filtros { display: flex; gap: var(--esp-3); align-items: flex-end; flex-wrap: wrap; margin-bottom: var(--esp-4); }
@@ -263,12 +271,24 @@
 
 /* ---- Kanban (M4) ------------------------------------------------------------------ */
 @layer componentes {
-  .kanban { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(230px, 1fr); gap: var(--esp-3); overflow-x: auto; padding-bottom: var(--esp-4); align-items: start; min-height: 60vh; }
-  .kanban-columna { background: var(--color-superficie-2); border: 1px solid var(--color-borde); border-radius: var(--radio-lg); display: flex; flex-direction: column; max-height: calc(100dvh - 240px); }
+  /* flex, no grid: con grid-auto-columns + fr las columnas no crecian para llenar el ancho
+     disponible en cuanto overflow-x:auto entraba en juego (dejaba hueco y forzaba scroll igual) */
+  .kanban { display: flex; gap: var(--esp-3); overflow-x: auto; padding-bottom: var(--esp-4); align-items: start; min-height: 60vh; }
+  .kanban-columna { flex: 1 0 230px; max-width: 340px; background: var(--color-superficie-2); border: 1px solid var(--color-borde); border-radius: var(--radio-lg); display: flex; flex-direction: column; max-height: calc(100dvh - 240px); }
   .kanban-cabecera { display: flex; align-items: center; justify-content: space-between; padding: var(--esp-2) var(--esp-3); border-bottom: 1px solid var(--color-borde); position: sticky; top: 0; background: var(--color-superficie-2); border-radius: var(--radio-lg) var(--radio-lg) 0 0; z-index: 1; }
-  .kanban-cabecera h2 { font-size: var(--tamano-sm); }
+  .kanban-cabecera h2 { font-size: var(--tamano-sm); flex: 1; min-width: 0; }
+  .kanban-colapsar svg { transition: transform var(--dur-rapida); }
+  .kanban-columna.colapsada { flex: 0 0 40px; width: 40px; max-width: 40px; }
+  .kanban-columna.colapsada .kanban-cabecera { flex-direction: column; flex: 1; position: static; padding: var(--esp-3) 0; }
+  .kanban-columna.colapsada .kanban-cabecera h2 { flex: 0 0 auto; }
+  .kanban-columna.colapsada .kanban-titulo-texto { display: none; }
+  .kanban-columna.colapsada .kanban-colapsar svg { transform: rotate(180deg); }
+  .kanban-columna.colapsada .kanban-lista { display: none; }
   .kanban-contador { font-size: var(--tamano-xs); font-weight: var(--peso-negrita); background: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: 999px; padding: 1px 8px; }
-  .kanban-lista { list-style: none; padding: var(--esp-2); margin: 0; display: flex; flex-direction: column; gap: var(--esp-2); overflow-y: auto; min-height: 80px; flex: 1; }
+  /* overflow-x:visible explicito: si solo se fija overflow-y, el eje x tambien pasa a
+     recortar y el menu "Mover a..." (position:absolute, se abre hacia la izquierda del
+     boton) perdia su primer caracter al quedar clipado por este contenedor */
+  .kanban-lista { list-style: none; padding: var(--esp-2); margin: 0; display: flex; flex-direction: column; gap: var(--esp-2); overflow-y: auto; overflow-x: visible; min-height: 80px; flex: 1; }
   .tarjeta { background: var(--color-superficie); border: 1px solid var(--color-borde); border-left: 4px solid var(--color-semaforo-gris); border-radius: var(--radio); padding: var(--esp-2) var(--esp-2) var(--esp-2) var(--esp-3); box-shadow: var(--sombra-sm); cursor: grab; transition: box-shadow var(--dur-rapida), transform var(--dur-rapida); }
   .tarjeta:hover { box-shadow: var(--sombra); }
   .tarjeta:focus-visible { box-shadow: var(--anillo-foco); outline: none; }
