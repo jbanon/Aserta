@@ -50,7 +50,7 @@ Las cuatro vistas son **de primera clase**: no vale encoger la de escritorio. Co
 
 SGA es una gestoría que lleva a tres tipos de cliente. Cada uno trabaja distinto:
 
-**A. Arrendador** (ejemplo: un propietario de locales). SGA **emite por él** las facturas de alquiler: una al mes, con IVA 21 % y retención de IRPF del 19 %, y las envía por correo directamente al inquilino con copia al cliente. Se registran en su programa de gestión (Monitor) y se generan **en bloque al trimestre**, por la fecha del IVA. Las facturas recibidas son solo las de SGA por sus servicios. SGA presenta el modelo 303 cada trimestre. Su cálculo es **acumulado**: cuota del año hasta la fecha menos lo liquidado en los trimestres anteriores.
+**A. Arrendador** (ejemplo: un propietario de locales). SGA **emite por él** las facturas de alquiler: una al mes, con IVA 21 % y retención de IRPF del 19 %, y las envía por correo directamente al inquilino con copia al cliente. Se registran en **Monitor**, su programa de contabilidad (confirmado por Javier) y se generan **en bloque al trimestre**, por la fecha del IVA. Las facturas recibidas del arrendador son solo las de **SGA por sus honorarios** (confirmado por Javier: "SGA emite factura mensual por el servicio" son las facturas de SGA al cliente), emitidas con el módulo de facturación de Monitor. SGA presenta el modelo 303 cada trimestre. Su cálculo es **acumulado**: cuota del año hasta la fecha menos lo liquidado en los trimestres anteriores.
 
 **B. Profesional o autónomo.** Puede estar dado de alta en **más de una actividad** (IAE), con un libro de gastos por actividad. Una factura común a dos actividades se imputa a la de mayor actividad. Dos variantes:
   1. **SGA le emite las facturas.** El cliente entrega las facturas recibidas y los gastos de la actividad (tickets, seguro, cuota de autónomos) y el extracto bancario. Presentaciones: trimestral 303 y, a algunos, 130; anual 390 y 347; si tiene empleados, 111 trimestral y 190 anual. Cobro **domiciliado** (se tiene el IBAN) y, si el importe es alto, **se puede fraccionar**.
@@ -137,7 +137,6 @@ Decide tú el diseño de cada pantalla. Lo que tiene que existir, **explicado a 
 - Nombre comercial exacto para la web: "SGA Contabilizado" o "SGA" a secas. Dirección, teléfono, correo y equipo reales o ficticios.
 - ¿Quién es "Noelia" y qué significa un nombre en una celda de su Excel? (Mi hipótesis: la persona responsable.)
 - "5 documentos" del arrendador: ¿qué son? (Mi hipótesis: los documentos del paquete trimestral.)
-- "SGA emite factura mensual por el servicio": ¿son las facturas de SGA al cliente por sus honorarios o las facturas del cliente a sus clientes? (Mi hipótesis: ambas cosas existen; en el arrendador, las del cliente.)
-- Programa "Monitor": ¿es el programa de gestión del despacho? ¿Interesa integrarlo o solo nombrarlo?
+- Monitor (contabilidad del despacho): ¿interesa simular una exportación a su formato o solo nombrarlo? (Por defecto: solo nombrarlo y mostrar el libro que ya exportan en Excel.)
 - ¿Se mostrará la demo con datos de su propio negocio, o siempre con datos ficticios? (Por defecto: ficticios.)
 - ¿Prioridad entre la web pública y el área de clientes si hay que recortar? (Por defecto: el área de clientes.)
