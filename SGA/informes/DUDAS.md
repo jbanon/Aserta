@@ -31,9 +31,9 @@ Cada duda lleva el supuesto que he aplicado para no parar. Javier o SGA pueden c
 
 | # | Duda | Supuesto aplicado | Afecta a | Estado |
 |---|---|---|---|---|
-| S-23 | Fotos de stock (Pexels) en la web pública. | Tratadas con velo de marca y sin describirlas como oficina o equipo de SGA. Los originales quedan en `Recursos/`, fuera de git; en el repositorio solo los WebP recortados. | Web pública | Confirmar que SGA acepta fotografía de stock |
+| S-23 | Fotos de stock (Pexels) en la web pública. | Tratadas con velo de marca y sin describirlas como oficina o equipo de SGA. Los originales quedan en `Recursos/`, fuera de git; en el repositorio solo los WebP recortados. | Web pública | **Aceptado por Javier** (2026-09-30) |
 | S-24 | El servicio systemd `sga-demo` quedó parado por un `pkill` mío; sin sudo no puedo arrancarlo. He publicado la versión nueva y la sirvo a mano en el 5120 con la misma configuración. | Volver al servicio: `pkill -f publicado/Sga.Web.dll && sudo systemctl start sga-demo`. | Despliegue | **Necesita acción de Javier** |
-| S-25 | Vídeo explicativo de 526 KB en el repositorio (supera por poco los «cientos de KB»). | Se sirve con `preload="none"`. Alternativas: recortar a 12 s o dejarlo fuera de git. | Peso del repositorio | Decisión de Javier |
+| S-25 | Vídeo explicativo de 526 KB en el repositorio (supera por poco los «cientos de KB»). | Se sirve con `preload="none"`. Alternativas: recortar a 12 s o dejarlo fuera de git. | Peso del repositorio | **Aceptado por Javier**: se queda como está |
 | S-26 | Sin `.mp4`: el ffmpeg de Playwright solo codifica VP8 (WebM). | WebM lo reproducen los navegadores actuales, incluido Safari 16+. | Vídeo | Abierto |
-| S-27 | Cifras de la franja bajo el hero (48 h, 21/44, 15 años, 14 clientes). | Ilustrativas y marcadas como tales en el pie. | Web pública | Sustituir antes de publicar |
-| S-28 | Teléfono y WhatsApp de la barra móvil apuntan al número ficticio de `appsettings`. | Cambiar en `Sga:Telefono`. | Web pública | Sustituir |
+| S-27 | Cifras de la franja bajo el hero (48 h, 21/44, 15 años, 14 clientes). | Ilustrativas y marcadas como tales en el pie. | Web pública | **Aceptado por Javier** para la demo; sustituir solo si la web pasa a ser real |
+| S-28 | Teléfono y WhatsApp de la barra móvil apuntan al número ficticio de `appsettings`. | Cambiar en `Sga:Telefono`. | Web pública | **Aceptado por Javier** para la demo |
