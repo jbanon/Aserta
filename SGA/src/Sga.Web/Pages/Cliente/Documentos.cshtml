@@ -1,0 +1,40 @@
+@page "/cliente/documentos"
+@model Sga.Web.Pages.Cliente.DocumentosModel
+@{ ViewData["Titulo"] = "Documentos"; }
+<div class="pagina-cabecera">
+    <div><h1>Documentos</h1><p class="subtitulo">@(Model.Requisitos.Count > 0 ? Model.Frase : Model.Cliente.Tipo == TipoCliente.Arrendador ? "No tienes que enviarnos nada: nosotros generamos tus facturas y solo recibes las nuestras." : "Todo lo que has subido, por trimestre.")</p></div>
+    <div class="acciones"><a class="boton boton-primario" href="/cliente/subir"><partial name="_Icono" model='"camara"' /> Subir un documento</a></div>
+</div>
+@if (Model.Requisitos.Count > 0)
+{
+    <section class="tarjeta mb-4">
+        <div class="tarjeta-cabecera"><h2 style="font-size:var(--t-lg)">Para cerrar el @Model.Periodo @Model.Ejercicio</h2><span class="texto-sm texto-2">@Model.Recibidos de @Model.Esperados</span></div>
+        <div class="barra mb-4"><span class="@(Model.Recibidos >= Model.Esperados ? "" : "ambar")" style="width:@(Model.Esperados == 0 ? 100 : 100 * Model.Recibidos / Model.Esperados)%"></span></div>
+        <div class="rejilla rejilla-2">
+            @foreach (var q in Model.Requisitos)
+            {
+                <div class="requisito @(q.Completo ? "completo" : "falta")"><partial name="_Icono" model='@(q.Completo ? "ok" : "alerta")' /><div class="crece"><div>@q.Nombre</div><div class="texto-xs texto-2">@q.Ayuda</div></div><span class="contador">@Math.Min(q.Recibidos, q.Esperados)/@q.Esperados</span></div>
+            }
+        </div>
+        @if (Model.Cliente.ClaveConsultaBanco) { <p class="texto-sm texto-2 mt-4 mb-0"><partial name="_Icono" model='"llave"' /> Extracto bancario: tenemos acceso de consulta configurado; última descarga @(Model.Cliente.UltimaDescargaBancoUtc is DateTime u ? Formato.FechaHora(u) : "—"). No guardamos ninguna clave.</p> }
+    </section>
+}
+<div class="tabs">
+    @foreach (var t in new[] { "1T", "2T", "3T", "4T" }) { <a href="?periodo=@t" aria-current="@(Model.Periodo == t ? "true" : null)">@t @Model.Ejercicio</a> }
+</div>
+@if (Model.Documentos.Count == 0) { <div class="tarjeta"><partial name="_Vacio" model='("documentos", "Nada subido en este trimestre", "Cuando subas una foto o un PDF aparecerá aquí con su estado.")' /></div> }
+else
+{
+    <div class="tarjeta">
+        <ul class="lista">
+            @foreach (var d in Model.Documentos)
+            {
+                <li>
+                    <partial name="_Miniatura" model="d" />
+                    <div class="crece"><div class="principal">@d.Nombre</div><div class="secundario">@d.Tipo.Texto() · subido el @Formato.FechaCorta(DateOnly.FromDateTime(d.SubidoUtc.ToLocalTime())) por @d.SubidoPor@(d.ImporteDetectado is decimal imp ? $" · {Formato.Euros(imp)}" : "")</div></div>
+                    <span class="insignia @(d.Estado == EstadoDocumento.Revisado ? "insignia-ok" : d.Estado == EstadoDocumento.Incidencia ? "insignia-error" : "insignia-info")">@(d.Estado == EstadoDocumento.Revisado ? "Revisado" : d.Estado == EstadoDocumento.Incidencia ? "Incidencia" : "Recibido")</span>
+                </li>
+            }
+        </ul>
+    </div>
+}

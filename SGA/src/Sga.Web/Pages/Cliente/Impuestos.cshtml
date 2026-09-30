@@ -1,0 +1,48 @@
+@page "/cliente/impuestos"
+@model Sga.Web.Pages.Cliente.ImpuestosModel
+@{ ViewData["Titulo"] = "Cuánto voy a pagar"; var r = Model.Iva; }
+<div class="pagina-cabecera"><div><h1>Cuánto vas a pagar</h1><p class="subtitulo">Tu IVA del @CalendarioFiscal.NombrePeriodo(Model.Periodo) de @Model.Ejercicio, explicado: lo que has cobrado de IVA menos lo que has pagado, descontando lo ya liquidado este año.</p></div></div>
+@if (r is null)
+{
+    <div class="tarjeta"><partial name="_Vacio" model='("euro", "Sin IVA que presentar", "Este trimestre no tienes declaración de IVA.")' /></div>
+}
+else
+{
+    var maximo = Math.Max(r.RepercutidoAcumulado, 1m);
+    string Ancho(decimal v) => Math.Round(100 * Math.Abs(v) / maximo, 1).ToString(System.Globalization.CultureInfo.InvariantCulture) + "%";
+    <div class="rejilla rejilla-2 mb-4" style="align-items:start">
+        <section class="tarjeta tarjeta-marca">
+            <span class="kpi-etiqueta" style="color:rgba(255,255,255,.75)">@(Model.Obligacion?.Estado == EstadoObligacion.Presentado ? "Presentado: importe definitivo" : "Estimación con lo que tenemos hasta hoy")</span>
+            <div class="kpi-valor" style="color:#fff;font-size:var(--t-4xl)">@(r.Resultado < 0 ? "0 €" : Formato.Euros(r.Resultado))</div>
+            @if (r.Resultado < 0) { <p class="mt-3 mb-0">Te salen <strong>@Formato.Euros(-r.Resultado)</strong> a tu favor: se compensan en el siguiente trimestre.</p> }
+            else if (Model.Plazo is not null) { <p class="mt-3 mb-0"><partial name="_Icono" model='"banco"' /> Se cargará el <strong>@Formato.Fecha(Model.Plazo.Fin)</strong> en <span class="mono">@Formato.Iban(Model.Cliente.Iban)</span>.</p> }
+            <div id="fraccionar" class="mt-4">
+                @if (Model.Obligacion?.Fraccionamiento == EstadoFraccionamiento.Solicitado) { <span class="insignia insignia-aviso">Fraccionamiento solicitado el @Formato.FechaCorta(DateOnly.FromDateTime(Model.Obligacion.FraccionamientoSolicitadoUtc!.Value))</span><p class="texto-sm mt-2 mb-0" style="color:rgba(255,255,255,.8)">Tu gestora lo está tramitando. Te avisaremos aquí.</p> }
+                else if (Model.Obligacion?.Fraccionamiento == EstadoFraccionamiento.Concedido) { <span class="insignia insignia-ok">Fraccionamiento concedido</span> }
+                else if (Model.PuedeFraccionar) { <form method="post" asp-page-handler="Fraccionar"><p class="texto-sm mb-2" style="color:rgba(255,255,255,.8)">El importe supera los @Formato.EurosSinDecimales(Sga.Web.Servicios.ServicioIva.UmbralFraccionamiento). Si te viene mejor, podemos pedir pagarlo en varios plazos.</p><button class="boton boton-primario" type="submit">Solicitar fraccionamiento</button></form> }
+            </div>
+        </section>
+        <section class="tarjeta">
+            <h2 style="font-size:var(--t-lg)">De dónde sale la cifra</h2>
+            <div class="cascada">
+                <div class="cascada-fila"><span class="etiqueta">IVA que has cobrado en @Model.Ejercicio</span><div class="pista mas"><span style="left:0;width:@Ancho(r.RepercutidoAcumulado)"></span></div><span class="valor">@Formato.Euros(r.RepercutidoAcumulado)</span></div>
+                <div class="cascada-fila"><span class="etiqueta">ya liquidado en trimestres anteriores</span><div class="pista menos"><span style="left:0;width:@Ancho(r.RepercutidoLiquidadoAnterior)"></span></div><span class="valor">− @Formato.Euros(r.RepercutidoLiquidadoAnterior)</span></div>
+                <div class="cascada-fila"><span class="etiqueta">IVA cobrado de este trimestre</span><div class="pista mas"><span style="left:0;width:@Ancho(r.RepercutidoALiquidar)"></span></div><span class="valor">@Formato.Euros(r.RepercutidoALiquidar)</span></div>
+                <div class="cascada-fila"><span class="etiqueta">IVA que has pagado este trimestre (deducible)</span><div class="pista menos"><span style="left:0;width:@Ancho(r.SoportadoALiquidar)"></span></div><span class="valor">− @Formato.Euros(r.SoportadoALiquidar)</span></div>
+                <div class="cascada-fila total"><span class="etiqueta">Resultado</span><div class="pista resultado"><span style="left:0;width:@Ancho(r.Resultado)"></span></div><span class="valor">@Formato.Euros(r.Resultado)</span></div>
+            </div>
+            <p class="texto-xs texto-3 mt-3 mb-0">Es el mismo cálculo acumulado que hace tu gestora: cuota del año hasta la fecha menos lo liquidado en los trimestres anteriores.</p>
+        </section>
+    </div>
+    <section class="tarjeta">
+        <div class="tarjeta-cabecera"><h2 style="font-size:var(--t-lg)">Este año, trimestre a trimestre</h2></div>
+        <div class="tabla-envoltorio"><table class="tabla">
+            <thead><tr><th>Trimestre</th><th>Estado</th><th class="num">IVA cobrado</th><th class="num">IVA pagado</th><th class="num">Resultado</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var t in Model.Trimestres)
+            {
+                <tr><td><strong>@t.Periodo</strong> @Model.Ejercicio</td><td><partial name="_Estado" model="t.Estado" /></td><td class="num">@(t.Repercutido is decimal rp ? Formato.Euros(rp) : "—")</td><td class="num">@(t.Soportado is decimal sp ? Formato.Euros(sp) : "—")</td><td class="num"><strong>@(t.Resultado is decimal rs ? Formato.Euros(rs) : "—")</strong></td><td class="num">@if (t.PresentacionId is int pid) { <a class="boton boton-pequeno" href="/cliente/presentaciones/@pid/justificante">Justificante</a> }</td></tr>
+            }
+            </tbody></table></div>
+    </section>
+}

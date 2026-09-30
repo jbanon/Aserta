@@ -1,0 +1,45 @@
+@page "/cliente/subir"
+@model Sga.Web.Pages.Cliente.SubirModel
+@{ ViewData["Titulo"] = "Subir"; }
+@if (Model.Subido is not null)
+{
+    <section class="tarjeta centro" style="max-width:560px;margin:0 auto">
+        <span class="marca-tipo ok" style="width:64px;height:64px;margin:0 auto var(--e-3)"><partial name="_Icono" model='"ok"' /></span>
+        <h1 style="font-size:var(--t-2xl)">Recibido</h1>
+        <p class="texto-2">@Model.Subido.Nombre · @Model.Subido.Tipo.Texto() · @Model.Subido.Periodo @Model.Subido.Ejercicio</p>
+        <p><strong>@Model.Frase</strong></p>
+        <div class="fila gap-2" style="justify-content:center"><a class="boton boton-primario" href="/cliente/subir">Subir otro</a><a class="boton" href="/cliente">Volver al inicio</a></div>
+    </section>
+}
+else
+{
+    <div class="pagina-cabecera"><div><h1>Sube una foto o un PDF</h1><p class="subtitulo">Haz la foto al ticket o a la factura, dinos qué es y listo. Nosotros lo revisamos y lo llevamos a tus libros.</p></div></div>
+    <form method="post" enctype="multipart/form-data" class="rejilla rejilla-2" style="align-items:start">
+        <div class="tarjeta">
+            <label class="subida" for="Fichero">
+                <partial name="_Icono" model='"camara"' />
+                <strong>Hacer una foto o elegir un fichero</strong>
+                <span class="texto-sm">JPG, PNG o PDF · hasta 20 MB</span>
+                <input id="Fichero" name="Fichero" type="file" accept="image/*,application/pdf" capture="environment" data-previsualizar="#previa" required />
+            </label>
+            <div id="previa" class="mt-4" hidden>
+                <img alt="Vista previa del documento" style="max-height:260px;border-radius:var(--r);border:1px solid var(--linea);margin:0 auto" hidden />
+                <p class="texto-sm texto-2 centro mt-2" data-nombre></p>
+            </div>
+            <span asp-validation-for="Fichero" class="error-campo"></span>
+        </div>
+        <div class="tarjeta">
+            <div class="campo"><label for="Tipo">Qué es</label>
+                <select id="Tipo" name="Tipo">
+                    @foreach (var t in Model.Tipos) { <option value="@t" selected="@(t == Model.TipoSugerido)">@t.Texto()</option> }
+                </select>
+                <span class="ayuda">Si dudas, elige «Ticket»: lo clasificamos nosotros.</span></div>
+            <div class="campo"><label for="Periodo">Trimestre</label>
+                <select id="Periodo" name="Periodo">@foreach (var p in new[] { "1T", "2T", "3T", "4T" }) { <option value="@p" selected="@(p == Model.PeriodoSugerido)">@p @Model.Ejercicio</option> }</select></div>
+            <div class="campo"><label for="Nota">Nota para tu gestora (opcional)</label><input id="Nota" name="Nota" placeholder="Por ejemplo: gasolina del viaje a Toledo" /></div>
+            <input type="hidden" name="Ejercicio" value="@Model.Ejercicio" />
+            <button class="boton boton-primario boton-grande boton-bloque" type="submit" data-enviar><partial name="_Icono" model='"subir"' /> Enviar</button>
+            <p class="texto-xs texto-3 mt-3 mb-0">Se guarda cifrado en el servidor de SGA. Solo lo ve tu gestora.</p>
+        </div>
+    </form>
+}

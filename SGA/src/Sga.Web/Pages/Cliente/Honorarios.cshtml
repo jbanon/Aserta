@@ -1,0 +1,11 @@
+@page "/cliente/honorarios"
+@model Sga.Web.Pages.Cliente.HonorariosModel
+@{ ViewData["Titulo"] = "Facturas de SGA"; }
+<div class="pagina-cabecera"><div><h1>Facturas de SGA</h1><p class="subtitulo">Nuestros honorarios, @(Model.Cliente.PeriodicidadHonorarios == PeriodicidadHonorarios.Mensual ? "cada mes" : "cada trimestre"): @Formato.Euros(Model.Cliente.Honorarios) más IVA.</p></div></div>
+<section class="tarjeta">
+    <div class="tabla-envoltorio"><table class="tabla">
+        <thead><tr><th>Número</th><th>Fecha</th><th>Concepto</th><th class="num">Base</th><th class="num">IVA</th><th class="num">Total</th><th>Estado</th></tr></thead>
+        <tbody>
+        @foreach (var f in Model.Facturas) { <tr><td class="mono">@f.Numero</td><td class="tabular">@Formato.FechaCorta(f.Fecha)</td><td>@f.Concepto</td><td class="num">@Formato.Euros(f.Base)</td><td class="num">@Formato.Euros(f.CuotaIva)</td><td class="num"><strong>@Formato.Euros(f.Total)</strong></td><td><span class="insignia @(f.Pagada ? "insignia-ok" : "insignia-aviso")">@(f.Pagada ? "Pagada" : "Pendiente")</span></td></tr> }
+        </tbody></table></div>
+</section>

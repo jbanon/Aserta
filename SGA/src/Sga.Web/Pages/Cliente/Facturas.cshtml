@@ -1,0 +1,37 @@
+@page "/cliente/facturas"
+@model Sga.Web.Pages.Cliente.FacturasModel
+@{ ViewData["Titulo"] = "Facturas"; var sgaEmite = Model.Cliente.Emisor == QuienEmite.Sga; }
+<div class="pagina-cabecera">
+    <div><h1>@(sgaEmite ? "Mis facturas emitidas" : "Facturas que has emitido")</h1><p class="subtitulo">@(sgaEmite ? "Las emitimos nosotros por ti, con su IVA y su retención, y las enviamos a tu cliente con copia a ti." : "Las que nos has enviado. Comprobamos la numeración antes de presentar el trimestre.")</p></div>
+    @if (!sgaEmite) { <div class="acciones"><a class="boton boton-primario" href="/cliente/subir"><partial name="_Icono" model='"subir"' /> Enviar facturas</a></div> }
+</div>
+@if (Model.Numeracion is { Correcta: false } n)
+{
+    <div class="alerta alerta-aviso"><partial name="_Icono" model='"alerta"' /><div><strong>Aviso de numeración.</strong> @n.Huecos hueco@(n.Huecos == 1 ? "" : "s"), @n.Duplicados duplicado@(n.Duplicados == 1 ? "" : "s") y @n.Desordenadas fecha@(n.Desordenadas == 1 ? "" : "s") fuera de orden. Tu gestora te ha escrito para aclararlo.<ul class="mb-0 mt-2">@foreach (var a in n.Anomalias.Take(4)) { <li>@a.Numero: @a.Detalle</li> }</ul></div></div>
+}
+else if (Model.Numeracion is { Correcta: true, Total: > 0 }) { <div class="alerta alerta-ok"><partial name="_Icono" model='"ok"' /><div>Numeración correcta: @Model.Numeracion.Total facturas seguidas, sin huecos ni duplicados.</div></div> }
+<div class="rejilla rejilla-3 mb-4">
+    <div class="tarjeta kpi"><span class="kpi-valor kpi-valor-sm">@Formato.Euros(Model.TotalBase)</span><span class="kpi-etiqueta">facturado en @Model.Ejercicio (sin IVA)</span></div>
+    <div class="tarjeta kpi"><span class="kpi-valor kpi-valor-sm">@Formato.Euros(Model.TotalIva)</span><span class="kpi-etiqueta">IVA repercutido</span></div>
+    <div class="tarjeta kpi"><span class="kpi-valor kpi-valor-sm">@Formato.Euros(Model.TotalRetencion)</span><span class="kpi-etiqueta">retenido a tu favor (IRPF)</span></div>
+</div>
+@foreach (var g in Model.PorMes)
+{
+    <section class="tarjeta mb-4">
+        <div class="tarjeta-cabecera"><h2 style="font-size:var(--t-lg)">@g.Key</h2><span class="texto-sm texto-2">@g.Count() factura@(g.Count() == 1 ? "" : "s")</span></div>
+        <ul class="lista @(sgaEmite ? "lista-enlazada" : "")">
+            @foreach (var f in g)
+            {
+                if (sgaEmite)
+                {
+                    <li><a href="/cliente/facturas/@f.Id/pdf" title="Descargar PDF"><span class="marca-tipo @(f.Estado >= EstadoFacturaEmitida.EnviadaInquilino ? "ok" : "")"><partial name="_Icono" model='"factura"' /></span><div class="crece"><div class="principal">@f.Numero · @f.DestinatarioNombre</div><div class="secundario">@Formato.FechaCorta(f.Fecha) · base @Formato.Euros(f.Base) + IVA @Formato.Euros(f.CuotaIva)@(f.CuotaRetencion > 0 ? $" − IRPF {Formato.Euros(f.CuotaRetencion)}" : "")</div></div><div style="text-align:right"><strong class="num">@Formato.Euros(f.Total)</strong><br /><span class="insignia @(f.Estado >= EstadoFacturaEmitida.EnviadaInquilino ? "insignia-ok" : "insignia-info")">@f.Estado.Texto()</span></div><partial name="_Icono" model='"descargar"' /></a></li>
+                }
+                else
+                {
+                    <li><span class="marca-tipo"><partial name="_Icono" model='"factura"' /></span><div class="crece"><div class="principal">@f.Numero · @f.DestinatarioNombre</div><div class="secundario">@Formato.FechaCorta(f.Fecha) · base @Formato.Euros(f.Base) + IVA @Formato.Euros(f.CuotaIva)</div></div><strong class="num">@Formato.Euros(f.Total)</strong></li>
+                }
+            }
+        </ul>
+    </section>
+}
+@if (Model.PorMes.Count == 0) { <div class="tarjeta"><partial name="_Vacio" model='("factura", "Todavía no hay facturas", "Cuando haya facturas de este año aparecerán aquí por meses.")' /></div> }

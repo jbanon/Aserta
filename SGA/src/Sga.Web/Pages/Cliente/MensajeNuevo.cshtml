@@ -1,0 +1,10 @@
+@page "/cliente/mensajes/nuevo"
+@model Sga.Web.Pages.Cliente.MensajeNuevoModel
+@{ ViewData["Titulo"] = "Nueva consulta"; }
+<p class="mb-2"><a href="/cliente/mensajes" class="texto-sm"><partial name="_Icono" model='"flecha-i"' /> Mensajes</a></p>
+<div class="pagina-cabecera"><div><h1>Nueva consulta</h1><p class="subtitulo">Escríbele a @Model.Cliente.Gestor!.Nombre.Split(' ')[0]. Te contesta en menos de 48 horas laborables.</p></div></div>
+<form method="post" class="tarjeta" style="max-width:640px">
+    <div class="campo"><label for="Titulo">Asunto</label><input id="Titulo" name="Titulo" required placeholder="Por ejemplo: ¿puedo deducir el seguro del coche?" /></div>
+    <div class="campo"><label for="Texto">Tu consulta</label><textarea id="Texto" name="Texto" required></textarea></div>
+    <button class="boton boton-primario" type="submit"><partial name="_Icono" model='"enviar"' /> Enviar</button>
+</form>

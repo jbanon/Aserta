@@ -1,0 +1,91 @@
+@page "/cliente"
+@model Sga.Web.Pages.Cliente.IndexModel
+@{ ViewData["Titulo"] = "Inicio"; var r = Model.Resumen; var c = Model.Cliente; var nombrePila = User.NombreActual().Split(' ')[0]; }
+<div class="fila-entre mb-4">
+    <div><h1 class="display" style="font-size:var(--t-2xl);margin:0">Hola, @nombrePila</h1><span class="texto-sm texto-2">@Formato.FechaLarga(Reloj.Hoy) · tu gestora es <strong>@c.Gestor!.Nombre.Split(' ')[0]</strong></span></div>
+    @if (r.AvisosSinLeer > 0) { <a class="insignia insignia-marca" href="/cliente/mensajes" style="text-decoration:none">@r.AvisosSinLeer aviso@(r.AvisosSinLeer == 1 ? "" : "s") nuevo@(r.AvisosSinLeer == 1 ? "" : "s")</a> }
+</div>
+
+<div class="rejilla rejilla-2 mb-4">
+    <section class="tarjeta tarjeta-marca">
+        <div class="fila" style="gap:var(--e-4);align-items:center">
+            <partial name="_Anillo" model='(r.Avance, r.Semaforo == "verde" ? "" : r.Semaforo, $"{r.Avance} %", $"{r.Periodo} {r.Ejercicio}")' />
+            <div class="crece">
+                <div class="texto-2 texto-sm">@CalendarioFiscal.NombrePeriodo(r.Periodo).ToUpperInvariant()[0]@CalendarioFiscal.NombrePeriodo(r.Periodo)[1..] de @r.Ejercicio</div>
+                <h2 style="font-size:var(--t-xl);margin:2px 0 6px">@(r.Presentadas == r.Aplicables ? "Trimestre cerrado" : r.DocsEsperados > 0 && r.DocsRecibidos < r.DocsEsperados ? r.FraseDocumentos : r.Presentadas > 0 ? $"{r.Presentadas} de {r.Aplicables} modelos presentados" : "Lo tenemos todo: estamos calculando")</h2>
+                @if (r.Plazo303 is not null) { <div class="texto-sm texto-2">@(r.DiasParaElPlazo >= 0 ? $"Presentamos antes del {Formato.Fecha(r.Plazo303.Fin)} · quedan {r.DiasParaElPlazo} días" : "Plazo cerrado")</div> }
+                @if (r.DocsEsperados > 0 && r.DocsRecibidos < r.DocsEsperados) { <a class="boton boton-primario mt-3" href="/cliente/subir"><partial name="_Icono" model='"camara"' /> Subir ahora</a> }
+                else if (c.Tipo == TipoCliente.Arrendador) { <a class="boton mt-3" href="/cliente/facturas" style="background:rgba(255,255,255,.12);border-color:transparent;color:#fff">Ver mis facturas</a> }
+            </div>
+        </div>
+    </section>
+    <section class="tarjeta">
+        @if (r.Iva is not null)
+        {
+            <div class="tarjeta-cabecera"><h2 style="font-size:var(--t-lg)">Cuánto vas a pagar</h2><a class="texto-sm" href="/cliente/impuestos">Ver el cálculo</a></div>
+            <div class="kpi"><span class="kpi-valor">@(r.Iva.Resultado < 0 ? "0 €" : Formato.Euros(r.Iva.Resultado))</span><span class="kpi-etiqueta">@(r.Iva.Resultado < 0 ? $"Este trimestre no pagas: te quedan {Formato.Euros(-r.Iva.Resultado)} a compensar" : r.Obligacion303?.Estado == EstadoObligacion.Presentado ? "Presentado · importe definitivo" : "IVA del trimestre, estimado con lo que tenemos")</span></div>
+            @if (r.Iva.Resultado > 0 && r.Plazo303?.Domiciliacion is DateOnly dom) { <p class="texto-sm texto-2 mt-3 mb-0"><partial name="_Icono" model='"banco"' /> Se cargará el <strong>@Formato.Fecha(r.Plazo303.Fin)</strong> en <span class="mono">@Formato.Iban(c.Iban)</span></p> }
+            @if (r.Fraccionamiento == EstadoFraccionamiento.Solicitado) { <span class="insignia insignia-aviso mt-3">Fraccionamiento solicitado</span> }
+            else if (r.PuedeFraccionar) { <a class="boton boton-pequeno mt-3" href="/cliente/impuestos#fraccionar">Importe alto: pedir fraccionamiento</a> }
+        }
+        else
+        {
+            <partial name="_Vacio" model='("euro", "Sin IVA este trimestre", "No tienes IVA que presentar en este periodo.")' />
+        }
+    </section>
+</div>
+
+<section class="tarjeta mb-4">
+    <div class="tarjeta-cabecera"><h2 style="font-size:var(--t-lg)">Así va el trimestre</h2><span class="texto-xs texto-3">plazos pendientes de confirmar con la AEAT</span></div>
+    @{ var hitos = Model.Hitos; }
+    <div class="linea-tiempo">
+        @foreach (var h in hitos) { <div class="hito @h.Clase"><strong>@h.Titulo</strong>@h.Fecha</div> }
+    </div>
+    <div class="pildoras mt-3">
+        @foreach (var o in r.ObligacionesTrimestre)
+        {
+            <span class="insignia @(o.Estado == EstadoObligacion.Presentado ? "insignia-ok" : o.Estado == EstadoObligacion.EnCurso ? "insignia-aviso" : "")" title="@Modelos.Buscar(o.Modelo)?.ParaElCliente">@Modelos.Nombre(o.Modelo) (@o.Modelo) · @o.Estado.Texto()</span>
+        }
+    </div>
+</section>
+
+<div class="rejilla rejilla-2">
+    @if (r.Requisitos.Count > 0)
+    {
+        <section class="tarjeta">
+            <div class="tarjeta-cabecera"><h2 style="font-size:var(--t-lg)">Lo que necesitamos de ti</h2><a class="texto-sm" href="/cliente/documentos">Ver documentos</a></div>
+            <div class="col gap-2">
+                @foreach (var q in r.Requisitos)
+                {
+                    <div class="requisito @(q.Completo ? "completo" : "falta")"><partial name="_Icono" model='@(q.Completo ? "ok" : "alerta")' /><span>@q.Nombre</span><span class="contador">@Math.Min(q.Recibidos, q.Esperados)/@q.Esperados</span></div>
+                }
+            </div>
+        </section>
+    }
+    else if (c.Tipo == TipoCliente.Arrendador)
+    {
+        <section class="tarjeta">
+            <div class="tarjeta-cabecera"><h2 style="font-size:var(--t-lg)">Tus facturas del trimestre</h2><a class="texto-sm" href="/cliente/facturas">Todas</a></div>
+            @if (r.FacturasTrimestre.Count == 0) { <partial name="_Vacio" model='("factura", "Todavía sin facturas", "Las generamos al cierre del trimestre; te avisaremos.")' /> }
+            else
+            {
+                <ul class="lista lista-enlazada">
+                    @foreach (var f in r.FacturasTrimestre.OrderBy(f => f.Fecha))
+                    {
+                        <li><a href="/cliente/facturas/@f.Id/pdf"><span class="marca-tipo @(f.Estado >= EstadoFacturaEmitida.EnviadaInquilino ? "ok" : "")"><partial name="_Icono" model='"factura"' /></span><div class="crece"><div class="principal">@f.Numero · @Formato.Mes(f.Fecha)</div><div class="secundario">@f.DestinatarioNombre · @f.Estado.Texto()</div></div><strong class="num">@Formato.Euros(f.Total)</strong></a></li>
+                    }
+                </ul>
+            }
+        </section>
+    }
+    <section class="tarjeta">
+        <div class="tarjeta-cabecera"><h2 style="font-size:var(--t-lg)">Últimos avisos</h2><a class="texto-sm" href="/cliente/mensajes">Mensajes@(r.MensajesSinLeer > 0 ? $" ({r.MensajesSinLeer})" : "")</a></div>
+        @if (r.UltimosAvisos.Count == 0) { <partial name="_Vacio" model='("campana", "Sin avisos", "Aquí verás lo que vayamos haciendo por ti.")' /> }
+        else
+        {
+            <ul class="lista">
+                @foreach (var a in r.UltimosAvisos) { <li><span class="semaforo @(a.Leido ? "semaforo-gris" : "semaforo-verde")"></span><div class="crece"><div class="@(a.Leido ? "" : "principal")">@a.Texto</div><div class="secundario">@Formato.Relativa(a.FechaUtc, Reloj.AhoraUtc)</div></div></li> }
+            </ul>
+        }
+    </section>
+</div>

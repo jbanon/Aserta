@@ -1,0 +1,21 @@
+@page "/cliente/presentaciones"
+@model Sga.Web.Pages.Cliente.PresentacionesModel
+@{ ViewData["Titulo"] = "Presentaciones"; }
+<div class="pagina-cabecera"><div><h1>Presentaciones hechas</h1><p class="subtitulo">Cada modelo que hemos presentado por ti, con su justificante y su código seguro de verificación. En la demostración, los justificantes son simulados.</p></div></div>
+@foreach (var g in Model.Grupos)
+{
+    <section class="tarjeta mb-4">
+        <div class="tarjeta-cabecera"><h2 style="font-size:var(--t-lg)">@g.Key</h2></div>
+        <ul class="lista">
+            @foreach (var o in g)
+            {
+                <li>
+                    <span class="marca-tipo ok"><partial name="_Icono" model='"justificante"' /></span>
+                    <div class="crece"><div class="principal">@Modelos.Nombre(o.Modelo) <span class="texto-3">(@o.Modelo)</span></div><div class="secundario">Presentado el @Formato.FechaCorta(o.FechaPresentacion!.Value) por @o.Presentacion!.PresentadorNombre · CSV <span class="mono">@o.Presentacion.Csv</span></div></div>
+                    <div style="text-align:right"><strong class="num">@(o.Resultado is decimal r ? (r < 0 ? $"a compensar {Formato.Euros(-r)}" : r == 0 ? "sin importe" : Formato.Euros(r)) : "informativo")</strong><br /><a class="boton boton-pequeno mt-2" href="/cliente/presentaciones/@o.Presentacion.Id/justificante"><partial name="_Icono" model='"descargar"' /> Justificante</a></div>
+                </li>
+            }
+        </ul>
+    </section>
+}
+@if (Model.Grupos.Count == 0) { <div class="tarjeta"><partial name="_Vacio" model='("justificante", "Todavía no hay presentaciones", "Cuando presentemos tu primer modelo, el justificante aparecerá aquí.")' /></div> }

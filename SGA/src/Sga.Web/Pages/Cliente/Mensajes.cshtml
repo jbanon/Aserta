@@ -1,0 +1,38 @@
+@page "/cliente/mensajes/{id:int?}"
+@model Sga.Web.Pages.Cliente.MensajesModel
+@{ ViewData["Titulo"] = "Mensajes"; }
+@if (Model.Actual is null)
+{
+    <div class="pagina-cabecera"><div><h1>Mensajes con tu gestora</h1><p class="subtitulo">Cada conversación va ligada a un asunto: una consulta, un documento, el fraccionamiento de un pago.</p></div><div class="acciones"><a class="boton boton-primario" href="/cliente/mensajes/nuevo"><partial name="_Icono" model='"mas"' /> Nueva consulta</a></div></div>
+    @if (Model.Incidencias.Count == 0) { <div class="tarjeta"><partial name="_Vacio" model='("mensajes", "Sin conversaciones", "Escríbenos cualquier duda: te contestamos en menos de 48 horas.")' /></div> }
+    else
+    {
+        <div class="tarjeta"><ul class="lista lista-enlazada">
+            @foreach (var i in Model.Incidencias)
+            {
+                var ultimo = i.Mensajes.OrderByDescending(m => m.FechaUtc).First(); var sinLeer = i.Mensajes.Any(m => m.EsGestor && !m.LeidoPorCliente);
+                <li><a href="/cliente/mensajes/@i.Id"><span class="marca-tipo @(i.Estado == EstadoIncidencia.Resuelta ? "ok" : sinLeer ? "aviso" : "")"><partial name="_Icono" model='@(i.Tipo switch { TipoIncidencia.Fraccionamiento => "euro", TipoIncidencia.Numeracion => "numeracion", TipoIncidencia.Documento => "documentos", TipoIncidencia.Conciliacion => "banco", _ => "mensajes" })' /></span><div class="crece"><div class="@(sinLeer ? "principal" : "")">@i.Titulo</div><div class="secundario">@ultimo.Autor: @(ultimo.Texto.Length > 90 ? ultimo.Texto[..90] + "…" : ultimo.Texto)</div></div><div style="text-align:right"><span class="insignia @(i.Estado == EstadoIncidencia.Resuelta ? "insignia-ok" : i.Estado == EstadoIncidencia.EnCurso ? "insignia-aviso" : "insignia-info")">@i.Estado.Texto()</span><div class="texto-xs texto-3 mt-2">@Formato.Relativa(ultimo.FechaUtc, Reloj.AhoraUtc)</div></div></a></li>
+            }
+        </ul></div>
+    }
+}
+else
+{
+    <p class="mb-2"><a href="/cliente/mensajes" class="texto-sm"><partial name="_Icono" model='"flecha-i"' /> Todas las conversaciones</a></p>
+    <div class="pagina-cabecera"><div><h1 style="font-size:var(--t-xl)">@Model.Actual.Titulo</h1><p class="subtitulo">@Model.Actual.Tipo.Texto() · <span class="insignia @(Model.Actual.Estado == EstadoIncidencia.Resuelta ? "insignia-ok" : "insignia-info")">@Model.Actual.Estado.Texto()</span></p></div></div>
+    <section class="tarjeta">
+        <div class="col gap-3">
+            @foreach (var m in Model.Actual.Mensajes.OrderBy(m => m.FechaUtc))
+            {
+                <div class="burbuja @(m.EsGestor ? "" : "mia")"><span class="quien">@m.Autor · @Formato.FechaHora(m.FechaUtc)</span>@m.Texto</div>
+            }
+        </div>
+        @if (Model.Actual.Estado != EstadoIncidencia.Resuelta)
+        {
+            <form method="post" asp-page-handler="Responder" asp-route-id="@Model.Actual.Id" class="mt-4">
+                <div class="campo"><label for="Texto">Tu respuesta</label><textarea id="Texto" name="Texto" required></textarea></div>
+                <button class="boton boton-primario" type="submit"><partial name="_Icono" model='"enviar"' /> Enviar</button>
+            </form>
+        }
+    </section>
+}

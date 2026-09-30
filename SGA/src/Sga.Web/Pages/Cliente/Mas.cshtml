@@ -1,0 +1,12 @@
+@page "/cliente/mas"
+@model Sga.Web.Pages.Cliente.MasModel
+@{ ViewData["Titulo"] = "Más"; }
+<div class="pagina-cabecera"><div><h1>Más</h1><p class="subtitulo">@Model.Cliente.Nombre · @Model.Cliente.Nif</p></div></div>
+<div class="tarjeta"><ul class="lista lista-enlazada">
+    <li><a href="/cliente/facturas"><span class="marca-tipo"><partial name="_Icono" model='"factura"' /></span><div class="crece"><div class="principal">Facturas</div><div class="secundario">@(Model.Cliente.Emisor == QuienEmite.Sga ? "Las que emitimos por ti" : "Las que nos has enviado")</div></div><partial name="_Icono" model='"flecha-d"' /></a></li>
+    <li><a href="/cliente/presentaciones"><span class="marca-tipo ok"><partial name="_Icono" model='"justificante"' /></span><div class="crece"><div class="principal">Presentaciones</div><div class="secundario">Justificantes con su código de verificación</div></div><partial name="_Icono" model='"flecha-d"' /></a></li>
+    <li><a href="/cliente/honorarios"><span class="marca-tipo"><partial name="_Icono" model='"maletin"' /></span><div class="crece"><div class="principal">Facturas de SGA</div><div class="secundario">Nuestros honorarios</div></div><partial name="_Icono" model='"flecha-d"' /></a></li>
+    <li><a href="/cliente/mensajes"><span class="marca-tipo"><partial name="_Icono" model='"mensajes"' /></span><div class="crece"><div class="principal">Mensajes</div><div class="secundario">Con @Model.Cliente.Gestor!.Nombre</div></div><partial name="_Icono" model='"flecha-d"' /></a></li>
+    <li><a href="/salir"><span class="marca-tipo"><partial name="_Icono" model='"salir"' /></span><div class="crece"><div class="principal">Salir</div><div class="secundario">Volver a la página de acceso</div></div><partial name="_Icono" model='"flecha-d"' /></a></li>
+</ul></div>
+<p class="aviso-demo mt-4">datos ficticios · reloj fijado al @Formato.FechaCorta(Reloj.Hoy)</p>
