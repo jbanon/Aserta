@@ -1,0 +1,59 @@
+@page "/alcorcon/sociedad-obligaciones-fiscales"
+@model Sga.Web.Pages.Alcorcon.SociedadObligacionesModel
+@{
+    ViewData["Titulo"] = "Pequeña sociedad en Alcorcón: qué presenta cada año";
+    ViewData["Descripcion"] = "El calendario completo de una S.L. pequeña en Alcorcón: IVA y retenciones cada trimestre, pagos fraccionados, Impuesto sobre Sociedades, cuentas anuales y libros en el Registro Mercantil.";
+    var ej = (short)Reloj.Hoy.Year;
+    string Dia(DateOnly? f) => f is null ? "—" : f.Value.ToString("d 'de' MMMM 'de' yyyy", Formato.Es);
+    Plazo? B(string m, string p) => CalendarioFiscal.Buscar(m, ej, p);
+}
+<article>
+    <header class="contenedor articulo-cabecera">
+        <nav class="migas" aria-label="Estás en"><a href="/">Inicio</a><span aria-hidden="true">›</span><span>Guías para Alcorcón</span></nav>
+        <span class="antetitulo">Guía · Sociedades</span>
+        <h1>Pequeña sociedad en Alcorcón: qué presenta cada año</h1>
+        <p class="entradilla">Una S.L. con dos socios, un par de empleados y un local en Urtinsa o en el centro de Alcorcón tiene bastantes más citas con Hacienda y con el Registro Mercantil que un autónomo. Ninguna es complicada si se sabe cuándo toca. Esta es la lista completa, con las fechas del ejercicio @ej.</p>
+    </header>
+    <div class="contenedor articulo-cuerpo">
+        <div class="prosa">
+            <h2>Cada trimestre</h2>
+            <dl class="hoja-detalle">
+                <dt>303 · IVA</dt><dd>Del 1 al 20 de abril, julio y octubre; el último trimestre hasta el 30 de enero.</dd>
+                <dt>111 · Retenciones de nóminas y profesionales</dt><dd>Mismos plazos, pero el cuarto trimestre también termina el 20 de enero.</dd>
+                <dt>115 · Retenciones del alquiler</dt><dd>Si el local es de un propietario particular. Mismos plazos que el 111.</dd>
+                <dt>202 · Pagos fraccionados de Sociedades</dt><dd>Tres al año, no cuatro: <strong>abril, octubre y diciembre</strong>, hasta el 20. Son adelantos del Impuesto sobre Sociedades (en @ej: @Dia(B("202", "1P")?.Fin), @Dia(B("202", "2P")?.Fin) y @Dia(B("202", "3P")?.Fin)).</dd>
+            </dl>
+            <p>Si la sociedad factura más de seis millones de euros al año, el IVA pasa a ser mensual y cambian varias reglas <abbr class="verificar" title="Umbral pendiente de confirmar">[VERIFICAR]</abbr>; no es el caso de las sociedades que llevamos.</p>
+
+            <h2>Una vez al año, en orden</h2>
+            <div class="tabla-envoltorio">
+            <table class="tabla">
+                <thead><tr><th>Cuándo</th><th>Qué</th><th>Fecha para el ejercicio @ej</th></tr></thead>
+                <tbody>
+                    <tr><td>Enero</td><td>Resúmenes anuales: IVA (390), retenciones (190 y 180)</td><td>@Dia(B("390", "AN")?.Fin)</td></tr>
+                    <tr><td>Febrero</td><td>347, operaciones con terceros de más de 3.005,06 € <abbr class="verificar" title="Umbral pendiente de confirmar">[VERIFICAR]</abbr></td><td>@Dia(B("347", "AN")?.Fin)</td></tr>
+                    <tr><td>Marzo</td><td>Formulación de las cuentas por los administradores (tres meses desde el cierre)</td><td>31 de marzo de @(ej + 1) <abbr class="verificar" title="Plazo mercantil pendiente de confirmar">[VERIFICAR]</abbr></td></tr>
+                    <tr><td>Abril</td><td>Legalización de los libros contables y societarios en el Registro Mercantil</td><td>@Dia(B("LIBROS", "AN")?.Fin)</td></tr>
+                    <tr><td>Junio</td><td>Junta general que aprueba las cuentas (seis meses desde el cierre)</td><td>30 de junio de @(ej + 1) <abbr class="verificar" title="Plazo mercantil pendiente de confirmar">[VERIFICAR]</abbr></td></tr>
+                    <tr><td>Julio</td><td>Impuesto sobre Sociedades (modelo 200)</td><td>@Dia(B("200", "AN")?.Fin)</td></tr>
+                    <tr><td>Julio</td><td>Depósito de las cuentas anuales en el Registro Mercantil</td><td>@Dia(B("CCAA", "AN")?.Fin)</td></tr>
+                </tbody>
+            </table>
+            </div>
+            <p class="texto-sm texto-3">Fechas del calendario de la demo para una sociedad que cierra el ejercicio el 31 de diciembre, con el traslado a día hábil aplicado. Pendientes de confirmar contra los calendarios oficiales de la Agencia Tributaria y del Registro Mercantil <abbr class="verificar" title="Calendario pendiente de confirmar">[VERIFICAR]</abbr>.</p>
+
+            <h2>Tres cosas que se olvidan</h2>
+            <ul>
+                <li><strong>El Registro Mercantil que te corresponde es el de Madrid.</strong> Las sociedades de Alcorcón depositan allí las cuentas y legalizan los libros. Se hace por vía telemática; no hay que ir.</li>
+                <li><strong>El IAE</strong> (impuesto de actividades económicas) no se paga mientras la cifra de negocios no llegue al millón de euros <abbr class="verificar" title="Umbral pendiente de confirmar">[VERIFICAR]</abbr>, pero hay que estar dado de alta en el epígrafe correcto.</li>
+                <li><strong>Las tasas y la licencia del local</strong> van con el Ayuntamiento de Alcorcón, no con Hacienda. No entran en el trimestre, pero sus recibos sí son gasto de la sociedad: guárdalos.</li>
+            </ul>
+
+            <h2>Qué necesitamos de la sociedad cada mes</h2>
+            <p>Las facturas emitidas y recibidas (o acceso a tu programa de facturación), las nóminas si las hace otro despacho, el extracto bancario y cualquier contrato nuevo. Con eso llevamos la contabilidad al día, y de la contabilidad salen todos los modelos de arriba sin que haya que pedir nada a última hora. En tu <a href="/acceso">área de clientes</a> ves cada modelo presentado con su justificante, y el administrador puede descargar el balance y la cuenta de resultados cuando los pida el banco.</p>
+            <p>Precio orientativo: <a href="/servicios#sociedades">desde 150 € al mes</a>, con contabilidad, impuestos, cuentas anuales y libros incluidos.</p>
+            <div class="caja-nota">Guía pensada para una S.L. pequeña con ejercicio de enero a diciembre. Los plazos mercantiles y los umbrales citados están pendientes de revisión contra la normativa vigente antes de publicar la web definitiva <abbr class="verificar" title="Revisión normativa pendiente">[VERIFICAR]</abbr>.</div>
+        </div>
+        <partial name="_CtaLocal" />
+    </div>
+</article>

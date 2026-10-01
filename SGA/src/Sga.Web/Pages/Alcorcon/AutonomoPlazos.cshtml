@@ -1,0 +1,69 @@
+@page "/alcorcon/autonomo-plazos-del-trimestre"
+@model Sga.Web.Pages.Alcorcon.AutonomoPlazosModel
+@{
+    ViewData["Titulo"] = "Autónomo en Alcorcón: plazos del trimestre";
+    ViewData["Descripcion"] = "Qué presenta un autónomo de Alcorcón cada trimestre (303, 130, 111, 115), hasta qué día, cuándo hay que domiciliar y qué papeles hay que guardar. Con el calendario del año.";
+    var ej = (short)Reloj.Hoy.Year; string[] trimestres = ["1T", "2T", "3T", "4T"];
+    string Meses(string t) => t switch { "1T" => "enero a marzo", "2T" => "abril a junio", "3T" => "julio a septiembre", _ => "octubre a diciembre" };
+    string Dia(DateOnly? f) => f is null ? "—" : f.Value.ToString("d 'de' MMMM 'de' yyyy", Formato.Es);
+    var (ejCampana, trCampana) = CalendarioFiscal.TrimestreEnCampana(Reloj.Hoy);
+    var enCampana = CalendarioFiscal.Buscar("303", ejCampana, trCampana);
+}
+<article>
+    <header class="contenedor articulo-cabecera">
+        <nav class="migas" aria-label="Estás en"><a href="/">Inicio</a><span aria-hidden="true">›</span><span>Guías para Alcorcón</span></nav>
+        <span class="antetitulo">Guía · Autónomos y profesionales</span>
+        <h1>Autónomo en Alcorcón: plazos del trimestre</h1>
+        <p class="entradilla">Cuatro veces al año toca «el trimestre». Esta es la lista de lo que se presenta, hasta qué día, qué pasa si domicilias el pago y qué papeles hacen falta. Vale igual para un fisioterapeuta con consulta en el centro, un electricista que trabaja por todo el sur de Madrid o un diseñador que factura desde casa.</p>
+        @if (enCampana is not null) { <p class="texto-sm texto-3">Hoy estamos en la campaña del <strong>@trCampana de @ejCampana</strong>: el plazo termina el @Dia(enCampana.Fin).</p> }
+    </header>
+    <div class="contenedor articulo-cuerpo">
+        <div class="prosa">
+            <h2>Los cuatro modelos del trimestre (y cuáles te tocan)</h2>
+            <dl class="hoja-detalle">
+                <dt>303 · IVA</dt><dd>Casi todos. El IVA que has cobrado en tus facturas menos el que has pagado en gastos con factura. Quedan fuera las actividades exentas (sanitarias, formación reglada, seguros) <abbr class="verificar" title="Lista de exenciones pendiente de confirmar">[VERIFICAR]</abbr>.</dd>
+                <dt>130 · Pago a cuenta del IRPF</dt><dd>Si tributas en estimación directa y menos del 70 % de tus ingresos llevan retención <abbr class="verificar" title="Umbral pendiente de confirmar">[VERIFICAR]</abbr>. Es un adelanto del 20 % sobre el beneficio acumulado del año.</dd>
+                <dt>111 · Retenciones a personas</dt><dd>Solo si pagas nóminas o facturas de otros profesionales con retención (un colaborador, un abogado).</dd>
+                <dt>115 · Retenciones del alquiler</dt><dd>Solo si alquilas un local o despacho a un propietario particular: ingresas en su nombre el 19 % que le descuentas.</dd>
+            </dl>
+            <p>Si vendes o compras a empresas de otros países de la Unión Europea, se añade el <strong>349</strong>, informativo. Y si llevas un negocio con empleados, las cotizaciones van por otra vía (Seguridad Social, cada mes), no por el trimestre.</p>
+
+            <h2>El calendario de @ej</h2>
+            <p>El plazo general es <strong>del 1 al 20 del mes siguiente</strong> al cierre del trimestre. El último trimestre del año tiene una excepción: el IVA y el 130 se pueden presentar hasta el 30 de enero. Si cae en fin de semana o festivo, pasa al siguiente día hábil.</p>
+            <div class="tabla-envoltorio">
+            <table class="tabla">
+                <thead><tr><th>Trimestre</th><th>Meses</th><th>303 y 130 hasta el</th><th>111 y 115 hasta el</th><th>Domiciliar el pago antes del</th></tr></thead>
+                <tbody>
+                @foreach (var t in trimestres)
+                {
+                    var p303 = CalendarioFiscal.Buscar("303", ej, t); var p111 = CalendarioFiscal.Buscar("111", ej, t);
+                    <tr><td><strong>@t @ej</strong></td><td>@Meses(t)</td><td>@Dia(p303?.Fin)</td><td>@Dia(p111?.Fin)</td><td>@Dia(p303?.Domiciliacion)</td></tr>
+                }
+                </tbody>
+            </table>
+            </div>
+            <p class="texto-sm texto-3">Fechas del calendario de la demo, con el traslado a día hábil ya aplicado. Pendientes de confirmar contra el calendario oficial de la Agencia Tributaria <abbr class="verificar" title="Calendario pendiente de confirmar">[VERIFICAR]</abbr>.</p>
+            <div class="caja-nota"><strong>Domiciliar o pagar a mano.</strong> Si domicilias, la declaración tiene que estar enviada unos días antes del cierre (la columna de la derecha) y el cargo llega el último día del plazo. Si no, se puede presentar hasta el último día pagando con NRC del banco. Nosotros domiciliamos siempre que el cliente lo autoriza: es la forma de que nadie tenga que acordarse del día.</div>
+
+            <h2>Una vez al año, además</h2>
+            <ul>
+                <li><strong>Enero:</strong> resúmenes anuales de IVA (390) y de retenciones (190 y 180), que no se pagan: recogen los trimestres.</li>
+                <li><strong>Febrero:</strong> el 347, con los clientes y proveedores con los que has movido más de 3.005,06 € en el año <abbr class="verificar" title="Umbral pendiente de confirmar">[VERIFICAR]</abbr>.</li>
+                <li><strong>Abril a junio:</strong> la declaración de la renta, donde se ajusta lo adelantado con los 130 y las retenciones.</li>
+            </ul>
+
+            <h2>Qué hay que guardar (y qué no sirve)</h2>
+            <ul>
+                <li><strong>Tus facturas emitidas</strong>, numeradas sin huecos. Si te saltas un número, Hacienda lo nota.</li>
+                <li><strong>Facturas de gastos a tu nombre y con tu NIF.</strong> Un ticket vale para justificar el gasto en la renta, pero el IVA solo se deduce con factura completa <abbr class="verificar" title="Requisitos de la factura simplificada pendientes de confirmar">[VERIFICAR]</abbr>. Pídela siempre en la gasolinera, la ferretería, el almacén.</li>
+                <li><strong>El recibo de autónomos</strong> de cada mes: es gasto deducible.</li>
+                <li><strong>El extracto del banco</strong> del trimestre, para cuadrar cobros y pagos.</li>
+                <li>Si trabajas desde casa, los suministros se deducen solo en parte y con reglas concretas <abbr class="verificar" title="Porcentajes pendientes de confirmar">[VERIFICAR]</abbr>; mejor preguntarnos antes de contarlos.</li>
+            </ul>
+
+            <h2>Cómo es el trimestre con nosotros</h2>
+            <p><strong>Del 1 al 10</strong> tu área de clientes te dice exactamente qué falta («te faltan 2 tickets y el extracto») y le haces una foto desde el móvil. <strong>Del 10 al 15</strong> calculamos y ves la cifra en tu área, con el desglose. <strong>Antes del 20</strong> presentamos y te dejamos el justificante. <strong>El día del plazo</strong> se carga en tu cuenta. Si el importe es alto, pides el fraccionamiento con un botón. Precio orientativo: <a href="/servicios#autonomos">desde 50 € al mes</a>.</p>
+        </div>
+        <partial name="_CtaLocal" />
+    </div>
+</article>

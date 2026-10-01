@@ -29,6 +29,8 @@ if (demo.GetValue<bool>("RelojReal")) builder.Services.AddSingleton<IReloj, Relo
 else builder.Services.AddSingleton<IReloj>(new RelojFijo(DateOnly.Parse(demo["Hoy"] ?? "2026-10-06", CultureInfo.InvariantCulture)));
 
 builder.Services.Configure<OpcionesSga>(builder.Configuration.GetSection("Sga"));
+builder.Services.Configure<OpcionesSeo>(builder.Configuration.GetSection("Seo"));
+builder.Services.AddSingleton<Seo>();
 builder.Services.AddScoped<ServicioIva>();
 builder.Services.AddScoped<ServicioCliente>();
 builder.Services.AddScoped<ServicioGestor>();
@@ -92,6 +94,8 @@ app.Use(async (ctx, next) =>
     ctx.Response.Headers["X-Content-Type-Options"] = "nosniff";
     ctx.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
     ctx.Response.Headers["Permissions-Policy"] = "camera=(self), geolocation=()";
+    // SEO: fuera del dominio canonico (demo, local) nada se indexa, tampoco PDF ni estaticos
+    if (!ctx.RequestServices.GetRequiredService<Seo>().EsIndexable(ctx.Request)) ctx.Response.Headers["X-Robots-Tag"] = "noindex, nofollow";
     await next();
 });
 app.UseStaticFiles();
@@ -100,6 +104,10 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapRazorPages();
 app.MapGet("/salud", () => Results.Ok(new { estado = "ok", app = "sga-demo" }));
+app.MapGet("/robots.txt", (HttpRequest r, Seo seo) => Results.Text(Seo.Robots(seo.EsIndexable(r), seo.Dominio), "text/plain; charset=utf-8"));
+app.MapGet("/sitemap.xml", (HttpRequest r, Seo seo) => seo.EsIndexable(r)
+    ? Results.Text(Seo.Sitemap(seo.Dominio, Seo.RutasPublicas), "application/xml; charset=utf-8")
+    : Results.NotFound());
 app.Run();
 
 public sealed class OpcionesSga
@@ -112,4 +120,15 @@ public sealed class OpcionesSga
     public string Email { get; set; } = "";
     public string Nif { get; set; } = "";
     public string Horario { get; set; } = "";
+    /// <summary>Horario por tramos para los datos estructurados (dias en ingles, como pide schema.org).</summary>
+    public List<TramoHorario> Horarios { get; set; } = [];
+    /// <summary>false mientras direccion, telefono y horario sean provisionales: la web los marca [VERIFICAR].</summary>
+    public bool DatosVerificados { get; set; }
+}
+
+public sealed class TramoHorario
+{
+    public string Dias { get; set; } = "";
+    public string Abre { get; set; } = "";
+    public string Cierra { get; set; } = "";
 }

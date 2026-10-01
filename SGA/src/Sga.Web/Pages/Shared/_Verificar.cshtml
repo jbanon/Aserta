@@ -1,0 +1,5 @@
+@* Marca de dato provisional: desaparece cuando Sga:DatosVerificados = true (direccion, telefono y horario confirmados por SGA). *@
+@if (!OpcionesSga.Value.DatosVerificados)
+{
+    <span class="verificar" title="Dato provisional: pendiente de confirmar con SGA">[VERIFICAR]</span>
+}

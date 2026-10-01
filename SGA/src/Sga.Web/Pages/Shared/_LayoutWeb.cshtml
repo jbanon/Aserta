@@ -4,8 +4,29 @@
     <script src="/js/js.js" asp-append-version="true"></script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>@(ViewData["Titulo"] is string t ? t + " · " : "")SGA Contabilizado</title>
-    <meta name="description" content="@(ViewData["Descripcion"] ?? "Gestoría en Madrid para arrendadores, autónomos y pequeñas sociedades. Tus impuestos al día, con un área de clientes que te dice qué falta y cuánto vas a pagar.")" />
+    @{
+        var tituloPagina = ViewData["Titulo"] is string t ? t + " · SGA Contabilizado" : "SGA Contabilizado · Gestoría en Alcorcón";
+        var descripcion = ViewData["Descripcion"] as string ?? "Gestoría en Alcorcón para arrendadores, autónomos y pequeñas sociedades. Tus impuestos al día, con un área de clientes que te dice qué falta y cuánto vas a pagar.";
+        var indexable = Seo.EsIndexable(Context.Request);
+        var canonica = Seo.Canonica(Context.Request.Path);
+        var origen = Context.Request.Scheme + "://" + Context.Request.Host;
+    }
+    <title>@tituloPagina</title>
+    <meta name="description" content="@descripcion" />
+    <link rel="canonical" href="@canonica" />
+    @if (!indexable) { <meta name="robots" content="noindex, nofollow" /> }
+    @if (Seo.VerificacionGoogle is { Length: > 0 } verificacion) { <meta name="google-site-verification" content="@verificacion" /> }
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_ES" />
+    <meta property="og:site_name" content="SGA Contabilizado" />
+    <meta property="og:title" content="@tituloPagina" />
+    <meta property="og:description" content="@descripcion" />
+    <meta property="og:url" content="@canonica" />
+    <meta property="og:image" content="@origen/img/sga-tarjeta.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <partial name="_DatosLocales" />
     <link rel="icon" href="/img/favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="/css/tokens.css" asp-append-version="true" />
     <link rel="stylesheet" href="/css/sga.css" asp-append-version="true" />
@@ -41,9 +62,17 @@
                 <img src="/img/sga-logo-oscuro.svg" alt="SGA Contabilizado" width="260" height="100" style="height:auto;max-width:260px" />
                 <p class="mt-4" style="max-width:38ch">Gestoría para arrendadores, autónomos y pequeñas sociedades. Cuentas claras, plazos cumplidos y una persona con nombre al otro lado.</p>
             </div>
-            <div><h4>Servicios</h4><ul><li><a href="/servicios#arrendadores">Arrendadores</a></li><li><a href="/servicios#autonomos">Autónomos y profesionales</a></li><li><a href="/servicios#sociedades">Sociedades</a></li></ul></div>
+            <div><h4>Servicios</h4><ul><li><a href="/servicios#arrendadores">Arrendadores</a></li><li><a href="/servicios#autonomos">Autónomos y profesionales</a></li><li><a href="/servicios#sociedades">Sociedades</a></li></ul>
+                <h4 class="mt-4">Guías para Alcorcón</h4><ul><li><a href="/alcorcon/alquiler-de-local-impuestos">Alquiler de un local</a></li><li><a href="/alcorcon/autonomo-plazos-del-trimestre">Autónomo: plazos del trimestre</a></li><li><a href="/alcorcon/sociedad-obligaciones-fiscales">Pequeña sociedad</a></li></ul></div>
             <div><h4>SGA</h4><ul><li><a href="/como-trabajamos">Cómo trabajamos</a></li><li><a href="/equipo">Equipo</a></li><li><a href="/contacto">Contacto</a></li><li><a href="/acceso">Área de clientes</a></li></ul></div>
-            <div><h4>Dónde estamos</h4><ul><li>@OpcionesSga.Value.Direccion<br />@OpcionesSga.Value.CodigoPostal @OpcionesSga.Value.Localidad</li><li>@OpcionesSga.Value.Telefono</li><li>@OpcionesSga.Value.Email</li><li>@OpcionesSga.Value.Horario</li></ul></div>
+            <div><h4>Dónde estamos</h4>
+                @{ var nap = OpcionesSga.Value; }
+                <address class="nap">
+                    <div>@nap.Direccion <partial name="_Verificar" /><br />@nap.CodigoPostal @nap.Localidad (Madrid)</div>
+                    <div><a href="tel:+34@nap.Telefono.Replace(" ", "")">@nap.Telefono</a> <partial name="_Verificar" /></div>
+                    <div><a href="mailto:@nap.Email">@nap.Email</a></div>
+                    <div>@nap.Horario <partial name="_Verificar" /></div>
+                </address></div>
             <div class="legal">© @Reloj.Hoy.Year SGA Contabilizado · Demostración con datos ficticios: nombres, NIF, importes y contactos son inventados. Ninguna presentación se envía a la Agencia Tributaria.</div>
         </div>
     </footer>

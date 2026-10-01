@@ -1,0 +1,72 @@
+@page "/alcorcon/alquiler-de-local-impuestos"
+@model Sga.Web.Pages.Alcorcon.AlquilerLocalModel
+@{
+    ViewData["Titulo"] = "Alquiler de un local en Alcorcón: qué impuestos pagas";
+    ViewData["Descripcion"] = "Si alquilas un local, una nave o una oficina en Alcorcón: IVA del 21 %, retención del 19 %, modelo 303 cada trimestre y la renta. Explicado con un ejemplo con números.";
+    var ej = (short)Reloj.Hoy.Year; var p3 = CalendarioFiscal.Buscar("303", ej, "3T"); var p4 = CalendarioFiscal.Buscar("303", ej, "4T");
+    string Dia(Plazo? p) => p is null ? "—" : p.Fin.ToString("d 'de' MMMM 'de' yyyy", Formato.Es);
+}
+<article>
+    <header class="contenedor articulo-cabecera">
+        <nav class="migas" aria-label="Estás en"><a href="/">Inicio</a><span aria-hidden="true">›</span><span>Guías para Alcorcón</span></nav>
+        <span class="antetitulo">Guía · Arrendadores</span>
+        <h1>Alquiler de un local en Alcorcón: qué impuestos pagas</h1>
+        <p class="entradilla">Tienes un local, una nave o una oficina alquilada a un negocio en Alcorcón. Cobras el alquiler y, cada tres meses, alguien te habla de IVA, retenciones y modelos. Aquí está lo que pasa de verdad con ese dinero, con un ejemplo con números.</p>
+        <p class="texto-sm texto-3">Lectura de cinco minutos · Para propietarios particulares. Si el local es de una sociedad, mira la <a href="/alcorcon/sociedad-obligaciones-fiscales">guía de sociedades</a>.</p>
+    </header>
+    <div class="contenedor articulo-cuerpo">
+        <div class="prosa">
+            <h2>Lo primero: la factura del alquiler lleva dos cosas</h2>
+            <p>Cuando alquilas un local a una empresa o a un autónomo, la factura mensual no es solo «el alquiler». Lleva dos líneas más:</p>
+            <ul>
+                <li><strong>IVA del 21 %</strong>, que tú le cobras al inquilino y que después ingresas a Hacienda. No es tuyo: lo recaudas.</li>
+                <li><strong>Retención del 19 %</strong> de IRPF, que el inquilino te <em>descuenta</em> y que ingresa él a Hacienda en tu nombre. Es un adelanto de tu declaración de la renta.</li>
+            </ul>
+            <div class="caja-ejemplo">
+                <h3 style="margin-top:0">Ejemplo: un local en el centro de Alcorcón a 1.200 € al mes</h3>
+                <dl class="hoja-detalle">
+                    <dt>Alquiler (base)</dt><dd>1.200,00 €</dd>
+                    <dt>+ IVA 21 %</dt><dd>252,00 €</dd>
+                    <dt>− Retención 19 %</dt><dd>228,00 €</dd>
+                    <dt>Lo que ingresa el inquilino en tu cuenta</dt><dd><strong>1.224,00 €</strong></dd>
+                </dl>
+                <p class="texto-sm mb-0 mt-3">De esos 1.224 €, los 252 € de IVA los tendrás que ingresar tú al cierre del trimestre. Los 228 € de retención ya los ha adelantado el inquilino por ti: los recuperas (o los descuentas) en la renta.</p>
+            </div>
+
+            <h2>Cada trimestre: el modelo 303 (IVA)</h2>
+            <p>El IVA que has cobrado en los tres meses, menos el IVA que has pagado en gastos del local con factura (la cuota de la gestoría, una reparación, el seguro no lleva IVA), se declara en el <strong>modelo 303</strong>. Con el local del ejemplo:</p>
+            <dl class="hoja-detalle">
+                <dt>IVA cobrado (3 × 252 €)</dt><dd>756,00 €</dd>
+                <dt>IVA pagado en gastos con factura (p. ej. gestoría 45 €)</dt><dd>9,45 €</dd>
+                <dt>Resultado del 303 a ingresar</dt><dd><strong>746,55 €</strong></dd>
+            </dl>
+            <p>Los plazos son fijos: <strong>del 1 al 20 de abril, julio y octubre</strong>, y el último trimestre <strong>hasta el 30 de enero</strong>. Si domicilias el pago, el plazo para enviar la declaración termina unos días antes (el 15, o el 25 en enero). Con el calendario de @ej: el 3T se presenta hasta el @Dia(p3) y el 4T hasta el @Dia(p4) <abbr class="verificar" title="Fechas del calendario de la demo, pendientes de confirmar contra el calendario oficial de la Agencia Tributaria">[VERIFICAR]</abbr>.</p>
+            <p>En enero, además, se presenta el <strong>resumen anual de IVA (modelo 390)</strong>, que no se paga: solo recoge los cuatro trimestres.</p>
+
+            <h2>Una vez al año: la renta</h2>
+            <p>El alquiler es un <em>rendimiento del capital inmobiliario</em> en tu declaración de la renta (abril a junio del año siguiente). Tributa la diferencia entre lo cobrado y los gastos del local, y de la cuota resultante se descuentan las retenciones que el inquilino ya ingresó por ti. Gastos que normalmente se restan:</p>
+            <ul>
+                <li>El <strong>IBI</strong> del Ayuntamiento de Alcorcón y la tasa de basuras, si la pagas tú.</li>
+                <li>La <strong>comunidad de propietarios</strong>, el seguro del local y los intereses de la hipoteca, si la hay.</li>
+                <li>Las <strong>reparaciones y la conservación</strong> (pintar, arreglar la persiana), no las mejoras.</li>
+                <li>La <strong>amortización</strong> del inmueble, un porcentaje anual sobre el valor de la construcción <abbr class="verificar" title="Porcentaje y base de cálculo pendientes de confirmar con la normativa vigente">[VERIFICAR]</abbr>.</li>
+                <li>La factura de la gestoría.</li>
+            </ul>
+            <p>Para que todo eso cuente, hace falta el justificante: recibo del IBI, recibos de comunidad, facturas a tu nombre. Es lo que te pedimos una vez al año y lo que guardamos en tu área.</p>
+
+            <h2>Casos que cambian la cosa</h2>
+            <dl class="hoja-detalle">
+                <dt>El inquilino es un particular</dt><dd>Si no actúa como empresario (raro en un local), hay IVA pero no retención: cobras los 1.452 € enteros y adelantas tú el IRPF en la renta.</dd>
+                <dt>Es una vivienda, no un local</dt><dd>El alquiler de vivienda está exento de IVA: ni 303 ni 390. Va solo a la renta, con una reducción si es la vivienda habitual del inquilino <abbr class="verificar" title="Porcentaje de reducción pendiente de confirmar">[VERIFICAR]</abbr>.</dd>
+                <dt>Garaje o trastero alquilado aparte</dt><dd>Lleva IVA como un local.</dd>
+                <dt>El inquilino deja de pagar</dt><dd>El IVA de las facturas emitidas se declara igual; la renta permite deducir los impagos pasados unos meses <abbr class="verificar" title="Plazo y requisitos pendientes de confirmar">[VERIFICAR]</abbr>. Conviene avisarnos pronto.</dd>
+                <dt>Vendes el local</dt><dd>La ganancia tributa en la renta y conviene calcularla antes de firmar: el valor de compra actualizado y los gastos de ambas operaciones cambian mucho la cifra.</dd>
+            </dl>
+
+            <h2>Qué hacemos nosotros</h2>
+            <p>Emitimos la factura mensual por ti, con numeración correlativa, y se la enviamos al inquilino. Llevamos tus facturas de gastos, presentamos el 303 cada trimestre y el 390 en enero, y te preparamos la renta con las retenciones ya practicadas. Tú ves en tu <a href="/acceso">área de clientes</a> cuánto vas a pagar <strong>antes del día 20</strong>, y el justificante de cada presentación en cuanto se envía. Precio orientativo: <a href="/servicios#arrendadores">desde 45 € por trimestre</a>.</p>
+            <div class="caja-nota">Esta guía describe el caso general de un propietario particular que alquila un local a un negocio. Los tipos (21 % de IVA, 19 % de retención), los plazos y los gastos deducibles están pendientes de revisión contra la normativa vigente antes de publicar la web definitiva <abbr class="verificar" title="Revisión normativa pendiente">[VERIFICAR]</abbr>. No sustituye al estudio de tu caso.</div>
+        </div>
+        <partial name="_CtaLocal" />
+    </div>
+</article>

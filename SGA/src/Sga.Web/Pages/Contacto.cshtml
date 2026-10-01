@@ -1,6 +1,6 @@
 @page "/contacto"
 @model Sga.Web.Pages.ContactoModel
-@{ ViewData["Titulo"] = "Contacto"; var o = OpcionesSga.Value; }
+@{ ViewData["Titulo"] = "Contacto · Gestoría en Alcorcón"; ViewData["Descripcion"] = "Dónde está SGA Contabilizado en Alcorcón, teléfono, horario y formulario para pedir la primera reunión."; var o = OpcionesSga.Value; }
 <section class="contenedor" style="padding-top:var(--e-7)">
     <span class="antetitulo">Contacto</span>
     <h1>Cuéntanos tu caso</h1>
@@ -29,16 +29,39 @@
         <div class="col gap-4">
             <div class="tarjeta">
                 <h3>Dónde estamos</h3>
+                <address class="nap">
                 <ul class="lista">
-                    <li><span class="marca-tipo"><partial name="_Icono" model='"ubicacion"' /></span><div><div class="principal">@o.Direccion</div><div class="secundario">@o.CodigoPostal @o.Localidad</div></div></li>
-                    <li><span class="marca-tipo"><partial name="_Icono" model='"telefono"' /></span><div><div class="principal">@o.Telefono</div><div class="secundario">Lo coge una persona.</div></div></li>
-                    <li><span class="marca-tipo"><partial name="_Icono" model='"correo"' /></span><div><div class="principal">@o.Email</div><div class="secundario">Respuesta en menos de 48 h laborables.</div></div></li>
-                    <li><span class="marca-tipo"><partial name="_Icono" model='"reloj"' /></span><div><div class="principal">@o.Horario</div><div class="secundario">Del 1 al 20 de abril, julio, octubre y enero ampliamos horario.</div></div></li>
+                    <li><span class="marca-tipo"><partial name="_Icono" model='"ubicacion"' /></span><div><div class="principal">@o.Direccion <partial name="_Verificar" /></div><div class="secundario">@o.CodigoPostal @o.Localidad (Madrid)</div></div></li>
+                    <li><span class="marca-tipo"><partial name="_Icono" model='"telefono"' /></span><div><div class="principal"><a href="tel:+34@o.Telefono.Replace(" ", "")">@o.Telefono</a> <partial name="_Verificar" /></div><div class="secundario">Lo coge una persona.</div></div></li>
+                    <li><span class="marca-tipo"><partial name="_Icono" model='"correo"' /></span><div><div class="principal"><a href="mailto:@o.Email">@o.Email</a></div><div class="secundario">Respuesta en menos de 48 h laborables.</div></div></li>
+                    <li><span class="marca-tipo"><partial name="_Icono" model='"reloj"' /></span><div><div class="principal">@o.Horario <partial name="_Verificar" /></div><div class="secundario">Del 1 al 20 de abril, julio, octubre y enero ampliamos horario.</div></div></li>
                 </ul>
+                </address>
             </div>
-            <div class="tarjeta tarjeta-suave" aria-hidden="true">
-                <svg viewBox="0 0 400 180" width="100%" role="img" aria-label="Plano esquemático de la zona"><rect width="400" height="180" fill="#F3ECF7" rx="12"/><path d="M0 60 H400 M0 120 H400 M80 0 V180 M200 0 V180 M320 0 V180" stroke="#fff" stroke-width="10"/><path d="M0 60 H400 M0 120 H400 M80 0 V180 M200 0 V180 M320 0 V180" stroke="#DCCFE6" stroke-width="2"/><circle cx="240" cy="90" r="14" fill="#8A5BB5"/><circle cx="240" cy="90" r="5" fill="#F6D33C"/><text x="262" y="95" font-family="Inter, sans-serif" font-size="13" fill="#4A3470" font-weight="600">SGA Contabilizado</text></svg>
-                <p class="texto-xs texto-3 mb-0 mt-2">Plano esquemático. En la web definitiva irá el mapa real.</p>
+            <div class="tarjeta tarjeta-suave mapa-alcorcon">
+                <svg viewBox="0 0 480 300" role="img" aria-labelledby="mapa-titulo"><title id="mapa-titulo">Plano esquemático de Alcorcón con la ubicación aproximada de SGA Contabilizado</title>
+                    <rect width="480" height="300" rx="12" fill="#FBF9FD"/>
+                    <path d="M62 128 L118 72 L228 60 L332 50 L418 92 L442 160 L402 240 L302 272 L182 262 L92 222 Z" fill="#F3ECF7" stroke="#DCCFE6" stroke-width="2"/>
+                    <g font-family="Inter, sans-serif" font-size="10" fill="#8C8696" font-style="italic">
+                        <text x="300" y="30">Madrid</text><text x="472" y="186" text-anchor="end">Leganés</text><text x="320" y="292">Fuenlabrada</text><text x="28" y="258">Móstoles</text><text x="14" y="138">Villaviciosa de Odón</text>
+                    </g>
+                    <path d="M480 44 C360 54, 200 62, 40 112" fill="none" stroke="#DCD3E4" stroke-width="8" stroke-linecap="round"/><text x="248" y="52" font-family="Inter, sans-serif" font-size="9" font-weight="700" fill="#8C8696">A-5</text>
+                    <path d="M14 150 C60 232, 200 302, 430 276" fill="none" stroke="#DCD3E4" stroke-width="6" stroke-linecap="round"/><text x="110" y="268" font-family="Inter, sans-serif" font-size="9" font-weight="700" fill="#8C8696">M-50</text>
+                    <path d="M432 16 L472 112" fill="none" stroke="#DCD3E4" stroke-width="6" stroke-linecap="round"/><text x="476" y="30" text-anchor="end" font-family="Inter, sans-serif" font-size="9" font-weight="700" fill="#8C8696">M-40</text>
+                    <path d="M392 80 L252 148 L118 170" fill="none" stroke="#2F9E5B" stroke-width="3" stroke-dasharray="7 4"/>
+                    <path d="M430 120 L362 130 L302 120 L252 166 L192 210 L140 236" fill="none" stroke="#8A5BB5" stroke-width="3"/>
+                    <g fill="#fff" stroke="#2F9E5B" stroke-width="2.5"><circle cx="392" cy="80" r="4.5"/><circle cx="252" cy="148" r="4.5"/><circle cx="118" cy="170" r="4.5"/></g>
+                    <g fill="#fff" stroke="#8A5BB5" stroke-width="2.5"><circle cx="430" cy="120" r="4.5"/><circle cx="362" cy="130" r="4.5"/><circle cx="302" cy="120" r="4.5"/><circle cx="252" cy="166" r="4.5"/><circle cx="192" cy="210" r="4.5"/><circle cx="140" cy="236" r="4.5"/></g>
+                    <g font-family="Inter, sans-serif" font-size="8.5" fill="#5B556A">
+                        <text x="384" y="70" text-anchor="end">San José de Valderas (C-5)</text><text x="106" y="184">Las Retamas (C-5)</text><text x="200" y="144" text-anchor="end">Alcorcón (C-5)</text>
+                        <text x="424" y="112" text-anchor="end">Puerta del Sur</text><text x="356" y="145">Joaquín Vilumbrales</text><text x="296" y="112" text-anchor="end">Parque Lisboa</text><text x="258" y="180">Alcorcón Central</text><text x="198" y="224">Parque Oeste</text><text x="110" y="250">Univ. Rey Juan Carlos</text>
+                    </g>
+                    <g font-family="Inter, sans-serif" font-size="9" fill="#8C8696" font-style="italic"><text x="300" y="238">Ensanche Sur</text><text x="372" y="204">Urtinsa</text></g>
+                    <g transform="translate(262 150)"><path d="M0 -26 C-10 -26 -16 -19 -16 -11 C-16 -1 0 10 0 10 C0 10 16 -1 16 -11 C16 -19 10 -26 0 -26 Z" fill="#8A5BB5"/><circle cy="-12" r="5" fill="#F6D33C"/></g>
+                    <text x="282" y="164" font-family="Inter, sans-serif" font-size="11" font-weight="700" fill="#4A3470">SGA Contabilizado</text>
+                    <g font-family="Inter, sans-serif" font-size="8" fill="#8C8696"><text x="14" y="288">Sin escala · Cercanías C-5 (verde) · Metro L10 y L12 (morado)</text></g>
+                </svg>
+                <p class="texto-xs texto-3 mb-0 mt-2">Plano esquemático de Alcorcón. La ubicación exacta se marcará cuando SGA confirme la dirección <partial name="_Verificar" />. <a href="https://www.openstreetmap.org/search?query=Alcorc%C3%B3n" rel="noopener">Ver Alcorcón en OpenStreetMap</a>.</p>
             </div>
         </div>
     </div>

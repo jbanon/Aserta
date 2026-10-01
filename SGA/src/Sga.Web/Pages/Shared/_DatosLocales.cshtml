@@ -1,0 +1,3 @@
+@* Datos estructurados de negocio local (schema.org/AccountingService). Es un bloque de datos, no un script ejecutable: la CSP no lo bloquea.
+   Se emite crudo para que Razor no codifique el "+" del tipo; el JSON escapa < > & por si un dato llevara HTML. *@
+@Html.Raw("<script type=\"application/ld+json\">" + Seo.DatosLocalesJson(OpcionesSga.Value) + "</script>")

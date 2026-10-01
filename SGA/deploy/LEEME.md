@@ -18,3 +18,11 @@ La demo es una aplicación .NET 10 independiente de Aserta: su propio servicio (
 
 ## Memoria
 El servicio tiene `MemoryMax=450M`. No usa Chromium (los PDF se dibujan a mano), así que convive con la demo de Aserta.
+
+## El día que `sga.es` apunte a este servidor (encargo 03)
+El código ya está preparado: `Seo:DominioCanonico = https://sga.es`. Mientras la petición llegue por otro host (hoy `sga.winsoft.es`) la web se sirve con `noindex`, `robots.txt` lo deniega todo y no hay sitemap; en cuanto llegue por `sga.es` se indexa con normalidad. Pasos manuales, fuera del código:
+1. DNS: registro `A` de `sga.es` (y `www.sga.es`) apuntando aquí.
+2. nginx: bloque con `server_name sga.es` (misma configuración que `nginx-sga-demo.conf`) y un bloque que redirija `www.sga.es` → `https://sga.es` con 301. `www` no cuenta como canónico a propósito.
+3. TLS: `sudo certbot --nginx -d sga.es -d www.sga.es`.
+4. Search Console: pegar el código en `Seo:VerificacionGoogle` (o `Seo__VerificacionGoogle` en el `.service`), reiniciar y enviar `https://sga.es/sitemap.xml`.
+Cuando SGA confirme dirección, teléfono y horario: cambiar `Sga:*` en `appsettings.json` y poner `Sga:DatosVerificados = true` para que desaparezcan las marcas `[VERIFICAR]`.

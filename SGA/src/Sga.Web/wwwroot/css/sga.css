@@ -438,3 +438,42 @@ a.celda:hover { filter: brightness(.95); }
 .cajita-ok .marca-cajita { background: var(--ok-suave); color: var(--ok-texto); } .cajita-ok .valor { color: var(--ok-texto); }
 .cajita-aviso .marca-cajita { background: var(--aviso-suave); color: var(--aviso-texto); } .cajita-aviso .valor { color: var(--aviso-texto); }
 .cajita-error .marca-cajita { background: var(--error-suave); color: var(--error-texto); } .cajita-error .valor { color: var(--error-texto); }
+
+/* Encargo 03 · SEO local: marca [VERIFICAR], bloque NAP, guias para Alcorcon y plano de contacto */
+h1 > .antetitulo { display: block; font-family: var(--f-texto); letter-spacing: .12em; }
+.verificar { display: inline-block; font: 600 10px/1.5 var(--f-texto); letter-spacing: .06em; padding: 0 6px; border-radius: 4px; background: var(--amarillo-100); color: var(--amarillo-700); vertical-align: middle; cursor: help; text-decoration: none; }
+.pie .verificar { background: rgba(246, 211, 60, .18); color: #F6D33C; }
+.nap { font-style: normal; display: flex; flex-direction: column; gap: 8px; }
+.nap svg { width: 16px; height: 16px; vertical-align: -3px; margin-right: 4px; color: var(--morado-500); }
+.nap .lista { display: flex; }
+.migas { display: flex; flex-wrap: wrap; gap: 8px; font-size: var(--t-sm); color: var(--tinta-3); margin-bottom: var(--e-3); }
+.migas a { color: inherit; }
+.articulo-cabecera { padding: var(--e-7) var(--e-4) var(--e-5); max-width: 860px; }
+.articulo-cabecera h1 { font-size: clamp(2rem, 4.5vw, 3rem); }
+.articulo-cuerpo { display: grid; gap: var(--e-6); align-items: start; }
+@media (min-width: 960px) { .articulo-cuerpo { grid-template-columns: minmax(0, 70ch) minmax(260px, 340px); gap: var(--e-7); } }
+.prosa { font-size: var(--t-lg); line-height: 1.6; min-width: 0; }
+.prosa h2 { font-size: var(--t-2xl); margin: var(--e-6) 0 var(--e-3); }
+.prosa h2:first-child { margin-top: 0; }
+.prosa h3 { font-size: var(--t-lg); margin: var(--e-4) 0 var(--e-2); }
+.prosa p, .prosa li { color: var(--tinta-2); }
+.prosa ul { padding-left: 1.2em; margin: 0 0 var(--e-4); }
+.prosa li { margin-bottom: 8px; }
+.prosa .hoja-detalle { font-size: var(--t-base); margin: var(--e-3) 0 var(--e-4); gap: 10px var(--e-4); }
+.prosa .hoja-detalle dd { font-weight: var(--peso-normal); color: var(--tinta-2); }
+.prosa .hoja-detalle dt { font-weight: var(--peso-semi); color: var(--tinta); }
+@media (max-width: 640px) { .prosa .hoja-detalle { grid-template-columns: 1fr; gap: 4px; } .prosa .hoja-detalle dd { margin-bottom: 10px; } }
+.prosa .tabla { font-size: var(--t-base); margin: var(--e-3) 0; }
+.prosa .tabla-envoltorio { margin: 0 0 var(--e-2); }
+.caja-ejemplo { background: var(--morado-50); border: 1px solid var(--morado-100); border-radius: var(--r-lg); padding: var(--e-5); margin: var(--e-4) 0; }
+.caja-ejemplo .hoja-detalle dd { font-family: var(--f-mono); font-size: var(--t-base); color: var(--tinta); }
+.caja-nota { border-left: 3px solid var(--amarillo-500); background: var(--amarillo-100); color: var(--tinta-2); border-radius: 0 var(--r) var(--r) 0; padding: var(--e-3) var(--e-4); font-size: var(--t-base); margin: var(--e-5) 0 0; }
+.lateral-pegajoso { display: flex; flex-direction: column; gap: var(--e-4); }
+@media (min-width: 960px) { .lateral-pegajoso { position: sticky; top: 88px; } }
+.lista-simple { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; font-size: var(--t-sm); }
+.tarjeta-guia { display: flex; flex-direction: column; gap: var(--e-2); color: inherit; text-decoration: none; transition: transform .2s ease, box-shadow .2s ease; }
+.tarjeta-guia:hover { text-decoration: none; transform: translateY(-2px); box-shadow: var(--sombra-2); }
+.tarjeta-guia h3 { font-size: var(--t-lg); margin: var(--e-2) 0 0; }
+.tarjeta-guia p { margin: 0; }
+.tarjeta-guia .enlace { color: var(--morado-700); font-weight: var(--peso-semi); margin-top: auto; padding-top: var(--e-2); }
+.mapa-alcorcon svg { width: 100%; height: auto; display: block; border-radius: var(--r-lg); }

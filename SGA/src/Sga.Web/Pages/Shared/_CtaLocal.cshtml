@@ -1,0 +1,23 @@
+@* Cierre de las guias locales: primera reunion + datos de contacto (NAP) con marca [VERIFICAR] mientras sean provisionales. *@
+@{ var o = OpcionesSga.Value; }
+<aside class="lateral-pegajoso">
+    <div class="tarjeta">
+        <span class="antetitulo">Primera reunión</span>
+        <h3 style="margin-top:4px">¿Tienes un caso así en Alcorcón?</h3>
+        <p class="texto-2">Media hora, en el despacho o por videollamada. Te decimos cómo lo llevaríamos y la cuota cerrada. Sin compromiso.</p>
+        <a class="boton boton-primario" href="/contacto"><partial name="_Icono" model='"calendario"' /> Pide tu primera reunión</a>
+        <address class="nap texto-sm mt-4">
+            <div><partial name="_Icono" model='"ubicacion"' /> @o.Direccion, @o.CodigoPostal @o.Localidad <partial name="_Verificar" /></div>
+            <div><partial name="_Icono" model='"telefono"' /> <a href="tel:+34@o.Telefono.Replace(" ", "")">@o.Telefono</a> <partial name="_Verificar" /></div>
+            <div><partial name="_Icono" model='"reloj"' /> @o.Horario <partial name="_Verificar" /></div>
+        </address>
+    </div>
+    <div class="tarjeta tarjeta-suave">
+        <h4 style="margin:0 0 8px">Más guías para Alcorcón</h4>
+        <ul class="lista-simple">
+            <li><a href="/alcorcon/alquiler-de-local-impuestos">Alquiler de un local: qué impuestos pagas</a></li>
+            <li><a href="/alcorcon/autonomo-plazos-del-trimestre">Autónomo: plazos del trimestre</a></li>
+            <li><a href="/alcorcon/sociedad-obligaciones-fiscales">Pequeña sociedad: qué presenta cada año</a></li>
+        </ul>
+    </div>
+</aside>

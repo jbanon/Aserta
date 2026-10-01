@@ -1,13 +1,12 @@
 @page "/"
 @model Sga.Web.Pages.IndexModel
-@{ ViewData["Titulo"] = "Gestoría en Madrid para arrendadores, autónomos y sociedades"; }
+@{ ViewData["Titulo"] = "Gestoría en Alcorcón para arrendadores, autónomos y sociedades"; ViewData["Descripcion"] = "Gestoría en Alcorcón para propietarios de locales, autónomos y pequeñas sociedades. Cada trimestre te decimos qué falta, calculamos, presentamos y te dejamos el justificante en tu área de clientes."; }
 <section class="con-foto hero-foto hero-capa">
     <div class="foto-fondo velo-morado fondo-mesa-h" aria-hidden="true"><partial name="_Foto" model='("mesa", "", "100vw", true)' /></div>
     <div class="contenedor hero">
     <div class="aparece visible">
-        <span class="antetitulo">Gestoría en Madrid · arrendadores, autónomos y pequeñas sociedades</span>
-        <h1>Tus impuestos al día, sin sustos. <em>Y la cifra clara antes del día 20.</em></h1>
-        <p class="entradilla">Llevamos el IVA, las retenciones y la contabilidad de propietarios de locales, profesionales y pequeñas empresas. Cada trimestre te decimos qué falta, calculamos, presentamos y te dejamos el justificante en tu área. Con una persona con nombre al otro lado.</p>
+        <h1><span class="antetitulo">Gestoría en Alcorcón</span>Tus impuestos al día, sin sustos. <em>Y la cifra clara antes del día 20.</em></h1>
+        <p class="entradilla">Llevamos el IVA, las retenciones y la contabilidad de propietarios de locales, profesionales y pequeñas empresas de Alcorcón y alrededores. Cada trimestre te decimos qué falta, calculamos, presentamos y te dejamos el justificante en tu área. Con una persona con nombre al otro lado.</p>
         <p class="texto-sm texto-3 mt-4">Sin permanencia. Cuota mensual cerrada que te decimos en la primera reunión.</p>
     </div>
     <div class="movil aparece visible aparece-2" aria-hidden="true">
@@ -128,6 +127,21 @@
             <div class="tarjeta"><span class="marca-tipo aviso"><partial name="_Icono" model='"alerta"' /></span><h3 class="mt-3">Qué me falta</h3><p class="texto-sm texto-2 mb-0">Una lista clara por trimestre. Haces una foto al ticket y desaparece de la lista.</p></div>
             <div class="tarjeta"><span class="marca-tipo"><partial name="_Icono" model='"euro"' /></span><h3 class="mt-3">Cuánto voy a pagar</h3><p class="texto-sm texto-2 mb-0">El IVA cobrado menos el pagado, dibujado. Con la fecha del cargo y la cuenta.</p></div>
             <div class="tarjeta"><span class="marca-tipo ok"><partial name="_Icono" model='"justificante"' /></span><h3 class="mt-3">Todo lo presentado</h3><p class="texto-sm texto-2 mb-0">Justificantes descargables con su código de verificación, trimestre a trimestre.</p></div>
+        </div>
+    </div>
+</section>
+
+<section class="seccion">
+    <div class="contenedor">
+        <div class="aparece" style="max-width:640px">
+            <span class="antetitulo">Guías para Alcorcón</span>
+            <h2>Lo que nos preguntan los vecinos de Alcorcón</h2>
+            <p class="texto-2">Tres guías cortas, sin jerga, con los impuestos y los plazos de los casos que más llevamos. Para leer antes de la primera reunión, o en vez de ella.</p>
+        </div>
+        <div class="rejilla rejilla-3 aparece" style="margin-top:var(--e-5)">
+            <a class="tarjeta tarjeta-guia" href="/alcorcon/alquiler-de-local-impuestos"><span class="marca-tipo"><partial name="_Icono" model='"casa"' /></span><h3>Alquiler de un local en Alcorcón: qué impuestos pagas</h3><p class="texto-2">IVA, retención, modelo 303 y renta, con un ejemplo con números.</p><span class="enlace">Leer la guía</span></a>
+            <a class="tarjeta tarjeta-guia" href="/alcorcon/autonomo-plazos-del-trimestre"><span class="marca-tipo"><partial name="_Icono" model='"maletin"' /></span><h3>Autónomo en Alcorcón: plazos del trimestre</h3><p class="texto-2">Qué se presenta cada trimestre, hasta qué día y qué hay que guardar.</p><span class="enlace">Leer la guía</span></a>
+            <a class="tarjeta tarjeta-guia" href="/alcorcon/sociedad-obligaciones-fiscales"><span class="marca-tipo"><partial name="_Icono" model='"edificio"' /></span><h3>Pequeña sociedad en Alcorcón: qué presenta cada año</h3><p class="texto-2">El calendario completo de una S.L.: trimestres, Sociedades, cuentas y libros.</p><span class="enlace">Leer la guía</span></a>
         </div>
     </div>
 </section>
