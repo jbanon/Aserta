@@ -24,18 +24,18 @@
 3. **Tarjetas 01 / 02 / 03** para los perfiles, con icono, ficha técnica (IVA 21 % + retención 19 %; 303 y a algunos 130; 202 y libro de IVA) y flecha al servicio.
 4. Acento tipográfico: ya existía (Fraunces cursiva en el titular); se mantiene.
 5. **Barra fija inferior en móvil** en la web pública: Llamar, WhatsApp, Área de clientes.
-6. **Vídeo incrustado**: `sga-como-trabajamos.webm`, 18,6 s, mudo, con las tres fotos en Ken Burns suave, los cuatro pasos del trimestre como rótulos y el logo animado al final. Con controles y póster, `preload="none"` (no se descarga hasta que se pulsa). Va en la portada («Cuatro momentos») y en «Cómo trabajamos».
+6. **Vídeo incrustado**: `sga-como-trabajamos.webm`, 33 s (7 s por escena, para que dé tiempo a leer cada rótulo; la primera versión duraba 18,6 s y Javier pidió el doble), mudo, con las tres fotos en Ken Burns suave, los cuatro pasos del trimestre como rótulos y el logo animado al final. Con controles y póster, `preload="none"` (no se descarga hasta que se pulsa). Va en la portada («Cuatro momentos») y en «Cómo trabajamos».
 
 ## Peso de los assets nuevos
 | Asset | Peso |
 |---|---|
 | 18 WebP de las tres fotos (todas las variantes) | 656 KB en total; la portada carga uno de 23–62 KB según el ancho (174 KB solo en pantallas de 2400 px) |
 | `sga-logo-animado.svg` / `-oscuro.svg` | 38 KB cada uno (textos como trazados) |
-| `sga-logo-animado.webm` | 214 KB (7 s) |
-| `sga-como-trabajamos.webm` | 526 KB (18,6 s); póster 12,5 KB |
+| `sga-logo-animado.webm` | 240 KB (7 s, fondo morado-900) |
+| `sga-como-trabajamos.webm` | 599 KB (33 s); póster 24 KB |
 | `fotos.css` (marcadores de carga) | 6 KB |
 
-El vídeo de 526 KB supera «algunos cientos de KB» por poco; solo se descarga si alguien pulsa reproducir. Si molesta en el repositorio, se puede bajar a 12 s quitando la escena 04, o dejarlo fuera de git y generarlo con el script.
+El vídeo de 599 KB supera «algunos cientos de KB»; solo se descarga si alguien pulsa reproducir. Si molesta en el repositorio, se puede quitar la escena 04 (unos 130 KB menos) o dejarlo fuera de git y generarlo con el script. Desde el 2026-10-01 el vídeo se genera fotograma a fotograma (825 capturas con el tiempo de animación fijado por la API de animaciones) en vez de grabar la pantalla: la grabación en tiempo real perdía fotogramas y desfasaba los rótulos.
 
 ## Cómo se generó (fuera del repositorio, en `~/aserta-scratch/`)
 - `fotos/`: herramienta .NET con ImageSharp (recorte por proporción, desenfoque por zonas, desaturación, WebP por anchos, marcador). 

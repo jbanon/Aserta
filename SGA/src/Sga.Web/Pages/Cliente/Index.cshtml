@@ -6,19 +6,39 @@
     @if (r.AvisosSinLeer > 0) { <a class="insignia insignia-marca" href="/cliente/mensajes" style="text-decoration:none">@r.AvisosSinLeer aviso@(r.AvisosSinLeer == 1 ? "" : "s") nuevo@(r.AvisosSinLeer == 1 ? "" : "s")</a> }
 </div>
 
-<div class="rejilla rejilla-2 mb-4">
-    <section class="tarjeta tarjeta-marca">
-        <div class="fila" style="gap:var(--e-4);align-items:center">
-            <partial name="_Anillo" model='(r.Avance, r.Semaforo == "verde" ? "" : r.Semaforo, $"{r.Avance} %", $"{r.Periodo} {r.Ejercicio}")' />
-            <div class="crece">
-                <div class="texto-2 texto-sm">@CalendarioFiscal.NombrePeriodo(r.Periodo).ToUpperInvariant()[0]@CalendarioFiscal.NombrePeriodo(r.Periodo)[1..] de @r.Ejercicio</div>
-                <h2 style="font-size:var(--t-xl);margin:2px 0 6px">@(r.Presentadas == r.Aplicables ? "Trimestre cerrado" : r.DocsEsperados > 0 && r.DocsRecibidos < r.DocsEsperados ? r.FraseDocumentos : r.Presentadas > 0 ? $"{r.Presentadas} de {r.Aplicables} modelos presentados" : "Lo tenemos todo: estamos calculando")</h2>
-                @if (r.Plazo303 is not null) { <div class="texto-sm texto-2">@(r.DiasParaElPlazo >= 0 ? $"Presentamos antes del {Formato.Fecha(r.Plazo303.Fin)} · quedan {r.DiasParaElPlazo} días" : "Plazo cerrado")</div> }
-                @if (r.DocsEsperados > 0 && r.DocsRecibidos < r.DocsEsperados) { <a class="boton boton-primario mt-3" href="/cliente/subir"><partial name="_Icono" model='"camara"' /> Subir ahora</a> }
-                else if (c.Tipo == TipoCliente.Arrendador) { <a class="boton mt-3" href="/cliente/facturas" style="background:rgba(255,255,255,.12);border-color:transparent;color:#fff">Ver mis facturas</a> }
-            </div>
+@{
+    var docsCompletos = r.DocsEsperados == 0 || r.DocsRecibidos >= r.DocsEsperados;
+    var titulo = r.Presentadas == r.Aplicables && r.Aplicables > 0 ? "Trimestre cerrado: todo presentado" : !docsCompletos ? r.FraseDocumentos : r.Presentadas > 0 ? $"{r.Presentadas} de {r.Aplicables} modelos presentados" : "Lo tenemos todo: estamos calculando";
+    var claseDocs = r.DocsEsperados == 0 ? "cajita-ok" : docsCompletos ? "cajita-ok" : "cajita-aviso";
+    var clasePlazo = r.DiasParaElPlazo < 0 ? "cajita-error" : r.DiasParaElPlazo <= 5 ? "cajita-aviso" : "";
+    var claseModelos = r.Aplicables > 0 && r.Presentadas == r.Aplicables ? "cajita-ok" : "";
+}
+<section class="resumen-trimestre mb-4">
+    <div class="fila-entre" style="align-items:flex-start">
+        <div>
+            <span class="antetitulo">@CalendarioFiscal.NombrePeriodo(r.Periodo).ToUpperInvariant()[0]@CalendarioFiscal.NombrePeriodo(r.Periodo)[1..] de @r.Ejercicio</span>
+            <h2>@titulo</h2>
+            @if (r.Plazo303 is not null) { <p class="plazo">@(r.DiasParaElPlazo >= 0 ? $"Presentamos antes del {Formato.Fecha(r.Plazo303.Fin)} · quedan {r.DiasParaElPlazo} días" : "Plazo cerrado")</p> }
         </div>
-    </section>
+        @if (!docsCompletos) { <a class="boton boton-primario" href="/cliente/subir"><partial name="_Icono" model='"camara"' /> Subir ahora</a> }
+        else if (c.Tipo == TipoCliente.Arrendador) { <a class="boton" href="/cliente/facturas"><partial name="_Icono" model='"factura"' /> Ver mis facturas</a> }
+    </div>
+    <div class="cajitas">
+        @if (r.DocsEsperados > 0)
+        {
+            <div class="cajita @claseDocs"><span class="marca-cajita"><partial name="_Icono" model='"documentos"' /></span><span class="valor">@r.DocsRecibidos<small>/@r.DocsEsperados</small></span><span class="etiqueta">documentos entregados</span><div class="barra"><span class="@(docsCompletos ? "" : "ambar")" style="width:@(100 * r.DocsRecibidos / r.DocsEsperados)%"></span></div></div>
+        }
+        else
+        {
+            <div class="cajita cajita-ok"><span class="marca-cajita"><partial name="_Icono" model='"factura"' /></span><span class="valor">@r.FacturasTrimestre.Count<small>/@(Math.Max(r.FacturasTrimestre.Count, c.Contratos.Count * 3))</small></span><span class="etiqueta">facturas de alquiler emitidas</span></div>
+        }
+        <div class="cajita @claseModelos"><span class="marca-cajita"><partial name="_Icono" model='"justificante"' /></span><span class="valor">@r.Presentadas<small>/@r.Aplicables</small></span><span class="etiqueta">modelos presentados</span><div class="barra"><span class="@(r.Aplicables > 0 && r.Presentadas == r.Aplicables ? "" : "morado")" style="width:@(r.Aplicables == 0 ? 0 : 100 * r.Presentadas / r.Aplicables)%"></span></div></div>
+        <div class="cajita @clasePlazo"><span class="marca-cajita"><partial name="_Icono" model='"calendario"' /></span><span class="valor">@Math.Max(0, r.DiasParaElPlazo)<small>días</small></span><span class="etiqueta">@(r.Plazo303 is not null ? $"para el plazo del {r.Plazo303.Fin.Day} de {Formato.NombreMes(r.Plazo303.Fin.Month)}" : "sin plazo abierto")</span></div>
+        <div class="cajita"><span class="marca-cajita"><partial name="_Icono" model='"euro"' /></span><span class="valor">@(r.Iva is null ? "—" : r.Iva.Resultado < 0 ? "0 €" : Formato.EurosSinDecimales(r.Iva.Resultado))</span><span class="etiqueta">@(r.Iva is null ? "sin IVA este trimestre" : r.Obligacion303?.Estado == EstadoObligacion.Presentado ? "IVA presentado, importe definitivo" : "IVA estimado con lo que tenemos")</span></div>
+    </div>
+</section>
+
+<div class="rejilla rejilla-2 mb-4">
     <section class="tarjeta">
         @if (r.Iva is not null)
         {

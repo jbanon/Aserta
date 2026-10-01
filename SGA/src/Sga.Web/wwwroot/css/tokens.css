@@ -6,7 +6,7 @@
 :root {
   color-scheme: light;
   /* Marca */
-  --morado-900: #2A1A3D; --morado-700: #4A2660; --morado-500: #7B3F8E; --morado-300: #B48BC4; --morado-100: #F3ECF7; --morado-50: #FAF6FC;
+  --morado-900: #4A3470; --morado-700: #644A96; --morado-500: #8A5BB5; --morado-300: #B99BD6; --morado-100: #F3ECF7; --morado-50: #FAF6FC;
   --verde-700: #1F6E40; --verde-500: #2F9E5B; --verde-300: #8AD0A4; --verde-100: #E4F4EA;
   --amarillo-500: #F6D33C; --amarillo-700: #8A6100; --amarillo-100: #FDF5CF;
   --rojo-700: #8F2A1B; --rojo-500: #C8412B; --rojo-100: #FBE7E3;
@@ -21,7 +21,7 @@
   --aviso: var(--amarillo-500); --aviso-suave: var(--amarillo-100); --aviso-texto: var(--amarillo-700);
   --error: var(--rojo-500); --error-suave: var(--rojo-100); --error-texto: var(--rojo-700);
   --info: var(--azul-500); --info-suave: var(--azul-100);
-  --foco: #7B3F8E;
+  --foco: #8A5BB5;
   /* Estados de la matriz (mismos colores que el Excel, pero con criterio) */
   --celda-np: var(--superficie-3); --celda-pendiente: #FFFFFF; --celda-curso: var(--amarillo-100); --celda-presentado: var(--verde-100);
   /* Tipografía */

@@ -6,9 +6,9 @@ Un despacho, no una startup. Sobrio y cálido: papel crema, morado profundo como
 ## Color (sale del logo)
 | Token | Valor | Uso |
 |---|---|---|
-| `--morado-900` | #2A1A3D | cabeceras oscuras, lateral del área, pie |
-| `--morado-700` | #4A2660 | texto de marca, botón «marca», enlaces |
-| `--morado-500` | #7B3F8E | flor del logo, acentos, foco |
+| `--morado-900` | #4A3470 | cabeceras oscuras, pie, fondo del vídeo (el lateral del área es claro desde el 2026-10-01) |
+| `--morado-700` | #644A96 | texto de marca, botón «marca», enlaces |
+| `--morado-500` | #8A5BB5 | acentos, foco, velos sobre foto |
 | `--morado-100` | #F3ECF7 | fondos suaves, celdas de agrupación |
 | `--verde-500` | #2F9E5B | **acción principal** y estado «presentado / completo» |
 | `--verde-700` | #1F6E40 | texto sobre verde claro |
@@ -18,7 +18,7 @@ Un despacho, no una startup. Sobrio y cálido: papel crema, morado profundo como
 | `--papel` | #FBFAF7 | fondo de página |
 | `--tinta` / `--tinta-2` / `--tinta-3` | #221B2A / #5B5366 / #8B8494 | texto principal, secundario, terciario |
 
-Contraste: todos los pares texto/fondo usados cumplen AA (los de texto pequeño, ≥ 4,5:1: tinta sobre papel 14,9:1; morado-700 sobre blanco 10,3:1; verde-700 sobre verde-100 6,1:1; amarillo-700 sobre amarillo-100 5,6:1; blanco sobre verde-500 4,6:1 en botones con texto en semibold).
+Contraste: todos los pares texto/fondo usados cumplen AA (los de texto pequeño, ≥ 4,5:1: tinta sobre papel 14,9:1; morado-700 sobre blanco 7,1:1; verde-700 sobre verde-100 6,1:1; amarillo-700 sobre amarillo-100 5,6:1; blanco sobre verde-500 4,6:1 en botones con texto en semibold).
 
 Estados de la matriz (los del Excel, con criterio): presentado = verde suave; en curso = amarillo suave con las iniciales de la persona; pendiente = blanco; NP = gris; trimestre futuro = rayado.
 
